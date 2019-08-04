@@ -1,4 +1,5 @@
 .vscode/*
+assets/photoshop
 *.exe
 *.o
 *.d
