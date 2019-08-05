@@ -1,7 +1,7 @@
 #pragma once
+#include <memory>
 
 namespace Resources
 {
-    sf::Texture* AllocTexture(std::string filepath);
-    void FreeTexture(std::string filepath);
+    std::shared_ptr<sf::Texture> AllocTexture(std::string filepath);
 }

@@ -1,6 +1,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include "spritesheet.h"
+#include "main_menu.h"
 
 namespace {
     const sf::Vector2f DEFAULT_RATIO = {1200, 800};
@@ -12,15 +12,19 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "SphereDefender");
 
-    Spritesheet splash_screen("assets/SplashScreen.png");
+    MainMenu main_menu;
+
+    sf::Clock clock;
 
     while (window.isOpen())
     {
+        sf::Time elapsed = clock.restart();
         sf::Event event;
 
         window.clear(sf::Color::Black);
 
-        splash_screen.Draw(window);
+        main_menu.Update(elapsed, window);
+        main_menu.Draw(window);
 
         window.display();
 

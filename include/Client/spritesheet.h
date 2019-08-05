@@ -13,20 +13,20 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <memory>
 
 class Spritesheet
 {
 public:
     Spritesheet();
     Spritesheet(std::string filepath);
-    ~Spritesheet();
+    void Draw(sf::RenderWindow& window);
 
     bool LoadTexture(std::string filepath);
-
-    void Draw(sf::RenderWindow& window);
+    sf::Sprite& GetSprite();
 
 private:
     sf::Sprite sprite;
-    sf::Texture* texture;
+    std::shared_ptr<sf::Texture> texture;
     std::string filepath;
 };

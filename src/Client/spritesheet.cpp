@@ -1,5 +1,8 @@
 #include "spritesheet.h"
 #include "global_resources.h"
+#include <iostream>
+
+using std::cout, std::endl;
 
 Spritesheet::Spritesheet()
 {
@@ -10,15 +13,14 @@ Spritesheet::Spritesheet(std::string path)
     LoadTexture(path);
 }
 
-Spritesheet::~Spritesheet()
+void Spritesheet::Draw(sf::RenderWindow& window)
 {
-    Resources::FreeTexture(filepath);
-    texture = nullptr;
+    window.draw(sprite);
 }
 
 bool Spritesheet::LoadTexture(std::string path)
 {
-    filepath = path;
+    filepath = "assets/" + path;
     texture = Resources::AllocTexture(filepath);
     if (texture == nullptr)
     {
@@ -29,7 +31,7 @@ bool Spritesheet::LoadTexture(std::string path)
     return true;
 }
 
-void Spritesheet::Draw(sf::RenderWindow& window)
+sf::Sprite& Spritesheet::GetSprite()
 {
-    window.draw(sprite);
+    return sprite;
 }
