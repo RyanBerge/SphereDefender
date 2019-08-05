@@ -1,7 +1,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "spritesheet.h"
 
 namespace {
     const sf::Vector2f DEFAULT_RATIO = {1200, 800};
@@ -13,11 +12,7 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "SphereDefender");
 
-    sf::Sprite splash_screen;
-    sf::Texture splash_texture;
-
-    splash_texture.loadFromFile("assets/SplashScreen.png");
-    splash_screen.setTexture(splash_texture);
+    Spritesheet splash_screen("assets/SplashScreen.png");
 
     while (window.isOpen())
     {
@@ -25,7 +20,7 @@ int main()
 
         window.clear(sf::Color::Black);
 
-        window.draw(splash_screen);
+        splash_screen.Draw(window);
 
         window.display();
 
