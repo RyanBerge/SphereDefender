@@ -29,4 +29,6 @@ public:
 private:
     std::map<MenuType, Menu> menus;
     MenuType current_menu;
+
+    void onSplashStartClick();
 };

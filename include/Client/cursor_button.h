@@ -27,7 +27,7 @@ protected:
 
     Spritesheet spritesheet;
     bool mouse_hover = false;
-    bool mouse_pressed = false;
+    bool left_mouse_pressed = false;
 
     std::vector<std::function<void(void)>> onClickDownVector;
     std::vector<std::function<void(void)>> onClickUpVector;

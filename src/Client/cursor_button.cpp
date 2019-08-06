@@ -1,7 +1,8 @@
 #include "cursor_button.h"
 #include <SFML/Window/Mouse.hpp>
-
 #include <iostream>
+
+using std::cout, std::endl;
 
 CursorButton::CursorButton()
 {
@@ -32,11 +33,11 @@ void CursorButton::Update(sf::Time elapsed, sf::RenderWindow& window)
             onHoverExit();
         }
 
-        if (in_bounds && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !mouse_pressed)
+        if (in_bounds && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !left_mouse_pressed)
         {
             onClickDown();
         }
-        else if (in_bounds && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && mouse_pressed)
+        else if (in_bounds && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && left_mouse_pressed)
         {
             onClickUp();
         }
@@ -75,7 +76,7 @@ void CursorButton::RegisterOnHoverExit(std::function<void(void)> f)
 
 void CursorButton::onClickUp()
 {
-    mouse_pressed = false;
+    left_mouse_pressed = false;
 
     for (auto callback : onClickUpVector)
     {
@@ -85,7 +86,7 @@ void CursorButton::onClickUp()
 
 void CursorButton::onClickDown()
 {
-    mouse_pressed = true;
+    left_mouse_pressed = true;
 
     for (auto callback : onClickDownVector)
     {
