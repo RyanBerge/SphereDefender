@@ -1,16 +1,18 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "main_menu.h"
+#include "global_resources.h"
+#include <cstdlib>
 
 namespace {
-    const sf::Vector2f DEFAULT_RATIO = {1200, 800};
+    const sf::Vector2f DEFAULT_RATIO = { 1200, 800 };
 }
 
 void ResizeWindow(sf::RenderWindow& window, sf::Vector2f ratio);
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "SphereDefender");
+    sf::RenderWindow window(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "Sphere Defender");
 
     MainMenu main_menu;
 
@@ -27,6 +29,8 @@ int main()
         main_menu.Draw(window);
 
         window.display();
+
+        std::map<sf::Event::EventType, std::vector<sf::Event>> event_map;
 
         while (window.pollEvent(event))
         {
@@ -48,7 +52,16 @@ int main()
                     break;
                 }
             }
+
+            if (event_map.find(event.type) == event_map.end())
+            {
+                event_map[event.type] = std::vector<sf::Event>();
+            }
+
+            event_map[event.type].push_back(event);
         }
+
+        Resources::UpdateEvents(event_map);
     }
 }
 

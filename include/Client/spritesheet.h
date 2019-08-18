@@ -28,5 +28,4 @@ public:
 private:
     sf::Sprite sprite;
     std::shared_ptr<sf::Texture> texture;
-    std::string filepath;
 };

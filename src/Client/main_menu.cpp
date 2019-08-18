@@ -9,19 +9,28 @@ MainMenu::MainMenu()
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
     CursorButton splash_screen_start("SplashStart.png");
     splash_screen_start.GetSprite().setPosition(sf::Vector2f(472, 650));
-    splash_screen_start.RegisterOnClickUp(std::bind(&onSplashStartClick, this));
+    splash_screen_start.RegisterOnClickUp([this](void){ current_menu = MenuType::Main; });
     splash_screen_menu.buttons.push_back(splash_screen_start);
     menus[MenuType::SplashScreen] = splash_screen_menu;
     current_menu = MenuType::SplashScreen;
 
     Menu main_menu;
-    CursorButton new_game("NewGameButton.png");
-    new_game.GetSprite().setPosition(sf::Vector2f(545, 200));
-    main_menu.buttons.push_back(new_game);
+    CursorButton create_game_button("CreateGameButton.png");
+    create_game_button.GetSprite().setPosition(sf::Vector2f(545, 200));
+    create_game_button.RegisterOnClickUp([this](void){ current_menu = MenuType::CreateGame; InitTabOrder(); });
+    main_menu.buttons.push_back(create_game_button);
     CursorButton exit_game("ExitButton.png");
     exit_game.GetSprite().setPosition(sf::Vector2f(845, 500));
+    exit_game.RegisterOnClickUp([this](void){ current_menu = MenuType::Exit; });
     main_menu.buttons.push_back(exit_game);
     menus[MenuType::Main] = main_menu;
+
+    Menu create_game;
+    Textbox name_box("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
+    name_box.SetPosition(sf::Vector2f(200, 200));
+    create_game.textboxes.push_back(name_box);
+    menus[MenuType::CreateGame] = create_game;
+
 }
 
 void MainMenu::Update(sf::Time elapsed, sf::RenderWindow& window)
@@ -31,6 +40,11 @@ void MainMenu::Update(sf::Time elapsed, sf::RenderWindow& window)
     for (CursorButton& button : menu.buttons)
     {
         button.Update(elapsed, window);
+    }
+
+    for (Textbox& textbox : menu.textboxes)
+    {
+        textbox.Update(elapsed, window);
     }
 }
 
@@ -47,9 +61,29 @@ void MainMenu::Draw(sf::RenderWindow& window)
     {
         button.Draw(window);
     }
+
+    for (Textbox& textbox : menu.textboxes)
+    {
+        textbox.Draw(window);
+    }
 }
 
-void MainMenu::onSplashStartClick()
+void MainMenu::InitTabOrder()
 {
-    current_menu = MenuType::Main;
+    Menu& menu = menus[current_menu];
+
+    if (menu.textboxes.size() == 0)
+    {
+        return;
+    }
+
+    menu.textboxes[0].SetFocus(true);
+    Textbox* old = &menu.textboxes[0];
+    menu.textboxes[menu.textboxes.size() - 1].SetTabNext(old);
+
+    for (unsigned i = 1; i < menu.textboxes.size(); ++i)
+    {
+        old->SetTabNext(&menu.textboxes[i]);
+        old = &menu.textboxes[i];
+    }
 }

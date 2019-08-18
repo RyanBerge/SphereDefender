@@ -20,8 +20,7 @@ void Spritesheet::Draw(sf::RenderWindow& window)
 
 bool Spritesheet::LoadTexture(std::string path)
 {
-    filepath = "assets/" + path;
-    texture = Resources::AllocTexture(filepath);
+    texture = Resources::AllocTexture("assets/" + path);
     if (texture == nullptr)
     {
         return false;
