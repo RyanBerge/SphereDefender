@@ -3,6 +3,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "cursor_button.h"
 #include "textbox.h"
+#include "lobby.h"
 #include <map>
 #include <vector>
 
@@ -33,11 +34,13 @@ public:
     void Update(sf::Time elapsed, sf::RenderWindow& window);
     void Draw(sf::RenderWindow& window);
 
-    void InitTabOrder();
-
     MenuType GetCurrentMenu();
 
 private:
     std::map<MenuType, Menu> menus;
     MenuType current_menu;
+    Lobby lobby;
+
+    void initTabOrder();
+    void createLobby();
 };

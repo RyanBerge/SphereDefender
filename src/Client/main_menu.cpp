@@ -17,7 +17,7 @@ MainMenu::MainMenu()
     Menu main_menu;
     CursorButton create_game_button("CreateGameButton.png");
     create_game_button.GetSprite().setPosition(sf::Vector2f(545, 200));
-    create_game_button.RegisterOnClickUp([this](void){ current_menu = MenuType::CreateGame; InitTabOrder(); });
+    create_game_button.RegisterOnClickUp([this](void){ current_menu = MenuType::CreateGame; initTabOrder(); });
     main_menu.buttons.push_back(create_game_button);
     CursorButton exit_game("ExitButton.png");
     exit_game.GetSprite().setPosition(sf::Vector2f(845, 500));
@@ -26,6 +26,10 @@ MainMenu::MainMenu()
     menus[MenuType::Main] = main_menu;
 
     Menu create_game;
+    CursorButton create_game_start("SplashStart.png");
+    create_game_start.GetSprite().setPosition(sf::Vector2f(472, 650));
+    create_game_start.RegisterOnClickUp([this](void){ createLobby(); current_menu = MenuType::Lobby; });
+    create_game.buttons.push_back(create_game_start);
     Textbox name_box("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
     name_box.SetPosition(sf::Vector2f(200, 200));
     create_game.textboxes.push_back(name_box);
@@ -45,6 +49,11 @@ void MainMenu::Update(sf::Time elapsed, sf::RenderWindow& window)
     for (Textbox& textbox : menu.textboxes)
     {
         textbox.Update(elapsed, window);
+    }
+
+    if (current_menu == MenuType::Lobby)
+    {
+        lobby.Update(elapsed, window);
     }
 }
 
@@ -66,9 +75,14 @@ void MainMenu::Draw(sf::RenderWindow& window)
     {
         textbox.Draw(window);
     }
+
+    if (current_menu == MenuType::Lobby)
+    {
+        lobby.Draw(window);
+    }
 }
 
-void MainMenu::InitTabOrder()
+void MainMenu::initTabOrder()
 {
     Menu& menu = menus[current_menu];
 
@@ -86,4 +100,10 @@ void MainMenu::InitTabOrder()
         old->SetTabNext(&menu.textboxes[i]);
         old = &menu.textboxes[i];
     }
+}
+
+void MainMenu::createLobby()
+{
+    std::string name = menus[current_menu].textboxes[0].GetText().getString().toAnsiString();
+    lobby.InitNew(name);
 }
