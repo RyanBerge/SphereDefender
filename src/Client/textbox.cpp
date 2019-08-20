@@ -42,6 +42,13 @@ Textbox::Textbox(std::string fontpath, sf::Vector2u box_size, sf::Color font_col
 
 void Textbox::Update(sf::Time elapsed, sf::RenderWindow& window)
 {
+    if (delayed_focus)
+    {
+        delayed_focus = false;
+        has_focus = true;
+        return;
+    }
+
     if (has_focus)
     {
         auto text_events = Resources::GetEvent(sf::Event::TextEntered);
@@ -49,7 +56,15 @@ void Textbox::Update(sf::Time elapsed, sf::RenderWindow& window)
         {
             OnTextEntered(event);
         }
+
     }
+
+    auto mouse_click_events = Resources::GetEvent(sf::Event::MouseButtonPressed);
+    for (auto& event : mouse_click_events)
+    {
+        OnMouseDown(event, window);
+    }
+
 }
 
 void Textbox::Draw(sf::RenderWindow& window)
@@ -78,6 +93,11 @@ void Textbox::OnTextEntered(sf::Event event)
         }
         ++cursor_index;
     }
+    else if (character == 9) // tab
+    {
+        tab_next->ApplyDelayedFocus();
+        has_focus = false;
+    }
     else if (character == 8) // backspace
     {
         auto temp = text.getString();
@@ -89,6 +109,26 @@ void Textbox::OnTextEntered(sf::Event event)
         }
     }
     cursor.setPosition(text.getPosition().x + text.getGlobalBounds().width, text.getPosition().y);
+}
+
+void Textbox::OnMouseDown(sf::Event event, sf::RenderWindow& window)
+{
+    sf::FloatRect bounds = box.getGlobalBounds();
+    auto mouse_position = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+    bool in_bounds = mouse_position.x >= bounds.left &&
+                    mouse_position.x <= bounds.left + bounds.width &&
+                    mouse_position.y >= bounds.top &&
+                    mouse_position.y <= bounds.top + bounds.height;
+
+    if (has_focus && !in_bounds)
+    {
+        has_focus = false;
+    }
+    else if (!has_focus && in_bounds)
+    {
+        has_focus = true;
+    }
 }
 
 sf::Text& Textbox::GetText()
@@ -111,6 +151,11 @@ bool Textbox::GetFocus()
 void Textbox::SetFocus(bool focus)
 {
     has_focus = focus;
+}
+
+void Textbox::ApplyDelayedFocus()
+{
+    delayed_focus = true;
 }
 
 void Textbox::SetTabNext(Textbox* next)

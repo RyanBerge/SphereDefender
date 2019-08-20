@@ -16,11 +16,13 @@ public:
     void Draw(sf::RenderWindow& window);
 
     void OnTextEntered(sf::Event event);
+    void OnMouseDown(sf::Event event, sf::RenderWindow& window);
 
     sf::Text& GetText();
     void SetPosition(sf::Vector2f position);
     bool GetFocus();
     void SetFocus(bool focus);
+    void ApplyDelayedFocus();
     void SetTabNext(Textbox* next);
 
 private:
@@ -30,5 +32,6 @@ private:
     sf::Text cursor;
     Textbox* tab_next = nullptr;
     bool has_focus = false;
+    bool delayed_focus = false;
     int cursor_index = 0;
 };

@@ -42,5 +42,5 @@ private:
     Lobby lobby;
 
     void initTabOrder();
-    void createLobby();
+    void createLobby(bool create_new);
 };

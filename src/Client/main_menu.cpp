@@ -16,9 +16,13 @@ MainMenu::MainMenu()
 
     Menu main_menu;
     CursorButton create_game_button("CreateGameButton.png");
-    create_game_button.GetSprite().setPosition(sf::Vector2f(545, 200));
+    create_game_button.GetSprite().setPosition(sf::Vector2f(439, 200));
     create_game_button.RegisterOnClickUp([this](void){ current_menu = MenuType::CreateGame; initTabOrder(); });
     main_menu.buttons.push_back(create_game_button);
+    CursorButton join_game_button("JoinGameButton.png");
+    join_game_button.GetSprite().setPosition(sf::Vector2f(558, 350));
+    join_game_button.RegisterOnClickUp([this](void){ current_menu = MenuType::JoinGame; initTabOrder(); });
+    main_menu.buttons.push_back(join_game_button);
     CursorButton exit_game("ExitButton.png");
     exit_game.GetSprite().setPosition(sf::Vector2f(845, 500));
     exit_game.RegisterOnClickUp([this](void){ current_menu = MenuType::Exit; });
@@ -28,13 +32,25 @@ MainMenu::MainMenu()
     Menu create_game;
     CursorButton create_game_start("SplashStart.png");
     create_game_start.GetSprite().setPosition(sf::Vector2f(472, 650));
-    create_game_start.RegisterOnClickUp([this](void){ createLobby(); current_menu = MenuType::Lobby; });
+    create_game_start.RegisterOnClickUp([this](void){ createLobby(true); current_menu = MenuType::Lobby; });
     create_game.buttons.push_back(create_game_start);
-    Textbox name_box("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
-    name_box.SetPosition(sf::Vector2f(200, 200));
-    create_game.textboxes.push_back(name_box);
+    Textbox name_box_create("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
+    name_box_create.SetPosition(sf::Vector2f(200, 200));
+    create_game.textboxes.push_back(name_box_create);
     menus[MenuType::CreateGame] = create_game;
 
+    Menu join_game;
+    CursorButton connect_button("ConnectButton.png");
+    connect_button.GetSprite().setPosition(sf::Vector2f(425, 650));
+    connect_button.RegisterOnClickUp([this](void){ createLobby(false); current_menu = MenuType::Lobby; });
+    join_game.buttons.push_back(connect_button);
+    Textbox name_box_join("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
+    name_box_join.SetPosition(sf::Vector2f(200, 200));
+    join_game.textboxes.push_back(name_box_join);
+    Textbox ip_box("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
+    ip_box.SetPosition(sf::Vector2f(200, 350));
+    join_game.textboxes.push_back(ip_box);
+    menus[MenuType::JoinGame] = join_game;
 }
 
 void MainMenu::Update(sf::Time elapsed, sf::RenderWindow& window)
@@ -92,18 +108,28 @@ void MainMenu::initTabOrder()
     }
 
     menu.textboxes[0].SetFocus(true);
-    Textbox* old = &menu.textboxes[0];
-    menu.textboxes[menu.textboxes.size() - 1].SetTabNext(old);
 
-    for (unsigned i = 1; i < menu.textboxes.size(); ++i)
+    for (unsigned i = 0; i < menu.textboxes.size() - 1; ++i)
     {
-        old->SetTabNext(&menu.textboxes[i]);
-        old = &menu.textboxes[i];
+        if (i < menu.textboxes.size() - 1)
+        {
+            menu.textboxes[i].SetTabNext(&menu.textboxes[i + 1]);
+        }
     }
+    menu.textboxes[menu.textboxes.size() - 1].SetTabNext(&menu.textboxes[0]);
 }
 
-void MainMenu::createLobby()
+void MainMenu::createLobby(bool create_new)
 {
     std::string name = menus[current_menu].textboxes[0].GetText().getString().toAnsiString();
-    lobby.InitNew(name);
+
+    if (create_new)
+    {
+        lobby.InitNew(name);
+    }
+    else
+    {
+        std::string ip = menus[current_menu].textboxes[1].GetText().getString().toAnsiString();
+        lobby.InitExisting(name, ip);
+    }
 }

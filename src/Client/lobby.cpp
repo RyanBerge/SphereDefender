@@ -2,7 +2,7 @@
 #include "messaging.h"
 #include <iostream>
 
-using std::cerr, std::endl;
+using std::cout, std::cerr, std::endl;
 
 Lobby::Lobby()
 {
@@ -26,6 +26,14 @@ void Lobby::InitNew(std::string player_name)
 
 void Lobby::InitExisting(std::string player_name, std::string ip)
 {
+    sf::Socket::Status status = Network::Connect(ip);
+    if (status != sf::Socket::Status::Done)
+    {
+        cerr << "Server could not be reached." << endl;
+        return;
+    }
+
+    Message::setName(player_name);
 }
 
 void Lobby::Update(sf::Time elapsed, sf::RenderWindow& window)
