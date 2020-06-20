@@ -1,23 +1,12 @@
 #pragma once
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include "state_manager.h"
 #include "cursor_button.h"
 #include "textbox.h"
 #include "lobby.h"
 #include <map>
 #include <vector>
-
-enum class MenuType
-{
-    None,
-    SplashScreen,
-    Main,
-    CreateGame,
-    JoinGame,
-    Lobby,
-    Start,
-    Exit
-};
 
 struct Menu
 {
@@ -31,16 +20,16 @@ class MainMenu
 public:
     MainMenu();
 
-    void Update(sf::Time elapsed, sf::RenderWindow& window);
+    bool Update(sf::Time elapsed, sf::RenderWindow& window);
     void Draw(sf::RenderWindow& window);
 
     MenuType GetCurrentMenu();
 
 private:
     std::map<MenuType, Menu> menus;
-    MenuType current_menu;
     Lobby lobby;
 
+    void exitGame();
     void initTabOrder();
-    void createLobby(bool create_new);
+    bool createLobby(bool create_new);
 };

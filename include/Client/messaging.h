@@ -12,5 +12,9 @@ namespace Network
 
 namespace Message
 {
-    void setName(std::string name);
+    void CheckMessages();
+
+    void InitializeServer(std::string name);
+    void JoinServer(std::string name);
+    void LeaveGame();
 }

@@ -7,14 +7,18 @@ class Server
 {
 public:
     Server();
-    void Update();
+    bool Update();
 
 private:
     sf::TcpListener listener;
     std::vector<PlayerData> players;
+    int owner = -1;
 
     void listen();
     void checkMessages(PlayerData& player);
 
-    void setName(PlayerData& player);
+    bool setName(PlayerData& player);
+    void notifyAllPlayerJoined(PlayerData& p);
+    void notifyAllPlayerLeft(PlayerData& p);
+    void notifyAllOwnerLeft();
 };

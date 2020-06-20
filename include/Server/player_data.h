@@ -5,7 +5,15 @@
 
 struct PlayerData
 {
+    enum class Status
+    {
+        Uninitialized,
+        Disconnected,
+        Menus
+    };
+
     std::string name;
     std::shared_ptr<sf::TcpSocket> socket;
-    // TODO: PlayerId
+    uint16_t id;
+    Status status;
 };

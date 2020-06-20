@@ -11,6 +11,9 @@ int main()
 
     while (true)
     {
-        server.Update();
+        if (!server.Update())
+        {
+            break;
+        }
     }
 }

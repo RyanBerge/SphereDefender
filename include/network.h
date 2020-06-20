@@ -4,11 +4,22 @@
 
 namespace Network
 {
-    enum class MessageType : uint8_t
+    enum class ClientMessage : uint8_t
     {
         Error = 0,
-        SetName = 1,
-        NotifyChangeName = SetName
+        InitServer,
+        JoinServer,
+        LeaveGame
+    };
+
+    enum class ServerMessage : uint8_t
+    {
+        Error = 0,
+        PlayerId,
+        PlayerJoined,
+        PlayerLeft,
+        OwnerLeft,
+        LobbyOwner
     };
 
     extern const uint32_t ServerPort;

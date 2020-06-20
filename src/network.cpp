@@ -58,7 +58,16 @@ std::string Network::ReadString(sf::TcpSocket& socket)
 
 bool Network::Write(sf::TcpSocket& socket, const void* data, int num_bytes)
 {
-    auto status = socket.send(data, num_bytes);
+    size_t bytes_sent = 0;
+    auto status = socket.send(data, num_bytes, bytes_sent);
+
+    size_t offset = bytes_sent;
+    while (status == sf::Socket::Partial)
+    {
+        status = socket.send(&reinterpret_cast<const uint8_t*>(data)[offset], num_bytes - offset, bytes_sent);
+        offset += bytes_sent;
+    }
+
     return (status == sf::Socket::Done);
 }
 
@@ -70,6 +79,8 @@ bool Network::WriteString(sf::TcpSocket& socket, const std::string& str)
     }
 
     uint16_t size = str.size();
+
+    std::cout << "Writing string: " << str << std::endl;
 
     if (!Write(socket, &size, 2))
     {

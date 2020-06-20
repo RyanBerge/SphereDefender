@@ -1,6 +1,6 @@
 # Makefile
 
-SERVER = bin/Server.exe
+SERVER = bin/SphereDefenderServer.exe
 CLIENT = bin/Client.exe
 
 SFML_INCLUDE = C:/Libraries/sfml/include

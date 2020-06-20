@@ -2,6 +2,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "main_menu.h"
 #include "global_resources.h"
+#include "messaging.h"
 #include <cstdlib>
 
 namespace {
@@ -25,7 +26,11 @@ int main()
 
         window.clear(sf::Color::Black);
 
-        main_menu.Update(elapsed, window);
+        if (!main_menu.Update(elapsed, window))
+        {
+            break;
+        }
+
         main_menu.Draw(window);
 
         window.display();
@@ -62,6 +67,8 @@ int main()
         }
 
         Resources::UpdateEvents(event_map);
+
+        Message::CheckMessages();
     }
 }
 
