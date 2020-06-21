@@ -11,8 +11,9 @@
 #### `ServerMessage::PlayerLeft`
 * Broadcasted whenever a player intentionally leaves a game to all other players
 
-#### `ServerMessage::LobbyOwner`
+#### `ServerMessage::PlayersInLobby`
 * Sent immediately to a player after that player joins the game lobby
+* All players are listed, starting with the lobby owner
 
 #### `ServerMessage::OwnerLeft`
 * Broadcasted to all players after the owner of the game lobby leaves

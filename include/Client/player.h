@@ -1,9 +1,10 @@
 #include <cstdint>
+#include "player_states.h"
 
 class Player
 {
 public:
-    static uint16_t id;
+    static PlayerState state;
 
 private:
 

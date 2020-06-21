@@ -15,3 +15,8 @@ namespace Resources
 
     void Log(std::string message);
 }
+
+namespace Debug
+{
+    void DumpBuffer(uint8_t* buffer, int size);
+}

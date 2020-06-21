@@ -19,7 +19,7 @@ namespace Network
         PlayerJoined,
         PlayerLeft,
         OwnerLeft,
-        LobbyOwner
+        PlayersInLobby
     };
 
     extern const uint32_t ServerPort;
@@ -29,4 +29,6 @@ namespace Network
 
     bool Write(sf::TcpSocket& socket, const void* buf, int num_bytes);
     bool WriteString(sf::TcpSocket& socket, const std::string& str);
+
+    int CopyStringToBuffer(uint8_t* buffer, int offset, std::string data);
 }

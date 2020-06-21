@@ -1,5 +1,6 @@
 #include "network.h"
 #include <iostream>
+#include <cstring>
 
 using std::cerr, std::endl;
 
@@ -94,4 +95,15 @@ bool Network::WriteString(sf::TcpSocket& socket, const std::string& str)
         return false;
     }
     return true;
+}
+
+int Network::CopyStringToBuffer(uint8_t* buffer, int offset, std::string data)
+{
+    const char* raw_data = data.c_str();
+    uint16_t data_size = data.size();
+    std::memcpy(buffer + offset, &data_size, sizeof(data_size));
+    offset += 2;
+    std::memcpy(buffer + offset, raw_data, data_size);
+
+    return data_size + 2;
 }

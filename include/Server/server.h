@@ -21,4 +21,5 @@ private:
     void notifyAllPlayerJoined(PlayerData& p);
     void notifyAllPlayerLeft(PlayerData& p);
     void notifyAllOwnerLeft();
+    void listPlayersInLobby(PlayerData& p);
 };

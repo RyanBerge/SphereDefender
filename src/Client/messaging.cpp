@@ -4,6 +4,7 @@
 #include <iostream>
 #include "player.h"
 #include "state_manager.h"
+#include "player_states.h"
 
 using std::cerr, std::endl;
 
@@ -15,7 +16,7 @@ namespace {
     void playerJoined();
     void playerLeft();
     void ownerLeft();
-    void setLobbyOwner();
+    void getPlayerData();
 }
 
 sf::Socket::Status Network::Connect(std::string ip)
@@ -107,9 +108,9 @@ void Message::CheckMessages()
             ownerLeft();
         }
         break;
-        case Network::ServerMessage::LobbyOwner:
+        case Network::ServerMessage::PlayersInLobby:
         {
-            setLobbyOwner();
+            getPlayerData();
         }
         break;
     }
@@ -118,14 +119,15 @@ void Message::CheckMessages()
 namespace {
     void setPlayerId()
     {
-        if (!Network::Read(&Player::id, sizeof(Player::id)))
+        if (!Network::Read(&Player::state.id, sizeof(Player::state.id)))
         {
             // TODO: error of some sort
             std::cerr << "Failed to read player ID" << std::endl;
             return;
         }
 
-        std::cout << "Received player id: " << Player::id << std::endl;
+        std::cout << "Received player id: " << Player::state.id << std::endl;
+        Players::AddPlayer(Player::state);
     }
 
     void playerJoined()
@@ -147,6 +149,12 @@ namespace {
         }
 
         std::cout << player_name << " joined the game with ID: " << player_id << std::endl;
+
+        PlayerState player_state = {};
+        player_state.id = player_id;
+        player_state.name = player_name;
+
+        Players::AddPlayer(player_state);
     }
 
     void playerLeft()
@@ -160,6 +168,8 @@ namespace {
         }
 
         std::cout << "Player with ID: " << player_id << " left the game" << std::endl;
+
+        Players::RemovePlayer(player_id);
     }
 
     void ownerLeft()
@@ -168,20 +178,51 @@ namespace {
         server_socket.disconnect();
         is_initialized = false;
         StateManager::MainMenu::current_menu = MenuType::Main;
+
+        Players::Clear();
         // TODO: Actually handle this case
     }
 
-    void setLobbyOwner()
+    void getPlayerData()
     {
-        uint16_t player_id;
-        if (!Network::Read(&player_id, sizeof(player_id)))
+        uint8_t num_players = 0;
+        if (!Network::Read(&num_players, sizeof(num_players)))
         {
             // TODO: Error
-            std::cerr << "Failed to read owner ID" << std::endl;
+            std::cerr << "Failed to read player ID" << std::endl;
             return;
         }
 
-        std::cout << "Lobby is owned by player with ID: " << player_id << std::endl;
+        std::cout << "There are " << (int)num_players << " players currently in the game" << std::endl;
+
+        for (int i = 0; i < num_players; ++i)
+        {
+            PlayerState state;
+            if (!Network::Read(&state.id, sizeof(state.id)))
+            {
+                // TODO: Error
+                std::cerr << "Failed to read player ID" << std::endl;
+                return;
+            }
+
+            state.name = Network::ReadString(server_socket);
+            if (state.name == "")
+            {
+                std::cerr << "Something went wrong when reading a player name" << std::endl;
+                return;
+            }
+
+            // TODO: Read any future properties here!
+
+            std::cout << "Received PlayerData for: " << state.name << " (id: " << state.id << ")" << std::endl;
+
+            Players::AddPlayer(state);
+            if (i == 0)
+            {
+                Players::owner = state.id;
+                std::cout << "Lobby is owned by: " << state.name << std::endl;
+            }
+        }
     }
 }
 

@@ -80,3 +80,13 @@ void Resources::Log(std::string message)
 {
     std::cout << message << std::endl;
 }
+
+void Debug::DumpBuffer(uint8_t* buffer, int size)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        int byte = buffer[i];
+        std::cout << byte << " : ";
+    }
+    std::cout << std::endl;
+}

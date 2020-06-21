@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstring>
 
+#include "global_resources.h"
+
 using std::cout, std::cerr, std::endl;
 
 Server::Server()
@@ -146,7 +148,7 @@ void Server::checkMessages(PlayerData& player)
         break;
         case Network::ClientMessage::LeaveGame:
         {
-            cout << "Player leaving lobby: " << player.name << endl;
+            cout << "Player left the server: " << player.name << endl;
             player.socket->disconnect();
             player.status = PlayerData::Status::Disconnected;
             if (player.id != owner)
@@ -207,25 +209,7 @@ void Server::notifyAllPlayerJoined(PlayerData& p)
         }
         else
         {
-            code = Network::ServerMessage::LobbyOwner;
-            uint8_t owner_message_buffer[sizeof(code) + sizeof(p.id)];
-
-            if (owner < 0)
-            {
-                // TODO: Respond with an Error code ServerNotInitialized or something
-                cerr << "Player attempted to join a lobby with no owner" << endl;
-                return;
-            }
-
-            uint16_t owner_id = static_cast<uint16_t>(owner);
-
-            std::memcpy(owner_message_buffer, &code, sizeof(code));
-            std::memcpy(owner_message_buffer + sizeof(code), &owner_id, sizeof(owner_id));
-
-            if (!Network::Write(*player.socket, owner_message_buffer, sizeof(code) + sizeof(owner_id)))
-            {
-                cerr << "Something went wrong when notifying " << player.name << " of the owner id for the game" << endl;
-            }
+            listPlayersInLobby(p);
         }
     }
 }
@@ -281,5 +265,56 @@ void Server::notifyAllOwnerLeft()
             player.socket->disconnect();
             player.status = PlayerData::Status::Disconnected;
         }
+    }
+}
+
+void Server::listPlayersInLobby(PlayerData& p)
+{
+    Network::ServerMessage code = Network::ServerMessage::PlayersInLobby;
+
+    PlayerData owner_data;
+    uint8_t buffer_len = 2;
+
+    for (auto& player : players)
+    {
+        if (player.id == owner)
+        {
+            owner_data = player;
+        }
+
+        if (player.id != p.id)
+        {
+            buffer_len += sizeof(player.id);
+            buffer_len += 2;
+            buffer_len += player.name.size();
+        }
+        // TODO: Add any future properties here!
+    }
+
+    uint8_t buffer[buffer_len];
+
+    std::memcpy(buffer, &code, sizeof(code));
+    int offset = 1;
+    uint8_t num_players = players.size() - 1;
+    std::memcpy(buffer + offset, &num_players, 1);
+    offset += 1;
+
+    std::memcpy(buffer + offset, &owner_data.id, sizeof(owner_data.id));
+    offset += sizeof(owner_data.id);
+    offset += Network::CopyStringToBuffer(buffer, offset, owner_data.name);
+
+    for (auto& player : players)
+    {
+        if (player.id != owner && player.id != p.id)
+        {
+            std::memcpy(buffer + offset, &player.id, sizeof(player.id));
+            offset += sizeof(player.id);
+            offset += Network::CopyStringToBuffer(buffer, offset, player.name);
+        }
+    }
+
+    if (!Network::Write(*p.socket, buffer, buffer_len))
+    {
+        cerr << "Something went wrong when notifying " << p.name << " of the owner id for the game" << endl;
     }
 }

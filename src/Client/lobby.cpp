@@ -1,14 +1,27 @@
 #include "lobby.h"
 #include "messaging.h"
+#include "state_manager.h"
+#include "player.h"
 #include <iostream>
 
 using std::cout, std::cerr, std::endl;
 
+Lobby* Lobby::lobby_instance = nullptr;
+
 Lobby::Lobby()
 {
+    lobby_instance = this;
+
     leave_button = CursorButton("LeaveGameButton.png");
     leave_button.GetSprite().setPosition(sf::Vector2f(472, 650));
     leave_button.RegisterOnClickUp(std::bind(&Lobby::onLeavePressed, this));
+
+    font = Resources::AllocFont("assets/Vera.ttf");
+
+    if (font == nullptr)
+    {
+        std::cerr << "Lobby: There was an error loading the font." << std::endl;
+    }
 }
 
 bool Lobby::InitNew(std::string player_name)
@@ -25,6 +38,7 @@ bool Lobby::InitNew(std::string player_name)
     }
 
     Message::InitializeServer(player_name);
+    Player::state.name = player_name;
     owner = true;
     return true;
 }
@@ -41,6 +55,7 @@ bool Lobby::InitJoin(std::string player_name, std::string ip)
 
     Message::JoinServer(player_name);
     owner = false;
+    Player::state.name = player_name;
     return true;
 }
 
@@ -52,10 +67,49 @@ void Lobby::Update(sf::Time elapsed, sf::RenderWindow& window)
 void Lobby::Draw(sf::RenderWindow& window)
 {
     leave_button.Draw(window);
+
+    for (auto& pair : player_display_list)
+    {
+        window.draw(pair.second);
+    }
+}
+
+void Lobby::AddPlayer(PlayerState player)
+{
+    sf::Text text;
+    text.setFont(*font);
+    text.setString(player.name);
+
+    player_display_list[player.id] = text;
+
+    updatePlayerPositions();
+}
+
+void Lobby::RemovePlayer(uint16_t player_id)
+{
+    player_display_list.erase(player_id);
+
+    updatePlayerPositions();
+}
+
+void Lobby::ClearPlayers()
+{
+    player_display_list.clear();
+}
+
+void Lobby::updatePlayerPositions()
+{
+    int offset = 0;
+    for (auto& pair : player_display_list)
+    {
+        pair.second.setPosition(sf::Vector2f(50, 50 + offset));
+        offset += 35;
+    }
 }
 
 void Lobby::onLeavePressed()
 {
     Message::LeaveGame();
     StateManager::MainMenu::current_menu = MenuType::Main;
+    Players::Clear();
 }
