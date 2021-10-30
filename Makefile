@@ -3,8 +3,8 @@
 SERVER = bin/SphereDefenderServer.exe
 CLIENT = bin/Client.exe
 
-SFML_INCLUDE = C:/Libraries/sfml/include
-SFML_LIB = C:/Libraries/sfml/lib
+SFML_INCLUDE = C:/Libraries/sfml-2.5.0/include
+SFML_LIB = C:/Libraries/sfml-2.5.0/lib
 
 OBJ_FILES := $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
 

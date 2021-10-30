@@ -1,10 +1,13 @@
 #include "main_menu.h"
 #include <iostream>
+#include "global_resources.h"
 
 using std::cout, std::endl;
 
 MainMenu::MainMenu()
 {
+    std::shared_ptr<sf::Font> font = Resources::AllocFont("assets/Vera.ttf");
+
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
     CursorButton splash_screen_start("SplashStart.png");
@@ -29,6 +32,20 @@ MainMenu::MainMenu()
     main_menu.buttons.push_back(exit_game);
     menus[MenuType::Main] = main_menu;
 
+    sf::Text name_label_text;
+    name_label_text.setFont(*font);
+    name_label_text.setString("Display Name");
+    name_label_text.setCharacterSize(30);
+    name_label_text.setPosition(sf::Vector2f(200, 150));
+    name_label_text.setFillColor(sf::Color::White);
+
+    sf::Text ip_label_text;
+    ip_label_text.setFont(*font);
+    ip_label_text.setString("Server Ip Address");
+    ip_label_text.setCharacterSize(30);
+    ip_label_text.setPosition(sf::Vector2f(200, 350));
+    ip_label_text.setFillColor(sf::Color::White);
+
     Menu create_game;
     CursorButton create_game_start("SplashStart.png");
     create_game_start.GetSprite().setPosition(sf::Vector2f(472, 650));
@@ -42,6 +59,7 @@ MainMenu::MainMenu()
     Textbox name_box_create("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
     name_box_create.SetPosition(sf::Vector2f(200, 200));
     create_game.textboxes.push_back(name_box_create);
+    create_game.text.push_back(name_label_text);
     menus[MenuType::CreateGame] = create_game;
 
     Menu join_game;
@@ -58,9 +76,21 @@ MainMenu::MainMenu()
     name_box_join.SetPosition(sf::Vector2f(200, 200));
     join_game.textboxes.push_back(name_box_join);
     Textbox ip_box("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
-    ip_box.SetPosition(sf::Vector2f(200, 350));
+    ip_box.SetPosition(sf::Vector2f(200, 400));
     join_game.textboxes.push_back(ip_box);
+    join_game.text.push_back(name_label_text);
+    join_game.text.push_back(ip_label_text);
     menus[MenuType::JoinGame] = join_game;
+
+    Menu loading;
+    sf::Text loading_text;
+    loading_text.setFont(*font);
+    loading_text.setString("Loading...");
+    loading_text.setCharacterSize(40);
+    loading_text.setPosition(sf::Vector2f(500, 300));
+    loading_text.setFillColor(sf::Color::White);
+    loading.text.push_back(loading_text);
+    menus[MenuType::LoadingScreen] = loading;
 }
 
 bool MainMenu::Update(sf::Time elapsed, sf::RenderWindow& window)
@@ -107,6 +137,11 @@ void MainMenu::Draw(sf::RenderWindow& window)
     for (Textbox& textbox : menu.textboxes)
     {
         textbox.Draw(window);
+    }
+
+    for (sf::Text& text : menu.text)
+    {
+        window.draw(text);
     }
 
     if (StateManager::MainMenu::current_menu == MenuType::Lobby)

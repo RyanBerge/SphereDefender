@@ -126,12 +126,20 @@ void Server::checkMessages(PlayerData& player)
         {
             if (setName(player))
             {
+                if (game_state != GameState::Uninitialized)
+                {
+                    cerr << "Server already initialized" << endl;
+                    return;
+                }
+
                 owner = player.id;
                 cout << "Server initialized by " << player.name << endl;
                 player.status = PlayerData::Status::Menus;
+                game_state = GameState::Lobby;
             }
             else
             {
+                cerr << "Something went horribly wrong" << endl;
                 // TODO: Shut down server
             }
         }
@@ -140,9 +148,61 @@ void Server::checkMessages(PlayerData& player)
         {
             if (setName(player))
             {
+                if (game_state != GameState::Lobby)
+                {
+                    // TODO: Send error message
+                    cout << player.name << " tried to join a game already in progress" << endl;
+                    player.socket->disconnect();
+                    player.status = PlayerData::Status::Disconnected;
+                    return;
+                }
+
                 cout << player.name << " joined the server" << endl;
                 player.status = PlayerData::Status::Menus;
                 notifyAllPlayerJoined(player);
+            }
+        }
+        break;
+        case Network::ClientMessage::StartGame:
+        {
+            if (player.id == owner && game_state == GameState::Lobby)
+            {
+                cout << player.name << " started a new game!" << endl;
+                startGame();
+                game_state = GameState::Loading;
+            }
+            else
+            {
+                if (player.id != owner)
+                {
+                    cerr << player.name << " tried to start the game without being the owner" << endl;
+                }
+                else
+                {
+                    cerr << "The server was not in the lobby when the owner tried to start the game" << endl;
+                }
+            }
+        }
+        break;
+        case Network::ClientMessage::LoadingComplete:
+        {
+            cout << player.name << " has finished loading." << endl;
+
+            if (game_state == GameState::Loading)
+            {
+                player.status = PlayerData::Status::Alive;
+
+                for (auto& p : players)
+                {
+                    if (p.status != PlayerData::Status::Alive)
+                    {
+                        return;
+                    }
+                }
+
+                cout << "All players have loaded. Notifying." << endl;
+
+                notifyAllPlayersLoaded();
             }
         }
         break;
@@ -316,5 +376,46 @@ void Server::listPlayersInLobby(PlayerData& p)
     if (!Network::Write(*p.socket, buffer, buffer_len))
     {
         cerr << "Something went wrong when notifying " << p.name << " of the owner id for the game" << endl;
+    }
+}
+
+void Server::startGame()
+{
+    Network::ServerMessage code = Network::ServerMessage::StartGame;
+
+    size_t buffer_len = sizeof(code);
+    uint8_t buffer[buffer_len];
+
+    std::memcpy(buffer, &code, sizeof(code));
+
+    for (auto& player : players)
+    {
+        if (player.id != owner)
+        {
+            if (!Network::Write(*player.socket, buffer, buffer_len))
+            {
+                cerr << "Something went wrong when notifying players that the game was started" << endl;
+                continue;
+            }
+        }
+    }
+}
+
+void Server::notifyAllPlayersLoaded()
+{
+    Network::ServerMessage code = Network::ServerMessage::AllPlayersLoaded;
+
+    size_t buffer_len = sizeof(code);
+    uint8_t buffer[buffer_len];
+
+    std::memcpy(buffer, &code, sizeof(code));
+
+    for (auto& player : players)
+    {
+        if (!Network::Write(*player.socket, buffer, buffer_len))
+        {
+            cerr << "Something went wrong when notifying players that the game was started" << endl;
+            continue;
+        }
     }
 }

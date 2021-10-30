@@ -1,6 +1,7 @@
 #include "lobby.h"
 #include "messaging.h"
 #include "state_manager.h"
+#include "game_manager.h"
 #include "player.h"
 #include <iostream>
 
@@ -15,6 +16,10 @@ Lobby::Lobby()
     leave_button = CursorButton("LeaveGameButton.png");
     leave_button.GetSprite().setPosition(sf::Vector2f(472, 650));
     leave_button.RegisterOnClickUp(std::bind(&Lobby::onLeavePressed, this));
+
+    start_button = CursorButton("SplashStart.png");
+    start_button.GetSprite().setPosition(sf::Vector2f(472, 550));
+    start_button.RegisterOnClickUp(std::bind(&Lobby::onStartPressed, this));
 
     font = Resources::AllocFont("assets/Vera.ttf");
 
@@ -62,11 +67,19 @@ bool Lobby::InitJoin(std::string player_name, std::string ip)
 void Lobby::Update(sf::Time elapsed, sf::RenderWindow& window)
 {
     leave_button.Update(elapsed, window);
+    if (owner)
+    {
+        start_button.Update(elapsed, window);
+    }
 }
 
 void Lobby::Draw(sf::RenderWindow& window)
 {
     leave_button.Draw(window);
+    if (owner)
+    {
+        start_button.Draw(window);
+    }
 
     for (auto& pair : player_display_list)
     {
@@ -112,4 +125,14 @@ void Lobby::onLeavePressed()
     Message::LeaveGame();
     StateManager::MainMenu::current_menu = MenuType::Main;
     Players::Clear();
+}
+
+void Lobby::onStartPressed()
+{
+    if (owner)
+    {
+        Message::StartGame();
+        StateManager::MainMenu::current_menu = MenuType::LoadingScreen;
+        GameManager::GetInstance().LoadGame();
+    }
 }

@@ -28,7 +28,9 @@ private:
     std::shared_ptr<sf::Font> font;
     std::map<uint16_t, sf::Text> player_display_list;
     CursorButton leave_button;
+    CursorButton start_button;
 
     void updatePlayerPositions();
+    void onStartPressed();
     void onLeavePressed();
 };

@@ -1,6 +1,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include "main_menu.h"
+#include "game_manager.h"
 #include "global_resources.h"
 #include "messaging.h"
 #include <cstdlib>
@@ -15,7 +15,7 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "Sphere Defender");
 
-    MainMenu main_menu;
+    GameManager& game_manager = GameManager::GetInstance();
 
     sf::Clock clock;
 
@@ -26,12 +26,12 @@ int main()
 
         window.clear(sf::Color::Black);
 
-        if (!main_menu.Update(elapsed, window))
+        if (!game_manager.Update(elapsed, window))
         {
             break;
         }
 
-        main_menu.Draw(window);
+        game_manager.Draw(window);
 
         window.display();
 

@@ -9,7 +9,8 @@ struct PlayerData
     {
         Uninitialized,
         Disconnected,
-        Menus
+        Menus,
+        Alive
     };
 
     std::string name;

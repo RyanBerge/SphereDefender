@@ -1,5 +1,11 @@
 #pragma once
 
+enum class GlobalState
+{
+    MainMenu,
+    Game
+};
+
 enum class MenuType
 {
     None,
@@ -8,14 +14,27 @@ enum class MenuType
     CreateGame,
     JoinGame,
     Lobby,
-    Start,
+    LoadingScreen,
     Exit
+};
+
+enum class GameState
+{
+    None,
+    Running
 };
 
 namespace StateManager
 {
+    extern GlobalState global_state;
+
     namespace MainMenu
     {
         extern MenuType current_menu;
+    }
+
+    namespace Game
+    {
+        extern GameState state;
     }
 }

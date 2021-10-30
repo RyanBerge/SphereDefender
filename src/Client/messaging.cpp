@@ -4,6 +4,7 @@
 #include <iostream>
 #include "player.h"
 #include "state_manager.h"
+#include "game_manager.h"
 #include "player_states.h"
 
 using std::cerr, std::endl;
@@ -74,6 +75,9 @@ void Message::CheckMessages()
         {
             cerr << "Disconnected from server" << endl;
 
+            // this maybe will need to be changed
+            is_initialized = false;
+
             return;
         }
 
@@ -111,6 +115,21 @@ void Message::CheckMessages()
         case Network::ServerMessage::PlayersInLobby:
         {
             getPlayerData();
+        }
+        break;
+        case Network::ServerMessage::StartGame:
+        {
+            std::cout << "The game was started!" << std::endl;
+            StateManager::MainMenu::current_menu = MenuType::LoadingScreen;
+            GameManager::GetInstance().LoadGame();
+        }
+        break;
+        case Network::ServerMessage::AllPlayersLoaded:
+        {
+            std::cout << "All players have loaded!" << std::endl;
+            StateManager::MainMenu::current_menu = MenuType::None;
+            StateManager::Game::state = GameState::Running;
+            StateManager::global_state = GlobalState::Game;
         }
         break;
     }
@@ -262,6 +281,24 @@ void Message::JoinServer(std::string name)
     if (!Network::Write(buffer, buffer_len))
     {
         cerr << "Network: Something went wrong when trying to set the player name" << endl;
+    }
+}
+
+void Message::StartGame()
+{
+    Network::ClientMessage code = Network::ClientMessage::StartGame;
+    if (!Network::Write(&code, sizeof(code)))
+    {
+        cerr << "Network: Something went wrong when trying to send a StartGame message" << endl;
+    }
+}
+
+void Message::LoadingComplete()
+{
+    Network::ClientMessage code = Network::ClientMessage::LoadingComplete;
+    if (!Network::Write(&code, sizeof(code)))
+    {
+        cerr << "Network Something went wrong when trying to send a LoadingComplete message" << endl;
     }
 }
 

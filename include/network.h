@@ -9,6 +9,10 @@ namespace Network
         Error = 0,
         InitServer,
         JoinServer,
+
+        StartGame,
+        LoadingComplete,
+
         LeaveGame
     };
 
@@ -19,7 +23,10 @@ namespace Network
         PlayerJoined,
         PlayerLeft,
         OwnerLeft,
-        PlayersInLobby
+        PlayersInLobby,
+
+        StartGame,
+        AllPlayersLoaded
     };
 
     extern const uint32_t ServerPort;

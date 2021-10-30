@@ -1,4 +1,5 @@
 #pragma once
+
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "state_manager.h"
@@ -13,6 +14,7 @@ struct Menu
     std::vector<CursorButton> buttons;
     std::vector<Spritesheet> spritesheets;
     std::vector<Textbox> textboxes;
+    std::vector<sf::Text> text;
 };
 
 class MainMenu

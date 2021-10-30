@@ -16,5 +16,7 @@ namespace Message
 
     void InitializeServer(std::string name);
     void JoinServer(std::string name);
+    void StartGame();
+    void LoadingComplete();
     void LeaveGame();
 }
