@@ -3,3 +3,6 @@ assets/photoshop
 *.exe
 *.o
 *.d
+build/
+bin/*
+externals/sfml/install
