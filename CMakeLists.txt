@@ -15,5 +15,4 @@ if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endif()
 
-add_subdirectory(src/Server)
-add_subdirectory(src/Client)
+add_subdirectory(lib)

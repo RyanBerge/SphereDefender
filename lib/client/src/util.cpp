@@ -1,17 +1,26 @@
+/**************************************************************************************************
+ *  File:       util.h
+ *
+ *  Purpose:    Miscellaneous utility functions
+ *
+ *  Author:     Ryan Berge
+ *
+ *************************************************************************************************/
 #include <SFML/Graphics/Texture.hpp>
-#include "global_resources.h"
+#include "util.h"
 #include <iostream>
 #include <map>
 
 using std::cout, std::endl;
 
+namespace client::util {
+
 namespace {
     std::map<std::string, std::weak_ptr<sf::Texture>> texture_map;
     std::map<std::string, std::weak_ptr<sf::Font>> font_map;
-    std::map<sf::Event::EventType, std::vector<sf::Event>> event_map;
 }
 
-std::shared_ptr<sf::Texture> Resources::AllocTexture(std::string filepath)
+std::shared_ptr<sf::Texture> AllocTexture(std::string filepath)
 {
     if (texture_map.find(filepath) == texture_map.end() ||
         (texture_map.find(filepath) != texture_map.end() && texture_map[filepath].expired()))
@@ -36,7 +45,7 @@ std::shared_ptr<sf::Texture> Resources::AllocTexture(std::string filepath)
     }
 }
 
-std::shared_ptr<sf::Font> Resources::AllocFont(std::string filepath)
+std::shared_ptr<sf::Font> AllocFont(std::string filepath)
 {
     if (font_map.find(filepath) == font_map.end() ||
         (font_map.find(filepath) != font_map.end() && font_map[filepath].expired()))
@@ -61,32 +70,4 @@ std::shared_ptr<sf::Font> Resources::AllocFont(std::string filepath)
     }
 }
 
-void Resources::UpdateEvents(std::map<sf::Event::EventType, std::vector<sf::Event>> events)
-{
-    event_map = events;
-}
-
-std::vector<sf::Event> Resources::GetEvent(sf::Event::EventType type)
-{
-    if (event_map.find(type) == event_map.end())
-    {
-        return std::vector<sf::Event>();
-    }
-
-    return event_map[type];
-}
-
-void Resources::Log(std::string message)
-{
-    std::cout << message << std::endl;
-}
-
-void Debug::DumpBuffer(uint8_t* buffer, int size)
-{
-    for (int i = 0; i < size; ++i)
-    {
-        int byte = buffer[i];
-        std::cout << byte << " : ";
-    }
-    std::cout << std::endl;
-}
+} // client::util

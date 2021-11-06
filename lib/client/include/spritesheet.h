@@ -15,17 +15,22 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>
 
+namespace client {
+
 class Spritesheet
 {
 public:
     Spritesheet();
     Spritesheet(std::string filepath);
-    void Draw(sf::RenderWindow& window);
+    void Draw();
 
     bool LoadTexture(std::string filepath);
     sf::Sprite& GetSprite();
 
 private:
+    // TODO: Save the name of the file used for the texture so that it can be unloaded and reloaded
     sf::Sprite sprite;
     std::shared_ptr<sf::Texture> texture;
 };
+
+} // client

@@ -30,6 +30,11 @@ build() {
     # Put the mingw32 toolchain in our PATH so we can use it
     export PATH="/mnt/c/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin:${PATH}"
 
+    if [ ! -f externals/sfml/SFML/CMakeLists.txt ]; then
+        echo "Please initialize all submodules."
+        exit
+    fi
+
     if [ ! -d externals/sfml/install ]; then
         mkdir -p externals/sfml/install
         mkdir -p externals/sfml/SFML/cmake/build
