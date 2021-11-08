@@ -10,6 +10,7 @@
 #pragma once
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Network/TcpSocket.hpp>
 #include "main_menu.h"
 
 namespace client {
@@ -36,6 +37,7 @@ public:
 
     sf::RenderWindow Window;
     MainMenu MainMenu;
+    sf::TcpSocket ServerSocket;
 
     void Start();
     void ExitGame();

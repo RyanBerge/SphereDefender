@@ -258,6 +258,10 @@ void MainMenu::createLobby(bool create)
     {
         CurrentMenu = MenuType::Lobby;
     }
+    else
+    {
+        CurrentMenu = MenuType::Main;
+    }
 }
 
 } // client

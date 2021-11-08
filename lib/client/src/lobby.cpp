@@ -14,9 +14,13 @@
 #include "game_manager.h"
 //#include "player.h"
 #include "util.h"
+#include "messaging.h"
 #include <iostream>
+#include <SFML/Network/IpAddress.hpp>
 
 using std::cout, std::cerr, std::endl;
+using network::ClientMessage, network::ServerMessage;
+#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
 
@@ -49,42 +53,41 @@ void Lobby::initializeMenu()
 
 bool Lobby::Create(std::string player_name)
 {
-    initializeMenu();
+    // launch server
+    cerr << "Launching server..." << endl;
+    std::system("start build/bin/Server.exe");
 
-//    // launch server
-//    cerr << "Launching server..." << endl;
-//    std::system("start bin/SphereDefenderServer.exe");
-//
-//    sf::Socket::Status status = Network::Connect("127.0.0.1");
-//    if (status != sf::Socket::Status::Done)
-//    {
-//        cerr << "Server creation failed." << endl;
-//        return false;
-//    }
-//
-//    Message::InitializeServer(player_name);
+    if(ServerSocket.connect(sf::IpAddress("127.0.0.1"), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    {
+        cerr << "Server creation failed." << endl;
+        return false;
+    }
+
+    ClientMessage::InitServer(ServerSocket, player_name);
 //    Player::state.name = player_name;
 
     owner = true;
+
+    initializeMenu();
+
     return true;
 }
 
 bool Lobby::Join(std::string player_name, std::string ip)
 {
-    initializeMenu();
+    if(ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    {
+        cerr << "Server at " << ip << " could not be reached." << endl;
+        return false;
+    }
 
-//    sf::Socket::Status status = Network::Connect(ip);
-//    if (status != sf::Socket::Status::Done)
-//    {
-//        cerr << "Server could not be reached." << endl;
-//        StateManager::MainMenu::current_menu = MenuType::Main;
-//        return false;
-//    }
-//
-//    Message::JoinServer(player_name);
+    ClientMessage::JoinServer(ServerSocket, player_name);
 //    Player::state.name = player_name;
 
     owner = false;
+
+    initializeMenu();
+
     return true;
 }
 /*

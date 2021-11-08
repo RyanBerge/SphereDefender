@@ -16,8 +16,12 @@ set(Sources
 add_executable(${TargetName} ${Sources})
 
 target_include_directories(${TargetName} PRIVATE
-    include
-    externals/sfml/install/include
+    ${PROJECT_SOURCE_DIR}/lib/client/include
+    ${PROJECT_SOURCE_DIR}/lib/network/include
+    ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
 )
 
-target_link_libraries(${TargetName} sfml-graphics)
+target_link_libraries(${TargetName}
+    network
+    sfml-graphics
+)
