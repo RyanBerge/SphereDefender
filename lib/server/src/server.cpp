@@ -101,7 +101,8 @@ void Server::checkMessages(PlayerInfo& player)
         cerr << "Player disconnected unexpectedly: " << player.name << endl;
         player.socket->disconnect();
         player.status = PlayerInfo::Status::Disconnected;
-        // TODO: Notify
+
+        leaveGame(player);
         return;
     }
 
@@ -117,12 +118,12 @@ void Server::checkMessages(PlayerInfo& player)
             cerr << "Error codes not yet implemented." << endl;
         }
         break;
-        case ClientMessage::Code::InitServer:
+        case ClientMessage::Code::InitLobby:
         {
-            initServer(player);
+            initLobby(player);
         }
         break;
-        case ClientMessage::Code::JoinServer:
+        case ClientMessage::Code::JoinLobby:
         {
             playerJoined(player);
         }
@@ -150,9 +151,9 @@ void Server::checkMessages(PlayerInfo& player)
     }
 }
 
-void Server::initServer(PlayerInfo& player)
+void Server::initLobby(PlayerInfo& player)
 {
-    if (!ClientMessage::DecodeInitServer(*player.socket, player.name))
+    if (!ClientMessage::DecodeInitLobby(*player.socket, player.name))
     {
         player.socket->disconnect();
         player.status = PlayerInfo::Status::Disconnected;
@@ -191,7 +192,7 @@ void Server::initServer(PlayerInfo& player)
 
 void Server::playerJoined(PlayerInfo& player)
 {
-    if (!ClientMessage::DecodeJoinServer(*player.socket, player.name))
+    if (!ClientMessage::DecodeJoinLobby(*player.socket, player.name))
     {
         player.socket->disconnect();
         player.status = PlayerInfo::Status::Disconnected;
@@ -229,13 +230,13 @@ void Server::playerJoined(PlayerInfo& player)
                 players_in_lobby.push_back(network::PlayerData{p.id, p.name});
             }
 
-            ServerMessage::PlayerJoined(*p.socket, p.name, p.id);
+            ServerMessage::PlayerJoined(*p.socket, player.name, player.id);
         }
     }
 
     if (ServerMessage::PlayersInLobby(*player.socket, player.id, players_in_lobby))
     {
-        cout << player.name << " joined the server" << endl;
+        cout << player.name << " joined the lobby" << endl;
         player.status = PlayerInfo::Status::Menus;
     }
     else
@@ -275,7 +276,7 @@ void Server::loadingComplete(PlayerInfo& player)
 {
     if (game_state == GameState::Loading)
     {
-        cout << player.name << " had finished loading." << endl;
+        cout << player.name << " has finished loading." << endl;
         player.status = PlayerInfo::Status::Alive;
 
         for (auto& p : players)

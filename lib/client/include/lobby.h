@@ -1,6 +1,6 @@
 /**************************************************************************************************
  *  File:       lobby.h
- *  Class:      MainMenu
+ *  Class:      Lobby
  *
  *  Purpose:    The menu that handles game lobbies
  *
@@ -8,17 +8,25 @@
  *
  *************************************************************************************************/
 #pragma once
+
 #include <SFML/Graphics/Font.hpp>
-//#include <SFML/Graphics/Fonts.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <string>
 #include "cursor_button.h"
-//#include "player_states.h"
+#include "messaging.h"
 
 namespace client {
 
 class Lobby
 {
 public:
+    struct LobbyPlayer
+    {
+        uint16_t id;
+        std::string name;
+        sf::Text display_text;
+    };
+
     Lobby();
 
     bool Create(std::string player_name);
@@ -27,11 +35,13 @@ public:
     //void Update(sf::Time elapsed, sf::RenderWindow& window);
     void Draw();
 
-    //void AddPlayer(PlayerState player);
-    //void RemovePlayer(uint16_t player_id);
-    //void ClearPlayers();
+    void StartGame();
+    void Unload();
 
-    //static Lobby* lobby_instance;
+    void AssignId(uint16_t id);
+    void AddPlayer(network::PlayerData player);
+    void RemovePlayer(uint16_t player_id);
+    void LeaveLobby();
 
 private:
     void onMouseDown(sf::Event event);
@@ -40,16 +50,15 @@ private:
     uint64_t mouse_up_id;
 
     void initializeMenu();
-    void startGame();
-    void leaveLobby();
 
     bool owner = false;
     std::shared_ptr<sf::Font> font;
-    //std::map<uint16_t, sf::Text> player_display_list;
+    LobbyPlayer local_player;
+    std::vector<LobbyPlayer> player_display_list;
     CursorButton leave_button;
     CursorButton start_button;
 
-    //void updatePlayerPositions();
+    void updatePlayerPositions();
 };
 
 } // client

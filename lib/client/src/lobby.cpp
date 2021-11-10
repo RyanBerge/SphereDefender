@@ -9,14 +9,12 @@
  *************************************************************************************************/
 #include "lobby.h"
 #include "event_handler.h"
-//#include "messaging.h"
 //#include "state_manager.h"
 #include "game_manager.h"
 //#include "player.h"
 #include "util.h"
 #include "messaging.h"
 #include <iostream>
-#include <SFML/Network/IpAddress.hpp>
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -30,11 +28,11 @@ Lobby::Lobby()
 {
     leave_button = CursorButton("LeaveGameButton.png");
     leave_button.GetSprite().setPosition(sf::Vector2f(472, 650));
-    leave_button.RegisterLeftMouseDown(std::bind(&Lobby::leaveLobby, this));
+    leave_button.RegisterLeftMouseDown(std::bind(&Lobby::LeaveLobby, this));
 
     start_button = CursorButton("SplashStart.png");
     start_button.GetSprite().setPosition(sf::Vector2f(472, 550));
-    start_button.RegisterLeftMouseDown(std::bind(&Lobby::startGame, this));
+    start_button.RegisterLeftMouseDown(std::bind(&Lobby::StartGame, this));
 
     font = util::AllocFont("assets/Vera.ttf");
 
@@ -57,16 +55,16 @@ bool Lobby::Create(std::string player_name)
     cerr << "Launching server..." << endl;
     std::system("start build/bin/Server.exe");
 
-    if(ServerSocket.connect(sf::IpAddress("127.0.0.1"), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    if (!GameManager::GetInstance().ConnectToServer("127.0.0.1"))
     {
-        cerr << "Server creation failed." << endl;
         return false;
     }
 
-    ClientMessage::InitServer(ServerSocket, player_name);
+    ClientMessage::InitLobby(ServerSocket, player_name);
 //    Player::state.name = player_name;
 
     owner = true;
+    local_player.name = player_name;
 
     initializeMenu();
 
@@ -75,16 +73,16 @@ bool Lobby::Create(std::string player_name)
 
 bool Lobby::Join(std::string player_name, std::string ip)
 {
-    if(ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    if (!GameManager::GetInstance().ConnectToServer(ip))
     {
-        cerr << "Server at " << ip << " could not be reached." << endl;
         return false;
     }
 
-    ClientMessage::JoinServer(ServerSocket, player_name);
+    ClientMessage::JoinLobby(ServerSocket, player_name);
 //    Player::state.name = player_name;
 
     owner = false;
+    local_player.name = player_name;
 
     initializeMenu();
 
@@ -108,75 +106,106 @@ void Lobby::Draw()
         start_button.Draw();
     }
 
-    //for (auto& pair : player_display_list)
-    //{
-    //    GameManager::GetInstance().Window.draw(pair.second);
-    //}
+    GameManager::GetInstance().Window.draw(local_player.display_text);
+    for (auto& display_player : player_display_list)
+    {
+        GameManager::GetInstance().Window.draw(display_player.display_text);
+    }
 }
-/*
-void Lobby::AddPlayer(PlayerState player)
-{
-    sf::Text text;
-    text.setFont(*font);
-    text.setString(player.name);
 
-    player_display_list[player.id] = text;
+void Lobby::Unload()
+{
+    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonPressed, mouse_down_id);
+    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonReleased, mouse_up_id);
+    local_player = LobbyPlayer{};
+    player_display_list.clear();
+
+    // TODO: Unload UI elements as well?
+}
+
+void Lobby::StartGame()
+{
+    if (owner)
+    {
+        ClientMessage::StartGame(ServerSocket);
+    }
+
+    GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::LoadingScreen;
+    GameManager::GetInstance().Game.Load();
+
+    // TODO: Give the Game the player information
+    Unload();
+}
+
+void Lobby::AssignId(uint16_t id)
+{
+    local_player.id = id;
+    local_player.display_text.setScale(1.2, 1.2);
+    local_player.display_text.setFont(*font);
+    local_player.display_text.setString(local_player.name);
+
+    updatePlayerPositions();
+}
+
+void Lobby::AddPlayer(network::PlayerData player)
+{
+    LobbyPlayer lobby_player;
+    lobby_player.id = player.id;
+    lobby_player.name = player.name;
+    lobby_player.display_text.setFont(*font);
+    lobby_player.display_text.setString(player.name);
+
+    player_display_list.push_back(lobby_player);
 
     updatePlayerPositions();
 }
 
 void Lobby::RemovePlayer(uint16_t player_id)
 {
-    player_display_list.erase(player_id);
+    for (auto iterator = player_display_list.begin(); iterator != player_display_list.end(); ++iterator)
+    {
+        if (iterator->id == player_id)
+        {
+            player_display_list.erase(iterator);
+            break;
+        }
+    }
 
     updatePlayerPositions();
 }
 
-void Lobby::ClearPlayers()
+void Lobby::LeaveLobby()
 {
-    player_display_list.clear();
+    Unload();
+    ClientMessage::LeaveGame(ServerSocket);
+    GameManager::GetInstance().DisconnectFromServer();
+    GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::Main;
 }
 
 void Lobby::updatePlayerPositions()
 {
     int offset = 0;
-    for (auto& pair : player_display_list)
+
+    local_player.display_text.setPosition(sf::Vector2f(50, 50 + offset));
+    offset += 45;
+
+    for (auto& player : player_display_list)
     {
-        pair.second.setPosition(sf::Vector2f(50, 50 + offset));
+        player.display_text.setPosition(sf::Vector2f(50, 50 + offset));
         offset += 35;
     }
 }
-*/
+
 void Lobby::onMouseDown(sf::Event event)
 {
     leave_button.UpdateMouseState(event.mouseButton, CursorButton::State::Down);
+    start_button.UpdateMouseState(event.mouseButton, CursorButton::State::Down);
 }
 
 void Lobby::onMouseUp(sf::Event event)
 {
     leave_button.UpdateMouseState(event.mouseButton, CursorButton::State::Up);
-}
-
-void Lobby::startGame()
-{
-    if (owner)
-    {
-        GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::LoadingScreen;
-        //Message::StartGame();
-        //StateManager::MainMenu::current_menu = MenuType::LoadingScreen;
-        //GameManager::GetInstance().LoadGame();
-    }
-}
-
-void Lobby::leaveLobby()
-{
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonPressed, mouse_down_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonReleased, mouse_up_id);
-
-    GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::Main;
-    //Message::LeaveGame();
-    //StateManager::MainMenu::current_menu = MenuType::Main;
-    //Players::Clear();
+    start_button.UpdateMouseState(event.mouseButton, CursorButton::State::Up);
 }
 
 } // client

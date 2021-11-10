@@ -8,9 +8,15 @@
  *
  *************************************************************************************************/
 #include <SFML/Window/Event.hpp>
+#include <SFML/Network/IpAddress.hpp>
 #include <functional>
+#include <iostream>
 #include "game_manager.h"
 #include "event_handler.h"
+#include "messaging.h"
+
+using std::cout, std::cerr, std::endl;
+using network::ClientMessage, network::ServerMessage;
 
 namespace {
     // TODO: Move to Settings
@@ -53,8 +59,7 @@ void GameManager::Start()
             break;
             case GameState::Game:
             {
-                (void)elapsed;
-                // TODO: Game
+                Game.Update(elapsed);
             }
             break;
         }
@@ -71,7 +76,7 @@ void GameManager::Start()
             break;
             case GameState::Game:
             {
-                // TODO: Game
+                Game.Draw();
             }
             break;
         }
@@ -83,6 +88,8 @@ void GameManager::Start()
         {
             event_handler.AddEvent(event);
         }
+
+        checkMessages();
     }
 }
 
@@ -90,6 +97,236 @@ void GameManager::ExitGame()
 {
     Window.close();
     running = false;
+}
+
+bool GameManager::ConnectToServer(std::string ip)
+{
+    ServerSocket.setBlocking(true);
+
+    if (ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    {
+        cerr << "Server at " << ip << " could not be reached." << endl;
+        return false;
+    }
+
+    ServerSocket.setBlocking(false);
+    server_connected = true;
+
+    return true;
+}
+
+void GameManager::DisconnectFromServer()
+{
+    ServerSocket.disconnect();
+    server_connected = false;
+}
+
+void GameManager::checkMessages()
+{
+    if (!server_connected)
+    {
+        return;
+    }
+
+    ServerMessage::Code code;
+    bool success = ServerMessage::PollForCode(ServerSocket, code);
+    if (!success)
+    {
+        cerr << "You were disconnected unexpectedly." << endl;
+        handleDisconnected();
+        return;
+    }
+
+    switch (code)
+    {
+        case ServerMessage::Code::None:
+        {
+            return;
+        }
+        break;
+        case ServerMessage::Code::Error:
+        {
+            cerr << "Error codes not yet implemented." << endl;
+        }
+        break;
+        case ServerMessage::Code::PlayerId:
+        {
+            uint16_t player_id;
+            if (ServerMessage::DecodePlayerId(ServerSocket, player_id))
+            {
+                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                {
+                    MainMenu.Lobby.AssignId(player_id);
+                }
+                else
+                {
+                    cerr << "PlayerId message received when client wasn't in a lobby." << endl;
+                }
+            }
+        }
+        break;
+        case ServerMessage::Code::PlayerJoined:
+        {
+            network::PlayerData data;
+            if (ServerMessage::DecodePlayerJoined(ServerSocket, data))
+            {
+                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                {
+                    MainMenu.Lobby.AddPlayer(data);
+                }
+                else
+                {
+                    cerr << "PlayerJoined message received when client wasn't in a lobby." << endl;
+                }
+            }
+        }
+        break;
+        case ServerMessage::Code::PlayerLeft:
+        {
+            uint16_t player_id;
+            if (ServerMessage::DecodePlayerLeft(ServerSocket, player_id))
+            {
+                // TODO: Route and handle this
+                switch (State)
+                {
+                    case GameState::MainMenu:
+                    {
+                        switch (MainMenu.CurrentMenu)
+                        {
+                            case MainMenu::MenuType::Lobby:
+                            {
+                                MainMenu.Lobby.RemovePlayer(player_id);
+                            }
+                            break;
+                            case MainMenu::MenuType::LoadingScreen:
+                            {
+                                // TODO: Handle this
+                            }
+                            break;
+                            default:
+                            {
+                                cerr << "PlayerLeft message received when the client wasn't in a server." << endl;
+                            }
+                        }
+                    }
+                    break;
+                    case GameState::Game:
+                    {
+                        // TODO: Handle this
+                    }
+                    break;
+                }
+            }
+        }
+        break;
+        case ServerMessage::Code::OwnerLeft:
+        {
+            // TODO: Destroy everything and return to Main Menu
+            switch (State)
+            {
+                case GameState::MainMenu:
+                {
+                    switch (MainMenu.CurrentMenu)
+                    {
+                        case MainMenu::MenuType::Lobby:
+                        {
+                            MainMenu.Lobby.LeaveLobby();
+                        }
+                        break;
+                        case MainMenu::MenuType::LoadingScreen:
+                        {
+                            // TODO: Handle this
+                        }
+                        break;
+                        default:
+                        {
+                            cerr << "Somehow a player left when the client wasn't in a server." << endl;
+                        }
+                    }
+                }
+                break;
+                case GameState::Game:
+                {
+                    // TODO: Handle this
+                }
+                break;
+            }
+        }
+        break;
+        case ServerMessage::Code::PlayersInLobby:
+        {
+            uint16_t player_id;
+            std::vector<network::PlayerData> player_list;
+            if (ServerMessage::DecodePlayersInLobby(ServerSocket, player_id, player_list))
+            {
+                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                {
+                    MainMenu.Lobby.AssignId(player_id);
+                    for (auto& data : player_list)
+                    {
+                        MainMenu.Lobby.AddPlayer(data);
+                    }
+                }
+            }
+        }
+        break;
+        case ServerMessage::Code::StartGame:
+        {
+            if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+            {
+                MainMenu.Lobby.StartGame();
+            }
+        }
+        break;
+        case ServerMessage::Code::AllPlayersLoaded:
+        {
+            if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+            {
+                MainMenu.Unload();
+                State = GameState::Game;
+                // Game.Start();
+            }
+        }
+        break;
+    }
+}
+
+void GameManager::handleDisconnected()
+{
+    switch (State)
+    {
+        case GameState::MainMenu:
+        {
+            switch (MainMenu.CurrentMenu)
+            {
+                case MainMenu::MenuType::Lobby:
+                {
+                    MainMenu.Lobby.Unload();
+                    MainMenu.CurrentMenu = MainMenu::MenuType::Main;
+                }
+                break;
+                case MainMenu::MenuType::LoadingScreen:
+                {
+                    // TODO: Handle disconnects on load
+                }
+                break;
+                default:
+                {
+                    cerr << "What exactly is going on here?" << endl;
+                    MainMenu.CurrentMenu = MainMenu::MenuType::Main;
+                }
+                break;
+            }
+        }
+        break;
+        case GameState::Game:
+        {
+            // TODO: handle this
+        }
+        break;
+    }
+
+    server_connected = false;
 }
 
 void GameManager::onCloseWindow(sf::Event event)

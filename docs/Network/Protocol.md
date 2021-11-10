@@ -31,12 +31,12 @@
 
 ## Client Messages
 
-#### `ClientMessage::InitServer`
+#### `ClientMessage::InitLobby`
 * Sent immediately after a client launches a new server process by creating a game lobby
 * Server responds with a `ServerMessage::PlayerId` message
 * `[playername:string]`
 
-#### `ClientMessage::JoinServer`
+#### `ClientMessage::JoinLobby`
 * Sent whenever a player joins a lobby, just after connecting to the server in question
 * Server responds with a `ServerMessage::PlayersInLobby` message and by broadcasting a `ServerMessage::PlayerJoined` message to all _other_ players
 * `[playername:string]`

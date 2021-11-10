@@ -44,7 +44,7 @@ private:
 
     uint16_t getPlayerUid();
 
-    void initServer(PlayerInfo& player);
+    void initLobby(PlayerInfo& player);
     void playerJoined(PlayerInfo& player);
     void startGame(PlayerInfo& player);
     void loadingComplete(PlayerInfo& player);

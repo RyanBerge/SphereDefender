@@ -28,8 +28,8 @@ public:
     enum class Code : uint8_t
     {
         None = 0,
-        InitServer,
-        JoinServer,
+        InitLobby,
+        JoinLobby,
 
         StartGame,
         LoadingComplete,
@@ -41,14 +41,14 @@ public:
 
     static bool PollForCode(sf::TcpSocket& socket, Code& out_code);
 
-    static bool InitServer(sf::TcpSocket& socket, std::string name);
-    static bool JoinServer(sf::TcpSocket& socket, std::string name);
+    static bool InitLobby(sf::TcpSocket& socket, std::string name);
+    static bool JoinLobby(sf::TcpSocket& socket, std::string name);
     static bool StartGame(sf::TcpSocket& socket);
     static bool LoadingComplete(sf::TcpSocket& socket);
     static bool LeaveGame(sf::TcpSocket& socket);
 
-    static bool DecodeInitServer(sf::TcpSocket& socket, std::string& out_name);
-    static bool DecodeJoinServer(sf::TcpSocket& socket, std::string& out_name);
+    static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
+    static bool DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name);
 };
 
 class ServerMessage

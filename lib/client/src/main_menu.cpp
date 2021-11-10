@@ -19,10 +19,11 @@ namespace client {
 
 MainMenu::MainMenu()
 {
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
+    // TODO: Move callback registrations to an Initialize function
+    mouse_move_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
+    mouse_down_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
+    mouse_up_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
+    text_entered_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
 
     std::shared_ptr<sf::Font> font = util::AllocFont("assets/Vera.ttf");
 
@@ -124,7 +125,7 @@ void MainMenu::Update(sf::Time elapsed)
 
     if (CurrentMenu == MenuType::Lobby)
     {
-        lobby.Update(elapsed, window);
+        Lobby.Update(elapsed, window);
     }
 }
 */
@@ -154,8 +155,16 @@ void MainMenu::Draw()
 
     if (CurrentMenu == MenuType::Lobby)
     {
-        lobby.Draw();
+        Lobby.Draw();
     }
+}
+
+void MainMenu::Unload()
+{
+    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
+    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
+    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
+    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
 }
 
 void MainMenu::onMouseMove(sf::Event event)
@@ -246,12 +255,12 @@ void MainMenu::createLobby(bool create)
 
     if (create)
     {
-        success = lobby.Create(name);
+        success = Lobby.Create(name);
     }
     else
     {
         std::string ip = menus[CurrentMenu].textboxes[1].GetText().getString().toAnsiString();
-        success = lobby.Join(name, ip);
+        success = Lobby.Join(name, ip);
     }
 
     if (success)

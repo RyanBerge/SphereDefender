@@ -116,9 +116,9 @@ bool ClientMessage::PollForCode(sf::TcpSocket& socket, Code& out_code)
     return true;
 }
 
-bool ClientMessage::InitServer(sf::TcpSocket& socket, std::string name)
+bool ClientMessage::InitLobby(sf::TcpSocket& socket, std::string name)
 {
-    Code code = Code::InitServer;
+    Code code = Code::InitLobby;
     uint16_t str_len = name.size();
 
     // code + len + string
@@ -131,7 +131,7 @@ bool ClientMessage::InitServer(sf::TcpSocket& socket, std::string name)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::InitServer message" << endl;
+        cerr << "Network: Failed to send ClientMessage::InitLobby message" << endl;
         delete[] buffer;
         return false;
     }
@@ -140,9 +140,9 @@ bool ClientMessage::InitServer(sf::TcpSocket& socket, std::string name)
     return true;
 }
 
-bool ClientMessage::JoinServer(sf::TcpSocket& socket, std::string name)
+bool ClientMessage::JoinLobby(sf::TcpSocket& socket, std::string name)
 {
-    Code code = Code::JoinServer;
+    Code code = Code::JoinLobby;
     uint16_t str_len = name.size();
 
     // code + len + string
@@ -155,7 +155,7 @@ bool ClientMessage::JoinServer(sf::TcpSocket& socket, std::string name)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::JoinServer message" << endl;
+        cerr << "Network: Failed to send ClientMessage::JoinLobby message" << endl;
         delete[] buffer;
         return false;
     }
@@ -203,12 +203,12 @@ bool ClientMessage::LeaveGame(sf::TcpSocket& socket)
     return true;
 }
 
-bool ClientMessage::DecodeInitServer(sf::TcpSocket& socket, std::string& out_name)
+bool ClientMessage::DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name)
 {
     std::string name;
     if (!readString(socket, name))
     {
-        cerr << "Network: DecodeInitServer failed to read a player name." << endl;
+        cerr << "Network: DecodeInitLobby failed to read a player name." << endl;
         return false;
     }
 
@@ -216,12 +216,12 @@ bool ClientMessage::DecodeInitServer(sf::TcpSocket& socket, std::string& out_nam
     return true;
 }
 
-bool ClientMessage::DecodeJoinServer(sf::TcpSocket& socket, std::string& out_name)
+bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name)
 {
     std::string name;
     if (!readString(socket, name))
     {
-        cerr << "Network: DecodeJoinServer failed to read a player name." << endl;
+        cerr << "Network: DecodeJoinLobby failed to read a player name." << endl;
         return false;
     }
 
@@ -336,7 +336,7 @@ bool ServerMessage::PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, st
 
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer, &player_id, sizeof(player_id));
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
     offset += sizeof(player_id);
     std::memcpy(buffer + offset, &num_players, sizeof(num_players));
     offset += sizeof(num_players);

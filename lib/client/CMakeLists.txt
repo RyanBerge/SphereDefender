@@ -5,6 +5,7 @@ set(Sources
     src/cursor_button.cpp
     src/event_handler.cpp
     src/game_manager.cpp
+    src/game.cpp
     src/lobby.cpp
     src/main_menu.cpp
     src/main.cpp
