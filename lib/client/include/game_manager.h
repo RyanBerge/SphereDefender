@@ -1,0 +1,63 @@
+/**************************************************************************************************
+ *  File:       game_manager.h
+ *  Class:      GameManager
+ *
+ *  Purpose:    GameManager is the top-level state manager for the client
+ *
+ *  Author:     Ryan Berge
+ *
+ *************************************************************************************************/
+#pragma once
+
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Network/TcpSocket.hpp>
+#include "main_menu.h"
+#include "game.h"
+
+namespace client {
+
+class GameManager
+{
+public:
+    enum class GameState
+    {
+        MainMenu,
+        Game
+    };
+
+    GameManager(const GameManager&) = delete;
+    GameManager(GameManager&&) = delete;
+
+    GameManager& operator=(const GameManager&) = delete;
+    GameManager& operator=(GameManager&&) = delete;
+
+    static GameManager& GetInstance();
+
+    // TODO: Should this just be a map of menus instead of a state enum?
+    GameState State = GameState::MainMenu;
+
+    Game Game;
+    MainMenu MainMenu;
+
+    sf::RenderWindow Window;
+    sf::TcpSocket ServerSocket;
+
+    void Start();
+    void ExitGame();
+    bool ConnectToServer(std::string ip);
+    void DisconnectFromServer();
+
+private:
+    GameManager();
+
+    void checkMessages();
+    void handleDisconnected();
+
+    void onCloseWindow(sf::Event event);
+    void onResizeWindow(sf::Event event);
+
+    bool server_connected = false;
+    bool running = false;
+};
+
+} // client
