@@ -22,15 +22,21 @@ class Spritesheet
 public:
     Spritesheet();
     Spritesheet(std::string filepath);
+    Spritesheet(std::string filepath, bool tiled);
     void Draw();
 
-    bool LoadTexture(std::string filepath);
     sf::Sprite& GetSprite();
+    bool LoadTexture(std::string filepath);
+
+    void SetPosition(float x, float y);
+    void SetTiling(bool tiled);
 
 private:
     // TODO: Save the name of the file used for the texture so that it can be unloaded and reloaded
     sf::Sprite sprite;
     std::shared_ptr<sf::Texture> texture;
+
+    sf::Sprite tiled_sprite;
 };
 
 } // client

@@ -12,6 +12,7 @@ set(Sources
     src/spritesheet.cpp
     src/textbox.cpp
     src/util.cpp
+    src/world_map.cpp
 )
 
 add_executable(${TargetName} ${Sources})

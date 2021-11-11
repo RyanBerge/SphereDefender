@@ -34,6 +34,7 @@ public:
     void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);
 
     sf::Sprite& GetSprite();
+    void SetPosition(float x, float y);
 
     void RegisterLeftMouseDown(std::function<void(void)> f);
     void RegisterLeftMouseUp(std::function<void(void)> f);

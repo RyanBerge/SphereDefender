@@ -12,6 +12,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <atomic>
+#include "world_map.h"
 
 namespace client {
 
@@ -30,7 +31,7 @@ private:
 
     std::atomic_bool loaded = false;
 
-    sf::CircleShape sphere;
+    WorldMap world_map;
 };
 
 } // client

@@ -24,11 +24,17 @@ Game::Game() { }
 void Game::Update(sf::Time elapsed)
 {
     (void)elapsed;
+    if (loaded)
+    {
+    }
 }
 
 void Game::Draw()
 {
-    GameManager::GetInstance().Window.draw(sphere);
+    if (loaded)
+    {
+        world_map.Draw();
+    }
 }
 
 void Game::Load()
@@ -41,11 +47,7 @@ void Game::Load()
 void Game::asyncLoad()
 {
     std::cout << "Async load started..." << std::endl;
-
-    sphere.setFillColor(sf::Color(100, 250, 250));
-    sphere.setRadius(100);
-    sphere.setPosition(300, 300);
-
+    world_map.Load();
     loaded = true;
     std::cout << "Async load finished." << std::endl;
 

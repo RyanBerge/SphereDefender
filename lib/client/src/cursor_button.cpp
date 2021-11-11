@@ -31,6 +31,11 @@ sf::Sprite& CursorButton::GetSprite()
     return spritesheet.GetSprite();
 }
 
+void CursorButton::SetPosition(float x, float y)
+{
+    spritesheet.SetPosition(x, y);
+}
+
 void CursorButton::UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event)
 {
     sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();

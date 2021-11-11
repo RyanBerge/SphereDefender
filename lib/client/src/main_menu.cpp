@@ -30,7 +30,7 @@ MainMenu::MainMenu()
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
     CursorButton splash_screen_start("SplashStart.png");
-    splash_screen_start.GetSprite().setPosition(sf::Vector2f(472, 650));
+    splash_screen_start.SetPosition(472, 650);
     splash_screen_start.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Main; });
     splash_screen_menu.buttons.push_back(splash_screen_start);
     menus[MenuType::SplashScreen] = splash_screen_menu;
@@ -38,15 +38,15 @@ MainMenu::MainMenu()
 
     Menu main_menu;
     CursorButton create_game_button("CreateGameButton.png");
-    create_game_button.GetSprite().setPosition(sf::Vector2f(439, 200));
+    create_game_button.SetPosition(439, 200);
     create_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::CreateGame; setTabOrder(); });
     main_menu.buttons.push_back(create_game_button);
     CursorButton join_game_button("JoinGameButton.png");
-    join_game_button.GetSprite().setPosition(sf::Vector2f(558, 350));
+    join_game_button.SetPosition(558, 350);
     join_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::JoinGame; setTabOrder(); });
     main_menu.buttons.push_back(join_game_button);
     CursorButton exit_game("ExitButton.png");
-    exit_game.GetSprite().setPosition(sf::Vector2f(845, 500));
+    exit_game.SetPosition(845, 500);
     exit_game.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Exit; exitGame(); });
     main_menu.buttons.push_back(exit_game);
     menus[MenuType::Main] = main_menu;
@@ -67,7 +67,7 @@ MainMenu::MainMenu()
 
     Menu create_game;
     CursorButton create_game_start("SplashStart.png");
-    create_game_start.GetSprite().setPosition(sf::Vector2f(472, 650));
+    create_game_start.SetPosition(472, 650);
     create_game_start.RegisterLeftMouseUp([this](void) { createLobby(true); });
     create_game.buttons.push_back(create_game_start);
     Textbox name_box_create("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
@@ -78,7 +78,7 @@ MainMenu::MainMenu()
 
     Menu join_game;
     CursorButton connect_button("ConnectButton.png");
-    connect_button.GetSprite().setPosition(sf::Vector2f(425, 650));
+    connect_button.SetPosition(425, 650);
     connect_button.RegisterLeftMouseUp([this](void) { createLobby(false); });
     join_game.buttons.push_back(connect_button);
     Textbox name_box_join("Vera.ttf", sf::Vector2u(800, 75), sf::Color::White, sf::Color::Black);
