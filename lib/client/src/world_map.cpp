@@ -34,4 +34,6 @@ void WorldMap::Load()
     background.SetPosition(-2000, -2000);
 }
 
+void WorldMap::Unload() { }
+
 } // client

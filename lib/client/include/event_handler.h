@@ -15,6 +15,8 @@
 #include <map>
 #include <vector>
 #include <queue>
+#include <memory>
+#include <mutex>
 
 namespace client {
 
@@ -24,6 +26,7 @@ public:
     struct FunctionCallback {
         uint64_t callback_id;
         std::function<void(sf::Event)> f;
+        std::shared_ptr<bool> valid;
     };
 
     EventHandler(const EventHandler&) = delete;
@@ -44,6 +47,7 @@ private:
 
     uint64_t callback_uid = 0;
     std::map<sf::Event::EventType, std::queue<sf::Event>> event_map;
+    std::recursive_mutex event_mutex;
 
     // TODO: Priorities for callbacks?
     std::map<sf::Event::EventType, std::vector<FunctionCallback>> callbacks;

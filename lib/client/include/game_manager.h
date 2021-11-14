@@ -44,6 +44,7 @@ public:
 
     void Start();
     void ExitGame();
+    void Reset();
     bool ConnectToServer(std::string ip);
     void DisconnectFromServer();
 

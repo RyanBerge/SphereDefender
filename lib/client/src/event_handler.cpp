@@ -32,14 +32,24 @@ EventHandler& EventHandler::GetInstance()
 
 uint64_t EventHandler::RegisterCallback(sf::Event::EventType event_type, std::function<void(sf::Event)> f)
 {
-    callbacks[event_type].push_back(FunctionCallback{callback_uid, f});
+    std::lock_guard<std::recursive_mutex> lock(event_mutex);
+
+    std::shared_ptr<bool> valid(new bool(true));
+    callbacks[event_type].push_back(FunctionCallback{callback_uid, f, valid});
     return callback_uid++;
 }
 
 void EventHandler::UnregisterCallback(sf::Event::EventType event_type, uint64_t callback_id)
 {
-    auto element = std::remove_if(callbacks[event_type].begin(), callbacks[event_type].end(), [&](FunctionCallback callback){ return callback.callback_id == callback_id; });
-    callbacks[event_type].erase(element);
+    std::lock_guard<std::recursive_mutex> lock(event_mutex);
+
+    for (auto iterator = callbacks[event_type].begin(); iterator != callbacks[event_type].end(); ++iterator)
+    {
+        if (iterator->callback_id == callback_id)
+        {
+            callbacks[event_type].erase(iterator--);
+        }
+    }
 }
 
 void EventHandler::AddEvent(sf::Event event)
@@ -49,6 +59,8 @@ void EventHandler::AddEvent(sf::Event event)
 
 void EventHandler::RunCallbacks()
 {
+    std::lock_guard<std::recursive_mutex> lock(event_mutex);
+
     // For every event type,
     for (auto& event_entry : event_map)
     {
@@ -58,11 +70,17 @@ void EventHandler::RunCallbacks()
             sf::Event event = event_entry.second.front();
             event_entry.second.pop();
 
+            // Copy the callback vector in case it gets modified during the loop
+            auto callbacks_copy = callbacks[event.type];
+
             // For every callback function for the event,
-            for (auto& callback : callbacks[event.type])
+            for (auto& callback : callbacks_copy)
             {
-                // Call the callback
-                callback.f(event);
+                if (callback.valid)
+                {
+                    // Call the callback
+                    callback.f(event);
+                }
             }
         }
     }

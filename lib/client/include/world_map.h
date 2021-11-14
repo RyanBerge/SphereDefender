@@ -22,6 +22,7 @@ public:
     void Draw();
 
     void Load();
+    void Unload();
 
 private:
     Spritesheet background;

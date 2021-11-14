@@ -40,6 +40,7 @@ void GameManager::Start()
     event_handler.RegisterCallback(sf::Event::EventType::Closed, std::bind(&GameManager::onCloseWindow, this, std::placeholders::_1));
 
     Window.create(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "Sphere Defender");
+    Window.setKeyRepeatEnabled(false);
     sf::Clock clock;
 
     running = true;
@@ -103,7 +104,7 @@ bool GameManager::ConnectToServer(std::string ip)
 {
     ServerSocket.setBlocking(true);
 
-    if (ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(1)) != sf::Socket::Status::Done)
+    if (ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(5)) != sf::Socket::Status::Done)
     {
         cerr << "Server at " << ip << " could not be reached." << endl;
         return false;
@@ -113,6 +114,39 @@ bool GameManager::ConnectToServer(std::string ip)
     server_connected = true;
 
     return true;
+}
+
+void GameManager::Reset()
+{
+    switch (State)
+    {
+        case GameState::MainMenu:
+        {
+            switch (MainMenu.CurrentMenu)
+            {
+                case MainMenu::MenuType::Lobby:
+                case MainMenu::MenuType::LoadingScreen:
+                {
+                    ClientMessage::LeaveGame(ServerSocket);
+                    DisconnectFromServer();
+                }
+                default:
+                {
+
+                }
+            }
+        }
+        break;
+        case GameState::Game:
+        {
+            ClientMessage::LeaveGame(ServerSocket);
+            DisconnectFromServer();
+            Game.Unload();
+            State = GameState::MainMenu;
+            MainMenu.CurrentMenu = MainMenu::MenuType::Main;
+        }
+        break;
+    }
 }
 
 void GameManager::DisconnectFromServer()
@@ -337,33 +371,26 @@ void GameManager::onCloseWindow(sf::Event event)
 
 void GameManager::onResizeWindow(sf::Event event)
 {
-    sf::Vector2f ratio = sf::Vector2f(event.size.width, event.size.height);
+    float desired_ratio = DEFAULT_RATIO.x / DEFAULT_RATIO.y;
+    float current_ratio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
 
-    float aspect_ratio = DEFAULT_RATIO.x / DEFAULT_RATIO.y;
-    float window_ratio = (ratio.x / ratio.y);
+    sf::View view(sf::FloatRect(0, 0, DEFAULT_RATIO.x, DEFAULT_RATIO.y));
+    sf::FloatRect viewport(0, 0, 1, 1);
 
-    float viewport_width = 1;
-    float viewport_height = 1;
-    float viewport_x = 0;
-    float viewport_y = 0;
-
-    if (window_ratio > aspect_ratio)
+    if (current_ratio > desired_ratio)
     {
-        viewport_width = aspect_ratio / window_ratio;
-        viewport_x = (1 - viewport_width) / 2;
+        // cout << "window is too wide" << endl;
+        viewport.width = desired_ratio / current_ratio;
+        viewport.left = (1 - viewport.width) / 2;
     }
-    else if (window_ratio < aspect_ratio)
+    else if (current_ratio < desired_ratio)
     {
-        viewport_height = window_ratio / aspect_ratio;
-        viewport_y = (1 - viewport_height) / 2;
+        // cout << "window is too tall" << endl;
+        viewport.height = current_ratio / desired_ratio;
+        viewport.top = (1 - viewport.height) / 2;
     }
 
-    sf::FloatRect view_rect{0, 0, DEFAULT_RATIO.x, DEFAULT_RATIO.y};
-    view_rect.left = Window.getView().getCenter().x - Window.getView().getSize().x / 2;
-    view_rect.top = Window.getView().getCenter().y - Window.getView().getSize().y / 2;
-
-    sf::View view(view_rect);
-    view.setViewport(sf::FloatRect(viewport_x, viewport_y, viewport_width, viewport_height));
+    view.setViewport(viewport);
     Window.setView(view);
 }
 
