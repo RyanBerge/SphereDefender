@@ -14,14 +14,10 @@
 #include "game_manager.h"
 #include "event_handler.h"
 #include "messaging.h"
+#include "settings.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
-
-namespace {
-    // TODO: Move to Settings
-    const sf::Vector2f DEFAULT_RATIO = { 1200, 800 };
-}
 
 namespace client {
 
@@ -39,7 +35,8 @@ void GameManager::Start()
     event_handler.RegisterCallback(sf::Event::EventType::Resized, std::bind(&GameManager::onResizeWindow, this, std::placeholders::_1));
     event_handler.RegisterCallback(sf::Event::EventType::Closed, std::bind(&GameManager::onCloseWindow, this, std::placeholders::_1));
 
-    Window.create(sf::VideoMode(DEFAULT_RATIO.x, DEFAULT_RATIO.y), "Sphere Defender");
+    Settings& settings = Settings::GetInstance();
+    Window.create(sf::VideoMode(settings.WindowResolution.x, settings.WindowResolution.y), "Sphere Defender");
     Window.setKeyRepeatEnabled(false);
     sf::Clock clock;
 
@@ -104,7 +101,7 @@ bool GameManager::ConnectToServer(std::string ip)
 {
     ServerSocket.setBlocking(true);
 
-    if (ServerSocket.connect(sf::IpAddress(ip), network::SERVER_PORT, sf::seconds(5)) != sf::Socket::Status::Done)
+    if (ServerSocket.connect(sf::IpAddress(ip), Settings::GetInstance().ServerSettings.ServerPort, sf::seconds(5)) != sf::Socket::Status::Done)
     {
         cerr << "Server at " << ip << " could not be reached." << endl;
         return false;
@@ -371,10 +368,11 @@ void GameManager::onCloseWindow(sf::Event event)
 
 void GameManager::onResizeWindow(sf::Event event)
 {
-    float desired_ratio = DEFAULT_RATIO.x / DEFAULT_RATIO.y;
+    sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
+    float desired_ratio = window_resolution.x / window_resolution.y;
     float current_ratio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
 
-    sf::View view(sf::FloatRect(0, 0, DEFAULT_RATIO.x, DEFAULT_RATIO.y));
+    sf::View view(sf::FloatRect(0, 0, window_resolution.x, window_resolution.y));
     sf::FloatRect viewport(0, 0, 1, 1);
 
     if (current_ratio > desired_ratio)

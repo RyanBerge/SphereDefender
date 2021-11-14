@@ -13,9 +13,6 @@
 
 namespace network {
 
-// TODO: Move this to Settings when, you know, we have settings
-const uint32_t SERVER_PORT = 49879;
-
 struct PlayerData
 {
     uint16_t id;

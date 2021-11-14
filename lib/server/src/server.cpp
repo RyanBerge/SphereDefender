@@ -21,7 +21,7 @@ namespace server {
 Server::Server()
 {
     listener.setBlocking(false);
-    listener.listen(network::SERVER_PORT);
+    listener.listen(49879); // TODO: Make server settings and load from a file
 }
 
 void Server::Start()

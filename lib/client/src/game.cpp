@@ -11,6 +11,7 @@
 #include "messaging.h"
 #include "game_manager.h"
 #include "event_handler.h"
+#include "settings.h"
 #include <thread>
 #include <iostream>
 
@@ -20,18 +21,15 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
-// TODO: Move view sizze to Settings
-Game::Game() : world_view(sf::FloatRect(0, 0, 1200, 800)), scroll_data{0, 0} { }
+Game::Game() : world_view(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)), scroll_data{0, 0} { }
 
 void Game::Update(sf::Time elapsed)
 {
     (void)elapsed;
     if (loaded)
     {
-        // TODO: Move to Settings
-        float scroll_speed = 400;
-        float horizontal_scroll = scroll_data.horizontal * scroll_speed * elapsed.asSeconds();
-        float vertical_scroll = scroll_data.vertical * scroll_speed * elapsed.asSeconds();
+        float horizontal_scroll = scroll_data.horizontal * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
+        float vertical_scroll = scroll_data.vertical * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
         world_view.move(horizontal_scroll, vertical_scroll);
     }
 }
@@ -49,6 +47,11 @@ void Game::Draw()
         GameManager::GetInstance().Window.setView(old_view);
 
         gui.Draw();
+
+        if (menu_open)
+        {
+            Settings::GetInstance().Draw();
+        }
     }
 }
 
@@ -73,7 +76,7 @@ void Game::asyncLoad()
     world_map.Load();
     gui.Load();
 
-    world_view = sf::View(sf::FloatRect(0, 0, 1200, 800));
+    world_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
     loaded = true;
     std::cout << "Async load finished." << std::endl;
 
@@ -115,59 +118,65 @@ void Game::onTextEntered(sf::Event event)
 
 void Game::onKeyPressed(sf::Event event)
 {
-    // TODO: Move key to Settings
-    switch (event.key.code)
+    Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
+
+    if (event.key.code == bindings.ScrollLeft)
     {
-        case sf::Keyboard::Key::W:
+        --scroll_data.horizontal;
+    }
+
+    if (event.key.code == bindings.ScrollRight)
+    {
+        ++scroll_data.horizontal;
+    }
+
+    if (event.key.code == bindings.ScrollUp)
+    {
+        --scroll_data.vertical;
+    }
+
+    if (event.key.code == bindings.ScrollDown)
+    {
+        ++scroll_data.vertical;
+    }
+
+    if (event.key.code == bindings.Pause)
+    {
+        if (!menu_open)
         {
-            --scroll_data.vertical;
+            Settings::GetInstance().Open();
+            menu_open = true;
         }
-        break;
-        case sf::Keyboard::Key::A:
+        else
         {
-            --scroll_data.horizontal;
+            Settings::GetInstance().Close();
+            menu_open = false;
         }
-        break;
-        case sf::Keyboard::Key::S:
-        {
-            ++scroll_data.vertical;
-        }
-        break;
-        case sf::Keyboard::Key::D:
-        {
-            ++scroll_data.horizontal;
-        }
-        break;
-        default: { }
     }
 }
 
 void Game::onKeyReleased(sf::Event event)
 {
-    // TODO: Move key to Settings
-    switch (event.key.code)
+    Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
+
+    if (event.key.code == bindings.ScrollLeft)
     {
-        case sf::Keyboard::Key::W:
-        {
-            ++scroll_data.vertical;
-        }
-        break;
-        case sf::Keyboard::Key::A:
-        {
-            ++scroll_data.horizontal;
-        }
-        break;
-        case sf::Keyboard::Key::S:
-        {
-            --scroll_data.vertical;
-        }
-        break;
-        case sf::Keyboard::Key::D:
-        {
-            --scroll_data.horizontal;
-        }
-        break;
-        default: { }
+        ++scroll_data.horizontal;
+    }
+
+    if (event.key.code == bindings.ScrollRight)
+    {
+        --scroll_data.horizontal;
+    }
+
+    if (event.key.code == bindings.ScrollUp)
+    {
+        ++scroll_data.vertical;
+    }
+
+    if (event.key.code == bindings.ScrollDown)
+    {
+        --scroll_data.vertical;
     }
 }
 

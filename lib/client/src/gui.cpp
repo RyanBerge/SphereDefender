@@ -10,6 +10,7 @@
 #include "gui.h"
 #include "game_manager.h"
 #include "messaging.h"
+#include "settings.h"
 #include <iostream>
 
 using std::cout, std::cerr, std::endl;
@@ -27,8 +28,7 @@ Gui::Gui()
     exit_button.SetPosition(800, 669.5);
     exit_button.RegisterLeftMouseDown(std::bind(&Gui::exitGame, this));
 
-    // TODO: Move this number to Settings
-    gui_view = sf::View(sf::FloatRect(0, 0, 1200, 800));
+    gui_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 }
 
 void Gui::Draw()

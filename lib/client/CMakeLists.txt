@@ -10,6 +10,7 @@ set(Sources
     src/lobby.cpp
     src/main_menu.cpp
     src/main.cpp
+    src/settings.cpp
     src/spritesheet.cpp
     src/textbox.cpp
     src/util.cpp

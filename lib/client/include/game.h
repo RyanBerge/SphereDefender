@@ -53,6 +53,7 @@ private:
     void asyncLoad();
 
     std::atomic_bool loaded = false;
+    bool menu_open = false;
 
     sf::View world_view;
     Gui gui;
