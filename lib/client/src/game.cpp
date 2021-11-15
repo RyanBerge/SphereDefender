@@ -22,7 +22,7 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
-Game::Game() : world_view(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)), scroll_data{0, 0} { }
+Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)), scroll_data{0, 0} { }
 
 void Game::Update(sf::Time elapsed)
 {
@@ -30,7 +30,9 @@ void Game::Update(sf::Time elapsed)
     {
         float horizontal_scroll = scroll_data.horizontal * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
         float vertical_scroll = scroll_data.vertical * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
-        world_view.move(horizontal_scroll, vertical_scroll);
+        WorldView.move(horizontal_scroll, vertical_scroll);
+
+        local_player.Update(elapsed);
     }
 }
 
@@ -39,10 +41,11 @@ void Game::Draw()
     if (loaded)
     {
         sf::View old_view = GameManager::GetInstance().Window.getView();
-        world_view.setViewport(old_view.getViewport());
-        GameManager::GetInstance().Window.setView(world_view);
+        WorldView.setViewport(old_view.getViewport());
+        GameManager::GetInstance().Window.setView(WorldView);
 
         world_map.Draw();
+        local_player.Draw();
 
         GameManager::GetInstance().Window.setView(old_view);
 
@@ -75,8 +78,9 @@ void Game::asyncLoad()
 
     world_map.Load();
     gui.Load();
+    local_player.Load();
 
-    world_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
+    WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 
     sf::sleep(sf::seconds(1));
 
@@ -95,27 +99,32 @@ void Game::Unload()
 
     world_map.Unload();
     gui.Unload();
+    local_player.Unload();
 }
 
 // TODO: Ensure that these are only updated for elements that can be controlled at that time
 void Game::onMouseMove(sf::Event event)
 {
-    gui.OnMouseMove(event);
+    gui.OnMouseMove(event.mouseMove);
+    local_player.OnMouseMove(event.mouseMove);
 }
 
 void Game::onMouseDown(sf::Event event)
 {
-    gui.OnMouseDown(event);
+    gui.OnMouseDown(event.mouseButton);
+    local_player.OnMouseDown(event.mouseButton);
 }
 
 void Game::onMouseUp(sf::Event event)
 {
-    gui.OnMouseUp(event);
+    gui.OnMouseUp(event.mouseButton);
+    local_player.OnMouseUp(event.mouseButton);
 }
 
 void Game::onTextEntered(sf::Event event)
 {
-    gui.OnTextEntered(event);
+    gui.OnTextEntered(event.text);
+    local_player.OnTextEntered(event.text);
 }
 
 void Game::onKeyPressed(sf::Event event)

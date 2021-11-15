@@ -9,6 +9,7 @@
  *************************************************************************************************/
 #pragma once
 #include <SFML/System/Time.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include "spritesheet.h"
 
 namespace client {
@@ -26,6 +27,7 @@ public:
 
 private:
     Spritesheet background;
+    std::vector<sf::RectangleShape> buildings;
 };
 
 } // client

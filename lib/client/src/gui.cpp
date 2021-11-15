@@ -59,22 +59,22 @@ void Gui::exitGame()
     GameManager::GetInstance().Reset();
 }
 
-void Gui::OnMouseMove(sf::Event event)
+void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
-    exit_button.UpdateMousePosition(event.mouseMove);
+    exit_button.UpdateMousePosition(event);
 }
 
-void Gui::OnMouseDown(sf::Event event)
+void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
 {
-    exit_button.UpdateMouseState(event.mouseButton, CursorButton::State::Down);
+    exit_button.UpdateMouseState(event, CursorButton::State::Down);
 }
 
-void Gui::OnMouseUp(sf::Event event)
+void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
 {
-    exit_button.UpdateMouseState(event.mouseButton, CursorButton::State::Up);
+    exit_button.UpdateMouseState(event, CursorButton::State::Up);
 }
 
-void Gui::OnTextEntered(sf::Event event)
+void Gui::OnTextEntered(sf::Event::TextEvent event)
 {
     (void)event;
 }

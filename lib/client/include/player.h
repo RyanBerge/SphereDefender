@@ -1,25 +1,27 @@
 /**************************************************************************************************
- *  File:       gui.h
- *  Class:      Gui
+ *  File:       player.h
+ *  Class:      Player
  *
- *  Purpose:    Represents the in-game GUI
+ *  Purpose:    The local player
  *
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
 #pragma once
 
-#include "cursor_button.h"
 #include <SFML/System/Time.hpp>
-#include <SFML/Graphics/View.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Window/Event.hpp>
 
 namespace client {
 
-class Gui
+class Player
 {
 public:
-    Gui();
+    Player();
 
+    void Update(sf::Time elapsed);
     void Draw();
 
     void Load();
@@ -31,11 +33,11 @@ public:
     void OnTextEntered(sf::Event::TextEvent event);
 
 private:
-    void exitGame();
+    sf::CircleShape sphere;
+    sf::Vector2f current_destination;
+    sf::RectangleShape path;
+    double movement_speed = 200; // pixels per second
 
-    sf::View gui_view;
-    Spritesheet action_bar;
-    CursorButton exit_button;
 };
 
 } // client

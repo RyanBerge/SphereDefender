@@ -10,11 +10,11 @@
 #pragma once
 
 #include <SFML/System/Time.hpp>
-#include <SFML/Graphics/CircleShape.hpp>
 #include <atomic>
 #include <map>
 #include "world_map.h"
 #include "gui.h"
+#include "player.h"
 
 namespace client {
 
@@ -28,6 +28,8 @@ public:
 
     void Load();
     void Unload();
+
+    sf::View WorldView;
 
 private:
     struct ScrollData
@@ -50,9 +52,10 @@ private:
     std::atomic_bool loaded = false;
     bool menu_open = false;
 
-    sf::View world_view;
     Gui gui;
     WorldMap world_map;
+
+    Player local_player;
 
     ScrollData scroll_data;
 };
