@@ -44,9 +44,9 @@ public:
 
     MainMenu();
 
-    //void Update(sf::Time elapsed);
     void Draw();
 
+    void Load();
     void Unload();
 
     MenuType CurrentMenu;
@@ -58,10 +58,7 @@ private:
     void onMouseUp(sf::Event event);
     void onTextEntered(sf::Event event);
 
-    uint64_t mouse_move_id;
-    uint64_t mouse_down_id;
-    uint64_t mouse_up_id;
-    uint64_t text_entered_id;
+    std::map<sf::Event::EventType, uint64_t> event_id_map;
 
     std::map<MenuType, Menu> menus;
 

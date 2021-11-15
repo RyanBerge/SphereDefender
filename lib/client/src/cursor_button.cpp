@@ -39,7 +39,6 @@ void CursorButton::SetPosition(float x, float y)
 void CursorButton::UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event)
 {
     sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
-    // TODO: Will probably need a GUI view to map to for buttons with static window positions
     sf::Vector2f mouse_position = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
     bool in_bounds = mouse_position.x >= bounds.left &&
@@ -63,7 +62,6 @@ void CursorButton::UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, Sta
     if (mouse_event.button == sf::Mouse::Button::Left)
     {
         sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
-        // TODO: Will probably need a GUI view to map to for buttons with static window positions
         sf::Vector2f mouse_position = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
         bool in_bounds = mouse_position.x >= bounds.left &&

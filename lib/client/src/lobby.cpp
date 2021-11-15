@@ -9,9 +9,7 @@
  *************************************************************************************************/
 #include "lobby.h"
 #include "event_handler.h"
-//#include "state_manager.h"
 #include "game_manager.h"
-//#include "player.h"
 #include "util.h"
 #include "messaging.h"
 #include <iostream>
@@ -21,8 +19,6 @@ using network::ClientMessage, network::ServerMessage;
 #define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
-
-//Lobby* Lobby::lobby_instance = nullptr;
 
 Lobby::Lobby()
 {
@@ -45,8 +41,21 @@ Lobby::Lobby()
 void Lobby::initializeMenu()
 {
     //lobby_instance = this;
-    mouse_down_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Lobby::onMouseDown, this, std::placeholders::_1));
-    mouse_up_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Lobby::onMouseUp, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Lobby::onMouseDown, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Lobby::onMouseUp, this, std::placeholders::_1));
+}
+
+void Lobby::Unload()
+{
+    for (auto& event : event_id_map)
+    {
+        EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
+    }
+
+    local_player = LobbyPlayer{};
+    player_display_list.clear();
+
+    // TODO: Unload UI elements as well?
 }
 
 bool Lobby::Create(std::string player_name)
@@ -61,7 +70,6 @@ bool Lobby::Create(std::string player_name)
     }
 
     ClientMessage::InitLobby(ServerSocket, player_name);
-//    Player::state.name = player_name;
 
     owner = true;
     local_player.name = player_name;
@@ -79,7 +87,6 @@ bool Lobby::Join(std::string player_name, std::string ip)
     }
 
     ClientMessage::JoinLobby(ServerSocket, player_name);
-//    Player::state.name = player_name;
 
     owner = false;
     local_player.name = player_name;
@@ -88,16 +95,7 @@ bool Lobby::Join(std::string player_name, std::string ip)
 
     return true;
 }
-/*
-void Lobby::Update(sf::Time elapsed, sf::RenderWindow& window)
-{
-    leave_button.Update(elapsed, window);
-    if (owner)
-    {
-        start_button.Update(elapsed, window);
-    }
-}
-*/
+
 void Lobby::Draw()
 {
     leave_button.Draw();
@@ -111,16 +109,6 @@ void Lobby::Draw()
     {
         GameManager::GetInstance().Window.draw(display_player.display_text);
     }
-}
-
-void Lobby::Unload()
-{
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonPressed, mouse_down_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonReleased, mouse_up_id);
-    local_player = LobbyPlayer{};
-    player_display_list.clear();
-
-    // TODO: Unload UI elements as well?
 }
 
 void Lobby::StartGame()

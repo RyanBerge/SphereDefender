@@ -19,12 +19,6 @@ namespace client {
 
 MainMenu::MainMenu()
 {
-    // TODO: Move callback registrations to an Initialize function
-    mouse_move_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
-    mouse_down_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
-    mouse_up_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
-    text_entered_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
-
     std::shared_ptr<sf::Font> font = util::AllocFont("assets/Vera.ttf");
 
     Menu splash_screen_menu;
@@ -90,7 +84,7 @@ MainMenu::MainMenu()
     join_game.text.push_back(name_label_text);
     join_game.text.push_back(ip_label_text);
     menus[MenuType::JoinGame] = join_game;
-/*
+
     Menu loading;
     sf::Text loading_text;
     loading_text.setFont(*font);
@@ -100,35 +94,10 @@ MainMenu::MainMenu()
     loading_text.setFillColor(sf::Color::White);
     loading.text.push_back(loading_text);
     menus[MenuType::LoadingScreen] = loading;
-*/}
-/*
-void MainMenu::Update(sf::Time elapsed)
-{
-    (void)elapsed;
 
-    Menu& menu = menus[CurrentMenu];
-
-    if (CurrentMenu == MenuType::Exit)
-    {
-        return false;
-    }
-
-    for (CursorButton& button : menu.buttons)
-    {
-        button.Update(elapsed, window);
-    }
-
-    for (Textbox& textbox : menu.textboxes)
-    {
-        textbox.Update(elapsed, window);
-    }
-
-    if (CurrentMenu == MenuType::Lobby)
-    {
-        Lobby.Update(elapsed, window);
-    }
+    Load();
 }
-*/
+
 void MainMenu::Draw()
 {
     Menu& menu = menus[CurrentMenu];
@@ -159,12 +128,20 @@ void MainMenu::Draw()
     }
 }
 
+void MainMenu::Load()
+{
+    event_id_map[sf::Event::EventType::MouseMoved] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::TextEntered] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
+}
+
 void MainMenu::Unload()
 {
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&MainMenu::onMouseMove, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&MainMenu::onMouseDown, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&MainMenu::onMouseUp, this, std::placeholders::_1));
-    EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&MainMenu::onTextEntered, this, std::placeholders::_1));
+    for (auto& event : event_id_map)
+    {
+        EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
+    }
 }
 
 void MainMenu::onMouseMove(sf::Event event)

@@ -141,6 +141,7 @@ void GameManager::Reset()
             Game.Unload();
             State = GameState::MainMenu;
             MainMenu.CurrentMenu = MainMenu::MenuType::Main;
+            MainMenu.Load();
         }
         break;
     }
@@ -217,7 +218,6 @@ void GameManager::checkMessages()
             uint16_t player_id;
             if (ServerMessage::DecodePlayerLeft(ServerSocket, player_id))
             {
-                // TODO: Route and handle this
                 switch (State)
                 {
                     case GameState::MainMenu:
@@ -252,7 +252,6 @@ void GameManager::checkMessages()
         break;
         case ServerMessage::Code::OwnerLeft:
         {
-            // TODO: Destroy everything and return to Main Menu
             switch (State)
             {
                 case GameState::MainMenu:
@@ -267,6 +266,7 @@ void GameManager::checkMessages()
                         case MainMenu::MenuType::LoadingScreen:
                         {
                             // TODO: Handle this
+                            // TODO: Add a message sequents that aborts loading the game if someone disconnects during loading
                         }
                         break;
                         default:

@@ -12,6 +12,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <atomic>
+#include <map>
 #include "world_map.h"
 #include "gui.h"
 
@@ -42,13 +43,7 @@ private:
     void onKeyPressed(sf::Event event);
     void onKeyReleased(sf::Event event);
 
-    // TODO: Make a map for this
-    uint64_t mouse_move_id;
-    uint64_t mouse_down_id;
-    uint64_t mouse_up_id;
-    uint64_t text_entered_id;
-    uint64_t key_pressed_id;
-    uint64_t key_released_id;
+    std::map<sf::Event::EventType, uint64_t> event_id_map;
 
     void asyncLoad();
 

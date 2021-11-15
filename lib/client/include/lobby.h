@@ -46,8 +46,8 @@ public:
 private:
     void onMouseDown(sf::Event event);
     void onMouseUp(sf::Event event);
-    uint64_t mouse_down_id;
-    uint64_t mouse_up_id;
+
+    std::map<sf::Event::EventType, uint64_t> event_id_map;
 
     void initializeMenu();
 

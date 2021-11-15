@@ -14,6 +14,7 @@
 #include "settings.h"
 #include <thread>
 #include <iostream>
+#include "SFML/System/Sleep.hpp"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -25,7 +26,6 @@ Game::Game() : world_view(sf::FloatRect(0, 0, Settings::GetInstance().WindowReso
 
 void Game::Update(sf::Time elapsed)
 {
-    (void)elapsed;
     if (loaded)
     {
         float horizontal_scroll = scroll_data.horizontal * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
@@ -66,17 +66,20 @@ void Game::asyncLoad()
 {
     std::cout << "Async load started..." << std::endl;
 
-    mouse_move_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&Game::onMouseMove, this, std::placeholders::_1));
-    mouse_down_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Game::onMouseDown, this, std::placeholders::_1));
-    mouse_up_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Game::onMouseUp, this, std::placeholders::_1));
-    text_entered_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&Game::onTextEntered, this, std::placeholders::_1));
-    key_pressed_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyPressed, std::bind(&Game::onKeyPressed, this, std::placeholders::_1));
-    key_released_id = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyReleased, std::bind(&Game::onKeyReleased, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseMoved] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&Game::onMouseMove, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Game::onMouseDown, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseButtonReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Game::onMouseUp, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::TextEntered] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&Game::onTextEntered, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::KeyPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyPressed, std::bind(&Game::onKeyPressed, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::KeyReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyReleased, std::bind(&Game::onKeyReleased, this, std::placeholders::_1));
 
     world_map.Load();
     gui.Load();
 
     world_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
+
+    sf::sleep(sf::seconds(1));
+
     loaded = true;
     std::cout << "Async load finished." << std::endl;
 
@@ -85,17 +88,16 @@ void Game::asyncLoad()
 
 void Game::Unload()
 {
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseMoved, mouse_move_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonPressed, mouse_down_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::MouseButtonReleased, mouse_up_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::TextEntered, text_entered_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::KeyPressed, key_pressed_id);
-    EventHandler::GetInstance().UnregisterCallback(sf::Event::EventType::KeyReleased, key_released_id);
+    for (auto& event : event_id_map)
+    {
+        EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
+    }
 
     world_map.Unload();
     gui.Unload();
 }
 
+// TODO: Ensure that these are only updated for elements that can be controlled at that time
 void Game::onMouseMove(sf::Event event)
 {
     gui.OnMouseMove(event);
