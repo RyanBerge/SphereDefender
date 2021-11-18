@@ -13,20 +13,13 @@
 #include <SFML/Graphics/Text.hpp>
 #include <string>
 #include "cursor_button.h"
-#include "messaging.h"
+#include "player_state.h"
 
 namespace client {
 
 class Lobby
 {
 public:
-    struct LobbyPlayer
-    {
-        uint16_t id;
-        std::string name;
-        sf::Text display_text;
-    };
-
     Lobby();
 
     bool Create(std::string player_name);
@@ -39,7 +32,7 @@ public:
     void Unload();
 
     void AssignId(uint16_t id);
-    void AddPlayer(network::PlayerData player);
+    void AddPlayer(network::PlayerData player_data);
     void RemovePlayer(uint16_t player_id);
     void LeaveLobby();
 
@@ -53,8 +46,8 @@ private:
 
     bool owner = false;
     std::shared_ptr<sf::Font> font;
-    LobbyPlayer local_player;
-    std::vector<LobbyPlayer> player_display_list;
+    PlayerState local_player;
+    std::vector<PlayerState> player_display_list;
     CursorButton leave_button;
     CursorButton start_button;
 

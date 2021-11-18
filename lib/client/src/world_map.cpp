@@ -43,6 +43,7 @@ void WorldMap::Load()
     building.setFillColor(sf::Color(115, 150, 180));
     building.setOutlineColor(sf::Color::Black);
     building.setOutlineThickness(5);
+    building.setPosition(-400, -400);
     buildings.push_back(building);
 }
 

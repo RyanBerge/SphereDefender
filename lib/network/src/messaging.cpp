@@ -203,6 +203,26 @@ bool ClientMessage::LeaveGame(sf::TcpSocket& socket)
     return true;
 }
 
+bool ClientMessage::PlayerState(sf::TcpSocket& socket, sf::Vector2f position)
+{
+    Code code = Code::PlayerState;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(position.x) + sizeof(position.y);
+    uint8_t buffer[buffer_size];
+
+    std::memcpy(buffer, &code, sizeof(code));
+    std::memcpy(buffer + sizeof(code), &position.x, sizeof(position.x));
+    std::memcpy(buffer + sizeof(code) + sizeof(position.x), &position.y, sizeof(position.y));
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::PlayerState message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name)
 {
     std::string name;
@@ -229,6 +249,29 @@ bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name
     return true;
 }
 
+bool ClientMessage::DecodePlayerState(sf::TcpSocket& socket, sf::Vector2f& out_position)
+{
+    float x;
+    float y;
+
+    if (!read(socket, &x, sizeof(x)))
+    {
+        cerr << "Network: DecodePlayerState failed to read spawn x position." << endl;
+        return false;
+    }
+
+    if (!read(socket, &y, sizeof(y)))
+    {
+        cerr << "Network: DecodePlayerState failed to read spawn y position." << endl;
+        return false;
+    }
+
+    out_position.x = x;
+    out_position.y = y;
+
+    return true;
+}
+
 // ====================================================== Server Message ======================================================
 
 bool ServerMessage::PollForCode(sf::TcpSocket& socket, Code& out_code)
@@ -248,8 +291,8 @@ bool ServerMessage::PlayerId(sf::TcpSocket& socket, uint16_t player_id)
 {
     Code code = Code::PlayerId;
 
-    size_t buffer_len = sizeof(code) + sizeof(player_id);
-    uint8_t* buffer = new uint8_t[buffer_len];
+    constexpr size_t buffer_len = sizeof(code) + sizeof(player_id);
+    uint8_t buffer[buffer_len];
 
     std::memcpy(buffer, &code, sizeof(code));
     std::memcpy(buffer + sizeof(code), &player_id, sizeof(player_id));
@@ -257,32 +300,30 @@ bool ServerMessage::PlayerId(sf::TcpSocket& socket, uint16_t player_id)
     if (!writeBuffer(socket, buffer, buffer_len))
     {
         cerr << "Network: Failed to send ServerMessage::PlayerId message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
-bool ServerMessage::PlayerJoined(sf::TcpSocket& socket, std::string name, uint16_t player_id)
+bool ServerMessage::PlayerJoined(sf::TcpSocket& socket, PlayerData player)
 {
     Code code = Code::PlayerJoined;
-    uint16_t str_len = name.size();
+    uint16_t str_len = player.name.size();
 
     // code + len + string
-    size_t buffer_len = sizeof(code) + sizeof(player_id) + sizeof(str_len) + str_len;
+    size_t buffer_len = sizeof(code) + sizeof(player.id) + sizeof(str_len) + str_len;
     uint8_t* buffer = new uint8_t[buffer_len];
 
     int offset = 0;
 
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
-    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &player.id, sizeof(player.id));
+    offset += sizeof(player.id);
     std::memcpy(buffer + offset, &str_len, sizeof(str_len));
     offset += sizeof(str_len);
-    std::memcpy(buffer + offset, name.c_str(), str_len);
+    std::memcpy(buffer + offset, player.name.c_str(), str_len);
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
@@ -299,8 +340,8 @@ bool ServerMessage::PlayerLeft(sf::TcpSocket& socket, uint16_t player_id)
 {
     Code code = Code::PlayerLeft;
 
-    size_t buffer_len = sizeof(code) + sizeof(player_id);
-    uint8_t* buffer = new uint8_t[buffer_len];
+    constexpr size_t buffer_len = sizeof(code) + sizeof(player_id);
+    uint8_t buffer[buffer_len];
 
     std::memcpy(buffer, &code, sizeof(code));
     std::memcpy(buffer + sizeof(code), &player_id, sizeof(player_id));
@@ -308,11 +349,9 @@ bool ServerMessage::PlayerLeft(sf::TcpSocket& socket, uint16_t player_id)
     if (!writeBuffer(socket, buffer, buffer_len))
     {
         cerr << "Network: Failed to send ServerMessage::PlayerLeft message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
@@ -390,16 +429,55 @@ bool ServerMessage::StartGame(sf::TcpSocket& socket)
     return true;
 }
 
-bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket)
+bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position)
 {
     Code code = Code::AllPlayersLoaded;
 
-    if (!writeBuffer(socket, &code, sizeof(code)))
+    constexpr size_t buffer_size = sizeof(code) + sizeof(spawn_position.x) + sizeof(spawn_position.y);
+    uint8_t buffer[buffer_size];
+
+    std::memcpy(buffer, &code, sizeof(code));
+    std::memcpy(buffer + sizeof(code), &spawn_position.x, sizeof(spawn_position.x));
+    std::memcpy(buffer + sizeof(code) + sizeof(spawn_position.x), &spawn_position.y, sizeof(spawn_position.y));
+
+    if (!writeBuffer(socket, buffer, buffer_size))
     {
         cerr << "Network: Failed to send ServerMessage::AllPlayersLoaded message" << endl;
         return false;
     }
 
+    return true;
+}
+
+bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players)
+{
+    Code code = Code::PlayerStates;
+
+    size_t buffer_size = sizeof(code) + ((sizeof(uint16_t) + sizeof(float) * 2) * players.size());
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+
+    for (auto& player : players)
+    {
+        std::memcpy(buffer + offset, &player.id, sizeof(player.id));
+        offset += sizeof(player.id);
+        std::memcpy(buffer + offset, &player.position.x, sizeof(player.position.x));
+        offset += sizeof(player.position.x);
+        std::memcpy(buffer + offset, &player.position.y, sizeof(player.position.y));
+        offset += sizeof(player.position.y);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::AllPlayersLoaded message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
     return true;
 }
 
@@ -494,5 +572,57 @@ bool ServerMessage::DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id
     return true;
 }
 
+bool ServerMessage::DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position)
+{
+    float x;
+    float y;
+
+    if (!read(socket, &x, sizeof(x)))
+    {
+        cerr << "Network: DecodeAllPlayersLoaded failed to read a spawn x position." << endl;
+        return false;
+    }
+
+    if (!read(socket, &y, sizeof(y)))
+    {
+        cerr << "Network: DecodeAllPlayersLoaded failed to read a spawn y position." << endl;
+        return false;
+    }
+
+    out_spawn_position.x = x;
+    out_spawn_position.y = y;
+
+    return true;
+}
+
+bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players)
+{
+    std::vector<PlayerData> players = out_players;
+
+    for (size_t i = 0; i < players.size(); ++i)
+    {
+        if (!read(socket, &players[i].id, sizeof(players[i].id)))
+        {
+            cerr << "Network: DecodePlayerStates failed to read a player id." << endl;
+            return false;
+        }
+
+        if (!read(socket, &players[i].position.x, sizeof(players[i].position.x)))
+        {
+            cerr << "Network: DecodePlayerStates failed to read an x position." << endl;
+            return false;
+        }
+
+        if (!read(socket, &players[i].position.y, sizeof(players[i].position.y)))
+        {
+            cerr << "Network: DecodePlayerStates failed to read a y position." << endl;
+            return false;
+        }
+    }
+
+    out_players = players;
+
+    return true;
+}
 
 } // server

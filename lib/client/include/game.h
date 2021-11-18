@@ -26,8 +26,13 @@ public:
     void Update(sf::Time elapsed);
     void Draw();
 
-    void Load();
+    void Load(PlayerState local, std::vector<PlayerState> other_players);
     void Unload();
+
+    void Start(sf::Vector2f spawn_position);
+
+    int GetPlayerCount();
+    void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
 
     sf::View WorldView;
 
@@ -47,7 +52,7 @@ private:
 
     std::map<sf::Event::EventType, uint64_t> event_id_map;
 
-    void asyncLoad();
+    void asyncLoad(PlayerState local, std::vector<PlayerState> other_players);
 
     std::atomic_bool loaded = false;
     bool menu_open = false;
@@ -56,6 +61,7 @@ private:
     WorldMap world_map;
 
     Player local_player;
+    std::map<uint16_t, PlayerState> player_states;
 
     ScrollData scroll_data;
 };

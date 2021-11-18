@@ -311,14 +311,31 @@ void GameManager::checkMessages()
         break;
         case ServerMessage::Code::AllPlayersLoaded:
         {
-            if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+            sf::Vector2f spawn_position;
+            if (ServerMessage::DecodeAllPlayersLoaded(ServerSocket, spawn_position))
             {
-                MainMenu.Unload();
-                State = GameState::Game;
-                // Game.Start();
+                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+                {
+                    MainMenu.Unload();
+                    State = GameState::Game;
+                    Game.Start(spawn_position);
+                }
             }
         }
         break;
+        case ServerMessage::Code::PlayerStates:
+        {
+            std::vector<network::PlayerData> player_list(Game.GetPlayerCount());
+            if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
+            {
+                Game.UpdatePlayerStates(player_list);
+            }
+        }
+        break;
+        default:
+        {
+            cerr << "Unrecognized code." << endl;
+        }
     }
 }
 

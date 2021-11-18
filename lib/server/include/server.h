@@ -10,7 +10,9 @@
 #pragma once
 
 #include <SFML/Network/TcpListener.hpp>
-#include "player_info.h"
+#include <SFML/System/Clock.hpp>
+#include "messaging.h"
+#include <memory>
 #include <vector>
 
 namespace server {
@@ -18,6 +20,21 @@ namespace server {
 class Server
 {
 public:
+    struct PlayerInfo
+    {
+        enum class Status
+        {
+            Uninitialized,
+            Disconnected,
+            Menus,
+            Alive
+        };
+
+        std::shared_ptr<sf::TcpSocket> socket;
+        Status status;
+        network::PlayerData data;
+    };
+
     enum class GameState : uint8_t
     {
         Uninitialized,
@@ -36,6 +53,7 @@ private:
     std::vector<PlayerInfo> players;
     uint16_t owner = 0;
     GameState game_state = GameState::Uninitialized;
+    sf::Clock clock;
 
     void update();
 
@@ -49,6 +67,9 @@ private:
     void startGame(PlayerInfo& player);
     void loadingComplete(PlayerInfo& player);
     void leaveGame(PlayerInfo& player);
+    void updatePlayerState(PlayerInfo& player);
+
+    void broadcastStates();
 };
 
 } // server

@@ -52,7 +52,7 @@ void Lobby::Unload()
         EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
     }
 
-    local_player = LobbyPlayer{};
+    local_player = PlayerState();
     player_display_list.clear();
 
     // TODO: Unload UI elements as well?
@@ -72,7 +72,7 @@ bool Lobby::Create(std::string player_name)
     ClientMessage::InitLobby(ServerSocket, player_name);
 
     owner = true;
-    local_player.name = player_name;
+    local_player.data.name = player_name;
 
     initializeMenu();
 
@@ -89,7 +89,7 @@ bool Lobby::Join(std::string player_name, std::string ip)
     ClientMessage::JoinLobby(ServerSocket, player_name);
 
     owner = false;
-    local_player.name = player_name;
+    local_player.data.name = player_name;
 
     initializeMenu();
 
@@ -104,10 +104,10 @@ void Lobby::Draw()
         start_button.Draw();
     }
 
-    GameManager::GetInstance().Window.draw(local_player.display_text);
+    GameManager::GetInstance().Window.draw(local_player.lobby_display_text);
     for (auto& display_player : player_display_list)
     {
-        GameManager::GetInstance().Window.draw(display_player.display_text);
+        GameManager::GetInstance().Window.draw(display_player.lobby_display_text);
     }
 }
 
@@ -119,7 +119,8 @@ void Lobby::StartGame()
     }
 
     GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::LoadingScreen;
-    GameManager::GetInstance().Game.Load();
+
+    GameManager::GetInstance().Game.Load(local_player, player_display_list);
 
     // TODO: Give the Game the player information
     Unload();
@@ -127,21 +128,20 @@ void Lobby::StartGame()
 
 void Lobby::AssignId(uint16_t id)
 {
-    local_player.id = id;
-    local_player.display_text.setScale(1.2, 1.2);
-    local_player.display_text.setFont(*font);
-    local_player.display_text.setString(local_player.name);
+    local_player.data.id = id;
+    local_player.lobby_display_text.setScale(1.2, 1.2);
+    local_player.lobby_display_text.setFont(*font);
+    local_player.lobby_display_text.setString(local_player.data.name);
 
     updatePlayerPositions();
 }
 
-void Lobby::AddPlayer(network::PlayerData player)
+void Lobby::AddPlayer(network::PlayerData player_data)
 {
-    LobbyPlayer lobby_player;
-    lobby_player.id = player.id;
-    lobby_player.name = player.name;
-    lobby_player.display_text.setFont(*font);
-    lobby_player.display_text.setString(player.name);
+    PlayerState lobby_player;
+    lobby_player.data = player_data;
+    lobby_player.lobby_display_text.setFont(*font);
+    lobby_player.lobby_display_text.setString(player_data.name);
 
     player_display_list.push_back(lobby_player);
 
@@ -152,7 +152,7 @@ void Lobby::RemovePlayer(uint16_t player_id)
 {
     for (auto iterator = player_display_list.begin(); iterator != player_display_list.end(); ++iterator)
     {
-        if (iterator->id == player_id)
+        if (iterator->data.id == player_id)
         {
             player_display_list.erase(iterator);
             break;
@@ -174,12 +174,12 @@ void Lobby::updatePlayerPositions()
 {
     int offset = 0;
 
-    local_player.display_text.setPosition(sf::Vector2f(50, 50 + offset));
+    local_player.lobby_display_text.setPosition(sf::Vector2f(50, 50 + offset));
     offset += 45;
 
     for (auto& player : player_display_list)
     {
-        player.display_text.setPosition(sf::Vector2f(50, 50 + offset));
+        player.lobby_display_text.setPosition(sf::Vector2f(50, 50 + offset));
         offset += 35;
     }
 }

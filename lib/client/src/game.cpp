@@ -8,7 +8,6 @@
  *
  *************************************************************************************************/
 #include "game.h"
-#include "messaging.h"
 #include "game_manager.h"
 #include "event_handler.h"
 #include "settings.h"
@@ -33,6 +32,8 @@ void Game::Update(sf::Time elapsed)
         WorldView.move(horizontal_scroll, vertical_scroll);
 
         local_player.Update(elapsed);
+
+        ClientMessage::PlayerState(ServerSocket, local_player.GetPosition());
     }
 }
 
@@ -46,6 +47,10 @@ void Game::Draw()
 
         world_map.Draw();
         local_player.Draw();
+        for (auto& state : player_states)
+        {
+            GameManager::GetInstance().Window.draw(state.second.sphere);
+        }
 
         GameManager::GetInstance().Window.setView(old_view);
 
@@ -58,14 +63,14 @@ void Game::Draw()
     }
 }
 
-void Game::Load()
+void Game::Load(PlayerState local, std::vector<PlayerState> other_players)
 {
     loaded = false;
-    std::thread loading_thread(asyncLoad, this);
+    std::thread loading_thread(asyncLoad, this, local, other_players);
     loading_thread.detach();
 }
 
-void Game::asyncLoad()
+void Game::asyncLoad(PlayerState local, std::vector<PlayerState> other_players)
 {
     std::cout << "Async load started..." << std::endl;
 
@@ -78,7 +83,19 @@ void Game::asyncLoad()
 
     world_map.Load();
     gui.Load();
-    local_player.Load();
+    local_player.Load(local);
+
+    for (auto& player : other_players)
+    {
+        player.sphere.setRadius(35);
+        player.sphere.setPosition(300, 300);
+        player.sphere.setFillColor(sf::Color(180, 115, 150));
+        player.sphere.setOutlineColor(sf::Color::Black);
+        player.sphere.setOutlineThickness(2);
+        player.sphere.setOrigin(player.sphere.getLocalBounds().width / 2, player.sphere.getLocalBounds().height / 2);
+
+        player_states[player.data.id] = player;
+    }
 
     WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 
@@ -100,6 +117,33 @@ void Game::Unload()
     world_map.Unload();
     gui.Unload();
     local_player.Unload();
+}
+
+void Game::Start(sf::Vector2f spawn_position)
+{
+    local_player.SetPosition(spawn_position);
+    WorldView.setCenter(spawn_position);
+}
+
+int Game::GetPlayerCount()
+{
+    return player_states.size() + 1;
+}
+
+void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
+{
+    for (auto& player : player_list)
+    {
+        if (player.id == local_player.PlayerId)
+        {
+            //local_player.SetPosition(player.position);
+        }
+        else
+        {
+            player_states[player.id].data.position = player.position;
+            player_states[player.id].sphere.setPosition(player.position);
+        }
+    }
 }
 
 // TODO: Ensure that these are only updated for elements that can be controlled at that time

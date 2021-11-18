@@ -59,18 +59,30 @@ void Player::Draw()
     GameManager::GetInstance().Window.draw(sphere);
 }
 
-void Player::Load()
+void Player::Load(PlayerState local)
 {
-
+    name = local.data.name;
+    PlayerId = local.data.id;
 }
 
 void Player::Unload()
 {
 }
 
+void Player::SetPosition(sf::Vector2f position)
+{
+    sphere.setPosition(position);
+    current_destination = sphere.getPosition();
+}
+
+sf::Vector2f Player::GetPosition()
+{
+    return sphere.getPosition();
+}
+
 void Player::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
-
+    (void)event;
 }
 
 void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
@@ -83,12 +95,12 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
 
 void Player::OnMouseUp(sf::Event::MouseButtonEvent event)
 {
-
+    (void)event;
 }
 
 void Player::OnTextEntered(sf::Event::TextEvent event)
 {
-
+    (void)event;
 }
 
 } // client

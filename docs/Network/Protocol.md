@@ -28,6 +28,12 @@
 
 #### `ServerMessage::AllPlayersLoaded`
 * Sent after a game is started once the server has received a `ClientMessage::LoadingComplete` message from all players
+* `[spawnpos:4][spawnpox:4]`
+
+#### `ClientMessage::PlayerStates`
+* Sent every frame
+* `[playerid:2][posx:4][posy:4][playerid:2][posx:4][posy:4][...][...][...]`
+
 
 ## Client Messages
 
@@ -53,3 +59,6 @@
 * Sent whenever a player intentionally leaves a game
 * Server responds by broadcasting a `ServerMessage::PlayerLeft` message to all _other_ players
 
+#### `ClientMessage::PlayerState`
+* Sent every frame
+* `[posx:4][posy:4]`
