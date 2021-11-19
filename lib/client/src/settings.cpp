@@ -23,14 +23,14 @@ Settings::Settings()
     Bindings.Pause = sf::Keyboard::Key::Escape;
 
     ServerSettings.ServerPort = 49879;
-    WindowResolution = sf::Vector2f{1200, 800};
+    WindowResolution = sf::Vector2f{1920, 1280};
     ScrollSpeed = 400;
 
     frame.LoadTexture("Settings.png");
-    frame.SetPosition(50, 50);
+    frame.SetPosition(410, 200);
 
     save_button = CursorButton("SettingsSaveButton.png");
-    save_button.SetPosition(860, 620);
+    save_button.SetPosition(1220, 770);
     save_button.RegisterLeftMouseUp(std::bind(&Settings::ApplySettings, this));
 
     settings_view = sf::View(sf::FloatRect(0, 0, WindowResolution.x, WindowResolution.y));

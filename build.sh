@@ -49,11 +49,11 @@ build() {
             -G "MinGW Makefiles" \
             -DCMAKE_INSTALL_PREFIX=../../../install \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_BUILD_TYPE=${BUILD}
+            -DCMAKE_BUILD_TYPE=${BUILD} \
             ../..
 
-        mingw32-make.exe
-        mingw32-make.exe install
+        mingw32-make.exe --no-print-directory
+        mingw32-make.exe install --no-print-directory
 
         popd
     fi

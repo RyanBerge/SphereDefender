@@ -23,11 +23,11 @@ namespace client {
 Lobby::Lobby()
 {
     leave_button = CursorButton("LeaveGameButton.png");
-    leave_button.SetPosition(472, 650);
+    leave_button.SetPosition(542, 1000);
     leave_button.RegisterLeftMouseDown(std::bind(&Lobby::LeaveLobby, this));
 
-    start_button = CursorButton("SplashStart.png");
-    start_button.SetPosition(472, 550);
+    start_button = CursorButton("StartServerButton.png");
+    start_button.SetPosition(795, 850);
     start_button.RegisterLeftMouseDown(std::bind(&Lobby::StartGame, this));
 
     font = util::AllocFont("Vera.ttf");
@@ -129,9 +129,9 @@ void Lobby::StartGame()
 void Lobby::AssignId(uint16_t id)
 {
     local_player.data.id = id;
-    local_player.lobby_display_text.setScale(1.2, 1.2);
     local_player.lobby_display_text.setFont(*font);
     local_player.lobby_display_text.setString(local_player.data.name);
+    local_player.lobby_display_text.setCharacterSize(90);
 
     updatePlayerPositions();
 }
@@ -142,6 +142,7 @@ void Lobby::AddPlayer(network::PlayerData player_data)
     lobby_player.data = player_data;
     lobby_player.lobby_display_text.setFont(*font);
     lobby_player.lobby_display_text.setString(player_data.name);
+    lobby_player.lobby_display_text.setCharacterSize(75);
 
     player_display_list.push_back(lobby_player);
 
@@ -174,13 +175,13 @@ void Lobby::updatePlayerPositions()
 {
     int offset = 0;
 
-    local_player.lobby_display_text.setPosition(sf::Vector2f(50, 50 + offset));
-    offset += 45;
+    local_player.lobby_display_text.setPosition(sf::Vector2f(75, 75 + offset));
+    offset += 100;
 
     for (auto& player : player_display_list)
     {
-        player.lobby_display_text.setPosition(sf::Vector2f(50, 50 + offset));
-        offset += 35;
+        player.lobby_display_text.setPosition(sf::Vector2f(75, 75 + offset));
+        offset += 75;
     }
 }
 

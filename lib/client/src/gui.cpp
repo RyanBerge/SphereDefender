@@ -22,10 +22,10 @@ namespace client {
 Gui::Gui()
 {
     action_bar.LoadTexture("ActionBar.png");
-    action_bar.SetPosition(64, 600);
+    action_bar.SetPosition(192, 1080);
 
     exit_button = CursorButton("ActionExit.png");
-    exit_button.SetPosition(800, 669.5);
+    exit_button.SetPosition(1500, 1145);
     exit_button.RegisterLeftMouseDown(std::bind(&Gui::exitGame, this));
 
     gui_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));

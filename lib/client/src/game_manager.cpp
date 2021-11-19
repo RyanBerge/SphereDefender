@@ -35,8 +35,14 @@ void GameManager::Start()
     event_handler.RegisterCallback(sf::Event::EventType::Resized, std::bind(&GameManager::onResizeWindow, this, std::placeholders::_1));
     event_handler.RegisterCallback(sf::Event::EventType::Closed, std::bind(&GameManager::onCloseWindow, this, std::placeholders::_1));
 
-    Settings& settings = Settings::GetInstance();
-    Window.create(sf::VideoMode(settings.WindowResolution.x, settings.WindowResolution.y), "Sphere Defender");
+    Settings::GetInstance();
+    Window.create(sf::VideoMode(1200, 800), "Sphere Defender");
+
+    sf::Event event;
+    event.size.width = 1200;
+    event.size.height = 800;
+    onResizeWindow(event);
+
     Window.setKeyRepeatEnabled(false);
     sf::Clock clock;
 
