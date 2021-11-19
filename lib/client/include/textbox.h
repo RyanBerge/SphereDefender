@@ -23,7 +23,7 @@ class Textbox
 {
 public:
     Textbox();
-    Textbox(std::string fontpath, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color);
+    Textbox(std::string font_filename, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color);
 
     //void Update(sf::Time elapsed);
     void Draw();

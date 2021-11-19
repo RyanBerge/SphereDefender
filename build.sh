@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COMMAND="build"
+BUILD=Debug
 
 for i in "$@"
 do
@@ -13,6 +14,10 @@ do
         COMMAND="clean"
         shift
         ;;
+        "--release"*)
+        BUILD=Release
+        shift
+        ;;
         *)
         echo "Unknown option: ${i}"
         shift
@@ -22,14 +27,13 @@ done
 
 clean() {
     rm -rf build
+    rm -rf bin
+    rm -rf publish
     rm -rf externals/sfml/install
     rm -rf externals/sfml/SFML/cmake/build
 }
 
 build() {
-    # Put the mingw32 toolchain in our PATH so we can use it
-    export PATH="/mnt/c/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin:${PATH}"
-
     if [ ! -f externals/sfml/SFML/CMakeLists.txt ]; then
         echo "Please initialize all submodules."
         exit
@@ -45,6 +49,7 @@ build() {
             -G "MinGW Makefiles" \
             -DCMAKE_INSTALL_PREFIX=../../../install \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_BUILD_TYPE=${BUILD}
             ../..
 
         mingw32-make.exe
@@ -55,14 +60,27 @@ build() {
 
     mkdir -p build
     pushd build
-    cmake.exe -G "MinGW Makefiles" ../
-    mingw32-make.exe
+    cmake.exe -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=${BUILD} ../
+    mingw32-make.exe --no-print-directory
     popd
-    cp externals/sfml/install/bin/*.dll build/bin/
+    cp externals/sfml/install/bin/*.dll bin/
+
+    if [ ${BUILD} == Release ]; then
+        echo "Publishing..."
+        rm -rf publish
+        mkdir -p publish/bin
+        mkdir -p publish/assets
+        cp -r assets/*.png publish/assets
+        cp -r assets/*.ttf publish/assets
+        cp bin/*.exe publish/bin/
+        cp bin/*.dll publish/bin/
+    fi
 }
 
 rebuild() {
     rm -rf build
+    rm -rf bin
+    rm -rf publish
     build
 }
 

@@ -21,14 +21,14 @@ Spritesheet::Spritesheet()
 {
 }
 
-Spritesheet::Spritesheet(std::string path)
+Spritesheet::Spritesheet(std::string filename)
 {
-    LoadTexture(path);
+    LoadTexture(filename);
 }
 
-Spritesheet::Spritesheet(std::string path, bool tiled)
+Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
-    LoadTexture(path);
+    LoadTexture(filename);
     SetTiling(tiled);
 }
 
@@ -41,9 +41,9 @@ void Spritesheet::Draw()
     }
 }
 
-bool Spritesheet::LoadTexture(std::string path)
+bool Spritesheet::LoadTexture(std::string filename)
 {
-    texture = util::AllocTexture("assets/" + path);
+    texture = util::AllocTexture(filename);
     if (texture == nullptr)
     {
         return false;

@@ -20,8 +20,9 @@ namespace {
     std::map<std::string, std::weak_ptr<sf::Font>> font_map;
 }
 
-std::shared_ptr<sf::Texture> AllocTexture(std::string filepath)
+std::shared_ptr<sf::Texture> AllocTexture(std::string filename)
 {
+    std::string filepath = "../assets/" + filename;
     if (texture_map.find(filepath) == texture_map.end() ||
         (texture_map.find(filepath) != texture_map.end() && texture_map[filepath].expired()))
     {
@@ -45,8 +46,9 @@ std::shared_ptr<sf::Texture> AllocTexture(std::string filepath)
     }
 }
 
-std::shared_ptr<sf::Font> AllocFont(std::string filepath)
+std::shared_ptr<sf::Font> AllocFont(std::string filename)
 {
+    std::string filepath = "../assets/" + filename;
     if (font_map.find(filepath) == font_map.end() ||
         (font_map.find(filepath) != font_map.end() && font_map[filepath].expired()))
     {

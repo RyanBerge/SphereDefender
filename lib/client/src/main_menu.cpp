@@ -19,7 +19,7 @@ namespace client {
 
 MainMenu::MainMenu()
 {
-    std::shared_ptr<sf::Font> font = util::AllocFont("assets/Vera.ttf");
+    std::shared_ptr<sf::Font> font = util::AllocFont("Vera.ttf");
 
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));

@@ -27,14 +27,14 @@ Textbox::Textbox()
 
 }
 
-Textbox::Textbox(std::string fontpath, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color)
+Textbox::Textbox(std::string font_filename, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color)
 {
     box.setOutlineColor(font_color);
     box.setFillColor(background_color);
     box.setOutlineThickness(box_size.y * 0.05);
     box.setSize(sf::Vector2f(box_size.x, box_size.y));
 
-    font = util::AllocFont("assets/" + fontpath);
+    font = util::AllocFont(font_filename);
 
     if (font != nullptr)
     {

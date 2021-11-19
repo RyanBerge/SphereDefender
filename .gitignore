@@ -1,7 +1,5 @@
-.vscode/*
-*.exe
-*.o
-*.d
-build/
-bin/*
+.vscode
 externals/sfml/install
+build
+bin
+publish

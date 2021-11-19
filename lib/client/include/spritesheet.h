@@ -21,12 +21,12 @@ class Spritesheet
 {
 public:
     Spritesheet();
-    Spritesheet(std::string filepath);
-    Spritesheet(std::string filepath, bool tiled);
+    Spritesheet(std::string filename);
+    Spritesheet(std::string filename, bool tiled);
     void Draw();
 
     sf::Sprite& GetSprite();
-    bool LoadTexture(std::string filepath);
+    bool LoadTexture(std::string filename);
 
     void SetPosition(float x, float y);
     void SetTiling(bool tiled);

@@ -30,7 +30,7 @@ Lobby::Lobby()
     start_button.SetPosition(472, 550);
     start_button.RegisterLeftMouseDown(std::bind(&Lobby::StartGame, this));
 
-    font = util::AllocFont("assets/Vera.ttf");
+    font = util::AllocFont("Vera.ttf");
 
     if (font == nullptr)
     {
@@ -62,7 +62,7 @@ bool Lobby::Create(std::string player_name)
 {
     // launch server
     cerr << "Launching server..." << endl;
-    std::system("start build/bin/Server.exe");
+    std::system("start Server.exe");
 
     if (!GameManager::GetInstance().ConnectToServer("127.0.0.1"))
     {
