@@ -40,7 +40,7 @@ void Player::Update(sf::Time elapsed)
     if (attacking)
     {
         sword.setPosition(sphere.getPosition());
-        sword.rotate(270 * elapsed.asSeconds());
+        sword.rotate(360 * elapsed.asSeconds());
 
         float rotation_delta = sword.getRotation() - starting_attack_angle;
         if (rotation_delta < 0)

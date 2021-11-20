@@ -24,7 +24,10 @@ Settings::Settings()
 
     ServerSettings.ServerPort = 49879;
     WindowResolution = sf::Vector2f{1920, 1280};
-    ScrollSpeed = 400;
+    ScrollSpeed = 600;
+
+    MaxZoomFactor = 10; // 10 increments of +0.1%
+    MinZoomFactor = -5; // 5 increments of -0.1%
 
     frame.LoadTexture("Settings.png");
     frame.SetPosition(410, 200);

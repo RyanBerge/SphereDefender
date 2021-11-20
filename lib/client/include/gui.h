@@ -25,6 +25,8 @@ public:
     void Load();
     void Unload();
 
+    sf::View GuiView;
+
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
     void OnMouseUp(sf::Event::MouseButtonEvent event);
@@ -33,7 +35,6 @@ public:
 private:
     void exitGame();
 
-    sf::View gui_view;
     Spritesheet action_bar;
     CursorButton exit_button;
 };

@@ -42,6 +42,8 @@ public:
     network::ServerSettings ServerSettings;
     sf::Vector2f WindowResolution;
     int32_t ScrollSpeed;
+    int MaxZoomFactor;
+    int MinZoomFactor;
 
 private:
     sf::View settings_view;

@@ -28,14 +28,14 @@ Gui::Gui()
     exit_button.SetPosition(1500, 1145);
     exit_button.RegisterLeftMouseDown(std::bind(&Gui::exitGame, this));
 
-    gui_view = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
+    GuiView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 }
 
 void Gui::Draw()
 {
     sf::View old_view = GameManager::GetInstance().Window.getView();
-    gui_view.setViewport(old_view.getViewport());
-    GameManager::GetInstance().Window.setView(gui_view);
+    GuiView.setViewport(old_view.getViewport());
+    GameManager::GetInstance().Window.setView(GuiView);
 
     action_bar.Draw();
     exit_button.Draw();

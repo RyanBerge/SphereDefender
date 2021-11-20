@@ -29,6 +29,21 @@ void Game::Update(sf::Time elapsed)
     {
         local_player.Update(elapsed);
         ClientMessage::PlayerState(ServerSocket, local_player.GetPosition());
+
+        if (current_zoom != target_zoom)
+        {
+            current_zoom += zoom_speed * elapsed.asSeconds();
+            zoom_speed = (target_zoom - current_zoom) * 4;
+
+            if (std::abs(current_zoom - target_zoom) < 0.001)
+            {
+                current_zoom = target_zoom;
+            }
+
+            WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
+        }
+
+        updateScroll(elapsed);
     }
 }
 
@@ -75,6 +90,7 @@ void Game::asyncLoad(PlayerState local, std::vector<PlayerState> other_players)
     event_id_map[sf::Event::EventType::TextEntered] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::TextEntered, std::bind(&Game::onTextEntered, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::KeyPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyPressed, std::bind(&Game::onKeyPressed, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::KeyReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyReleased, std::bind(&Game::onKeyReleased, this, std::placeholders::_1));
+    event_id_map[sf::Event::EventType::MouseWheelScrolled] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseWheelScrolled, std::bind(&Game::onMouseWheel, this, std::placeholders::_1));
 
     world_map.Load();
     gui.Load();
@@ -141,6 +157,36 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
     }
 }
 
+void Game::updateScroll(sf::Time elapsed)
+{
+    sf::Vector2f mouse_coords = GameManager::GetInstance().Window.mapPixelToCoords(sf::Mouse::getPosition() - GameManager::GetInstance().Window.getPosition(), gui.GuiView);
+
+    sf::Vector2i scroll_factor{0, 0};
+    sf::Vector2f resolution = Settings::GetInstance().WindowResolution;
+
+    int edge_threshold = 15;
+
+    if (mouse_coords.x < edge_threshold)
+    {
+        scroll_factor.x = -1;
+    }
+    else if (mouse_coords.x > resolution.x - edge_threshold)
+    {
+        scroll_factor.x = 1;
+    }
+
+    if (mouse_coords.y < edge_threshold)
+    {
+        scroll_factor.y = -1;
+    }
+    else if (mouse_coords.y > resolution.y - edge_threshold)
+    {
+        scroll_factor.y = 1;
+    }
+
+    WorldView.move(sf::Vector2f(scroll_factor * Settings::GetInstance().ScrollSpeed) * current_zoom * elapsed.asSeconds());
+}
+
 // TODO: Ensure that these are only updated for elements that can be controlled at that time
 void Game::onMouseMove(sf::Event event)
 {
@@ -192,6 +238,22 @@ void Game::onKeyReleased(sf::Event event)
     local_player.OnKeyReleased(event.key);
 }
 
+void Game::onMouseWheel(sf::Event event)
+{
+    Settings& settings = Settings::GetInstance();
 
+    zoom_factor -= event.mouseWheelScroll.delta;
+    if (zoom_factor < settings.MinZoomFactor)
+    {
+        zoom_factor = settings.MinZoomFactor;
+    }
+    else if (zoom_factor > settings.MaxZoomFactor)
+    {
+        zoom_factor = settings.MaxZoomFactor;
+    }
+
+    target_zoom = 1 + static_cast<float>(zoom_factor) / 10;
+    zoom_speed = target_zoom - current_zoom;
+}
 
 } // client
