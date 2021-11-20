@@ -21,10 +21,10 @@ class Settings
 public:
     struct KeyBindings
     {
-        sf::Keyboard::Key ScrollLeft;
-        sf::Keyboard::Key ScrollRight;
-        sf::Keyboard::Key ScrollUp;
-        sf::Keyboard::Key ScrollDown;
+        sf::Keyboard::Key MoveLeft;
+        sf::Keyboard::Key MoveRight;
+        sf::Keyboard::Key MoveUp;
+        sf::Keyboard::Key MoveDown;
 
         sf::Keyboard::Key Pause;
     };

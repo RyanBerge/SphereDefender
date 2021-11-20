@@ -11,7 +11,7 @@
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
+#include "SFML/Graphics/RectangleShape.hpp"
 #include <SFML/Window/Event.hpp>
 #include "player_state.h"
 
@@ -35,15 +35,23 @@ public:
     void OnMouseDown(sf::Event::MouseButtonEvent event);
     void OnMouseUp(sf::Event::MouseButtonEvent event);
     void OnTextEntered(sf::Event::TextEvent event);
+    void OnKeyPressed(sf::Event::KeyEvent event);
+    void OnKeyReleased(sf::Event::KeyEvent event);
 
     uint16_t PlayerId;
 
 private:
+    sf::Vector2i movement{0, 0};
+    sf::Vector2i velocity{0, 0};
     sf::CircleShape sphere;
-    sf::Vector2f current_destination;
-    sf::RectangleShape path;
+    sf::RectangleShape sword;
     double movement_speed = 200; // pixels per second
     std::string name;
+    bool attacking = false;
+    float starting_attack_angle;
+
+    void updateMovement();
+    void startAttack(sf::Vector2i point);
 
 };
 

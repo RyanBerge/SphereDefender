@@ -21,18 +21,13 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
-Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)), scroll_data{0, 0} { }
+Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)) { }
 
 void Game::Update(sf::Time elapsed)
 {
     if (loaded)
     {
-        float horizontal_scroll = scroll_data.horizontal * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
-        float vertical_scroll = scroll_data.vertical * Settings::GetInstance().ScrollSpeed * elapsed.asSeconds();
-        WorldView.move(horizontal_scroll, vertical_scroll);
-
         local_player.Update(elapsed);
-
         ClientMessage::PlayerState(ServerSocket, local_player.GetPosition());
     }
 }
@@ -173,29 +168,11 @@ void Game::onTextEntered(sf::Event event)
 
 void Game::onKeyPressed(sf::Event event)
 {
-    Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
-
-    if (event.key.code == bindings.ScrollLeft)
-    {
-        --scroll_data.horizontal;
+    if (!menu_open) {
+        local_player.OnKeyPressed(event.key);
     }
 
-    if (event.key.code == bindings.ScrollRight)
-    {
-        ++scroll_data.horizontal;
-    }
-
-    if (event.key.code == bindings.ScrollUp)
-    {
-        --scroll_data.vertical;
-    }
-
-    if (event.key.code == bindings.ScrollDown)
-    {
-        ++scroll_data.vertical;
-    }
-
-    if (event.key.code == bindings.Pause)
+    if (event.key.code == Settings::GetInstance().Bindings.Pause)
     {
         if (!menu_open)
         {
@@ -212,27 +189,7 @@ void Game::onKeyPressed(sf::Event event)
 
 void Game::onKeyReleased(sf::Event event)
 {
-    Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
-
-    if (event.key.code == bindings.ScrollLeft)
-    {
-        ++scroll_data.horizontal;
-    }
-
-    if (event.key.code == bindings.ScrollRight)
-    {
-        --scroll_data.horizontal;
-    }
-
-    if (event.key.code == bindings.ScrollUp)
-    {
-        ++scroll_data.vertical;
-    }
-
-    if (event.key.code == bindings.ScrollDown)
-    {
-        --scroll_data.vertical;
-    }
+    local_player.OnKeyReleased(event.key);
 }
 
 

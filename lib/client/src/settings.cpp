@@ -16,10 +16,10 @@ Settings::Settings()
 {
     // Initialize default settings
     // TODO: Load from Settings file
-    Bindings.ScrollLeft = sf::Keyboard::Key::A;
-    Bindings.ScrollRight = sf::Keyboard::Key::D;
-    Bindings.ScrollUp = sf::Keyboard::Key::W;
-    Bindings.ScrollDown = sf::Keyboard::Key::S;
+    Bindings.MoveLeft = sf::Keyboard::Key::A;
+    Bindings.MoveRight = sf::Keyboard::Key::D;
+    Bindings.MoveUp = sf::Keyboard::Key::W;
+    Bindings.MoveDown = sf::Keyboard::Key::S;
     Bindings.Pause = sf::Keyboard::Key::Escape;
 
     ServerSettings.ServerPort = 49879;

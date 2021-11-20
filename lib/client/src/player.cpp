@@ -9,9 +9,11 @@
  *************************************************************************************************/
 #include "player.h"
 #include "game_manager.h"
+#include "settings.h"
 #include "util.h"
 #include <iostream>
 #include <cmath>
+#include <complex>
 
 using std::cout, std::cerr, std::endl;
 
@@ -25,37 +27,41 @@ Player::Player()
     sphere.setOutlineColor(sf::Color::Black);
     sphere.setOutlineThickness(2);
     sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
-    current_destination = sphere.getPosition();
-    path.setSize(sf::Vector2f(200, 2));
-    path.setFillColor(sf::Color::Red);
-    path.setPosition(current_destination);
+    sword.setSize(sf::Vector2f(40, 8));
+    sword.setOrigin(sf::Vector2f(-35, 1.5));
+    sword.setFillColor(sf::Color::Red);
+    sword.setPosition(sphere.getPosition());
 }
 
 void Player::Update(sf::Time elapsed)
 {
-    sf::Vector2f distance_to_destination = current_destination - sphere.getPosition();
-    double length = std::hypot(distance_to_destination.x, distance_to_destination.y);
+    sphere.move(velocity.x * elapsed.asSeconds(), velocity.y * elapsed.asSeconds());
 
-    if (length < 2)
+    if (attacking)
     {
-        sphere.setPosition(current_destination);
-    }
+        sword.setPosition(sphere.getPosition());
+        sword.rotate(270 * elapsed.asSeconds());
 
-    if (sphere.getPosition() != current_destination)
-    {
-        sphere.move(sf::Vector2f(distance_to_destination.x / length * movement_speed * elapsed.asSeconds(), distance_to_destination.y / length * movement_speed * elapsed.asSeconds()));
-    }
+        float rotation_delta = sword.getRotation() - starting_attack_angle;
+        if (rotation_delta < 0)
+        {
+            rotation_delta += 360;
+        }
 
-    path.setSize(sf::Vector2f(length , 2));
-    path.setPosition(sphere.getPosition());
-    float rotation = std::atan(distance_to_destination.y / distance_to_destination.x) * 180 / util::pi;
-    rotation += distance_to_destination.x < 0 ? 180 : 0;
-    path.setRotation(rotation);
+        if (rotation_delta > 90)
+        {
+            attacking = false;
+        }
+    }
 }
 
 void Player::Draw()
 {
-    GameManager::GetInstance().Window.draw(path);
+    if (attacking)
+    {
+        GameManager::GetInstance().Window.draw(sword);
+    }
+
     GameManager::GetInstance().Window.draw(sphere);
 }
 
@@ -72,7 +78,6 @@ void Player::Unload()
 void Player::SetPosition(sf::Vector2f position)
 {
     sphere.setPosition(position);
-    current_destination = sphere.getPosition();
 }
 
 sf::Vector2f Player::GetPosition()
@@ -89,7 +94,14 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
 {
     if (event.button == sf::Mouse::Button::Right)
     {
-        current_destination = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i(event.x, event.y), GameManager::GetInstance().Game.WorldView);
+        sf::Vector2i click_point{event.x, event.y};
+        //sf::Vector2f distance_to_destination = click_point - sphere.getPosition();
+        //double length = std::hypot(distance_to_destination.x, distance_to_destination.y);
+
+        if (!attacking)
+        {
+            startAttack(click_point);
+        }
     }
 }
 
@@ -101,6 +113,78 @@ void Player::OnMouseUp(sf::Event::MouseButtonEvent event)
 void Player::OnTextEntered(sf::Event::TextEvent event)
 {
     (void)event;
+}
+
+void Player::OnKeyPressed(sf::Event::KeyEvent event)
+{
+    Settings::KeyBindings& bindings = Settings::GetInstance().Bindings;
+
+    if (event.code == bindings.MoveLeft || event.code == bindings.MoveRight ||
+        event.code == bindings.MoveUp || event.code == bindings.MoveDown)
+    {
+        updateMovement();
+    }
+}
+
+void Player::OnKeyReleased(sf::Event::KeyEvent event)
+{
+    Settings::KeyBindings& bindings = Settings::GetInstance().Bindings;
+
+    if (event.code == bindings.MoveLeft || event.code == bindings.MoveRight ||
+        event.code == bindings.MoveUp || event.code == bindings.MoveDown)
+    {
+        updateMovement();
+    }
+}
+
+void Player::updateMovement()
+{
+    Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
+    double horizontal = 0;
+    double vertical = 0;
+
+    if (sf::Keyboard::isKeyPressed(bindings.MoveLeft))
+    {
+        --horizontal;
+    }
+
+    if (sf::Keyboard::isKeyPressed(bindings.MoveRight))
+    {
+        ++horizontal;
+    }
+
+    if (sf::Keyboard::isKeyPressed(bindings.MoveUp))
+    {
+        --vertical;
+    }
+
+    if (sf::Keyboard::isKeyPressed(bindings.MoveDown))
+    {
+        ++vertical;
+    }
+
+    double hyp = std::hypot(horizontal, vertical);
+
+    if (hyp == 0)
+    {
+        velocity.x = 0;
+        velocity.y = 0;
+    }
+    else
+    {
+        velocity.x = (horizontal / hyp) * movement_speed;
+        velocity.y = (vertical / hyp) * movement_speed;
+    }
+}
+
+void Player::startAttack(sf::Vector2i point)
+{
+    sf::Vector2f distance_to_destination = GameManager::GetInstance().Window.mapPixelToCoords(point, GameManager::GetInstance().Game.WorldView) - sphere.getPosition();
+    float rotation = std::atan(distance_to_destination.y / distance_to_destination.x) * 180 / util::pi;
+    rotation += distance_to_destination.x < 0 ? 180 : 0;
+    starting_attack_angle = (static_cast<int>(rotation) + 315) % 360;
+    sword.setRotation(starting_attack_angle);
+    attacking = true;
 }
 
 } // client

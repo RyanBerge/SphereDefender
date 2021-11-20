@@ -37,12 +37,6 @@ public:
     sf::View WorldView;
 
 private:
-    struct ScrollData
-    {
-        int horizontal;
-        int vertical;
-    };
-
     void onMouseMove(sf::Event event);
     void onMouseDown(sf::Event event);
     void onMouseUp(sf::Event event);
@@ -62,8 +56,6 @@ private:
 
     Player local_player;
     std::map<uint16_t, PlayerState> player_states;
-
-    ScrollData scroll_data;
 };
 
 } // client
