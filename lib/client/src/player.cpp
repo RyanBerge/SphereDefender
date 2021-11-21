@@ -16,6 +16,8 @@
 #include <complex>
 
 using std::cout, std::cerr, std::endl;
+using network::ClientMessage, network::ServerMessage;
+#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
 
@@ -35,8 +37,6 @@ Player::Player()
 
 void Player::Update(sf::Time elapsed)
 {
-    sphere.move(velocity.x * elapsed.asSeconds(), velocity.y * elapsed.asSeconds());
-
     if (attacking)
     {
         sword.setPosition(sphere.getPosition());
@@ -140,41 +140,30 @@ void Player::OnKeyReleased(sf::Event::KeyEvent event)
 void Player::updateMovement()
 {
     Settings::KeyBindings bindings = Settings::GetInstance().Bindings;
-    double horizontal = 0;
-    double vertical = 0;
+
+    sf::Vector2i movement_vector{};
 
     if (sf::Keyboard::isKeyPressed(bindings.MoveLeft))
     {
-        --horizontal;
+        --movement_vector.x;
     }
 
     if (sf::Keyboard::isKeyPressed(bindings.MoveRight))
     {
-        ++horizontal;
+        ++movement_vector.x;
     }
 
     if (sf::Keyboard::isKeyPressed(bindings.MoveUp))
     {
-        --vertical;
+        --movement_vector.y;
     }
 
     if (sf::Keyboard::isKeyPressed(bindings.MoveDown))
     {
-        ++vertical;
+        ++movement_vector.y;
     }
 
-    double hyp = std::hypot(horizontal, vertical);
-
-    if (hyp == 0)
-    {
-        velocity.x = 0;
-        velocity.y = 0;
-    }
-    else
-    {
-        velocity.x = (horizontal / hyp) * movement_speed;
-        velocity.y = (vertical / hyp) * movement_speed;
-    }
+    ClientMessage::PlayerStateChange(ServerSocket, movement_vector);
 }
 
 void Player::startAttack(sf::Vector2i point)

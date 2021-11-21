@@ -33,11 +33,19 @@ public:
         StartGame,
         LoadingComplete,
 
-        PlayerState,
+        PlayerStateChange,
 
         LeaveGame,
 
         Error = 0xFF
+    };
+
+    struct MovementVectorField
+    {
+        bool left: 1;
+        bool right: 1;
+        bool up: 1;
+        bool down: 1;
     };
 
     static bool PollForCode(sf::TcpSocket& socket, Code& out_code);
@@ -47,11 +55,11 @@ public:
     static bool StartGame(sf::TcpSocket& socket);
     static bool LoadingComplete(sf::TcpSocket& socket);
     static bool LeaveGame(sf::TcpSocket& socket);
-    static bool PlayerState(sf::TcpSocket& socket, sf::Vector2f position);
+    static bool PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i movement_vector);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
     static bool DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name);
-    static bool DecodePlayerState(sf::TcpSocket& socket, sf::Vector2f& out_position);
+    static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
 };
 
 class ServerMessage

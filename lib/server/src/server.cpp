@@ -21,6 +21,7 @@ namespace server {
 
 namespace {
     constexpr double pi = 3.141592653589793238462643383279502884L;
+    constexpr float MAX_BROADCAST_RATE = 120; // Hz
 } // anonymous namespace
 
 Server::Server()
@@ -33,6 +34,7 @@ void Server::Start()
 {
     running = true;
 
+    clock.restart();
     while (running)
     {
         update();
@@ -71,12 +73,21 @@ void Server::update()
         }
     }
 
+    sf::Time elapsed = clock.restart();
+
     if (game_state == GameState::Game)
     {
-        if (clock.getElapsedTime().asSeconds() > 1.0 / 50)
+        for (auto& player : players)
+        {
+            player.data.position += player.velocity * elapsed.asSeconds();
+        }
+        static float broadcast_delta = 0;
+        broadcast_delta += elapsed.asSeconds();
+
+        if (broadcast_delta > 1 / MAX_BROADCAST_RATE)
         {
             broadcastStates();
-            clock.restart();
+            broadcast_delta = 0;
         }
     }
 }
@@ -157,7 +168,7 @@ void Server::checkMessages(PlayerInfo& player)
             leaveGame(player);
         }
         break;
-        case ClientMessage::Code::PlayerState:
+        case ClientMessage::Code::PlayerStateChange:
         {
             updatePlayerState(player);
         }
@@ -346,8 +357,8 @@ void Server::leaveGame(PlayerInfo& player)
 
 void Server::updatePlayerState(PlayerInfo& player)
 {
-    sf::Vector2f position;
-    if (!ClientMessage::DecodePlayerState(*player.socket, position))
+    sf::Vector2i movement_vector;
+    if (!ClientMessage::DecodePlayerStateChange(*player.socket, movement_vector))
     {
         player.socket->disconnect();
         player.status = PlayerInfo::Status::Disconnected;
@@ -359,7 +370,18 @@ void Server::updatePlayerState(PlayerInfo& player)
         return;
     }
 
-    player.data.position = position;
+    double hyp = std::hypot(movement_vector.x, movement_vector.y);
+
+    if (hyp == 0)
+    {
+        player.velocity.x = 0;
+        player.velocity.y = 0;
+    }
+    else
+    {
+        player.velocity.x = (movement_vector.x / hyp) * player.movement_speed;
+        player.velocity.y = (movement_vector.y / hyp) * player.movement_speed;
+    }
 }
 
 void Server::broadcastStates()

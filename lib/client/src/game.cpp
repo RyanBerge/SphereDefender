@@ -28,7 +28,6 @@ void Game::Update(sf::Time elapsed)
     if (loaded)
     {
         local_player.Update(elapsed);
-        ClientMessage::PlayerState(ServerSocket, local_player.GetPosition());
 
         if (current_zoom != target_zoom)
         {
@@ -43,7 +42,10 @@ void Game::Update(sf::Time elapsed)
             WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
         }
 
-        updateScroll(elapsed);
+        if (GameManager::GetInstance().Window.hasFocus() && !menu_open)
+        {
+            updateScroll(elapsed);
+        }
     }
 }
 
@@ -147,7 +149,7 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
     {
         if (player.id == local_player.PlayerId)
         {
-            //local_player.SetPosition(player.position);
+            local_player.SetPosition(player.position);
         }
         else
         {

@@ -41,11 +41,9 @@ public:
     uint16_t PlayerId;
 
 private:
-    sf::Vector2i movement{0, 0};
     sf::Vector2i velocity{0, 0};
     sf::CircleShape sphere;
     sf::RectangleShape sword;
-    double movement_speed = 200; // pixels per second
     std::string name;
     bool attacking = false;
     float starting_attack_angle;

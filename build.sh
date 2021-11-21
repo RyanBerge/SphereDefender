@@ -74,6 +74,9 @@ build() {
         cp -r assets/*.ttf publish/assets
         cp bin/*.exe publish/bin/
         cp bin/*.dll publish/bin/
+        cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll publish/bin
+        cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll publish/bin
+        cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll publish/bin
     fi
 }
 

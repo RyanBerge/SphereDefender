@@ -33,6 +33,8 @@ public:
         std::shared_ptr<sf::TcpSocket> socket;
         Status status;
         network::PlayerData data;
+        sf::Vector2f velocity;
+        double movement_speed = 200; // pixels per second
     };
 
     enum class GameState : uint8_t

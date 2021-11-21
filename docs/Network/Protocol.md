@@ -59,6 +59,6 @@
 * Sent whenever a player intentionally leaves a game
 * Server responds by broadcasting a `ServerMessage::PlayerLeft` message to all _other_ players
 
-#### `ClientMessage::PlayerState`
-* Sent every frame
-* `[posx:4][posy:4]`
+#### `ClientMessage::PlayerStateChange`
+* Sent whenever the player state changes
+* `[velocityflag:1]`

@@ -17,6 +17,17 @@ namespace network {
 
 namespace {
 
+// DEBUG
+[[maybe_unused]] void printBuffer(uint8_t* buffer, int length)
+{
+    cout << "| ";
+    for (int i = 0; i < length; ++i)
+    {
+        cout << (int)buffer[i] << " | ";
+    }
+    cout << endl;
+}
+
 const int SOCKET_TIMEOUT_MS = 300;
 
 bool writeBuffer(sf::TcpSocket& socket, const void* data, int num_bytes)
@@ -203,16 +214,35 @@ bool ClientMessage::LeaveGame(sf::TcpSocket& socket)
     return true;
 }
 
-bool ClientMessage::PlayerState(sf::TcpSocket& socket, sf::Vector2f position)
+bool ClientMessage::PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i movement_vector)
 {
-    Code code = Code::PlayerState;
+    Code code = Code::PlayerStateChange;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(position.x) + sizeof(position.y);
+    MovementVectorField bitfield{false, false, false, false};
+
+    if (movement_vector.x > 0)
+    {
+        bitfield.right = true;
+    }
+    else if (movement_vector.x < 0)
+    {
+        bitfield.left = true;
+    }
+
+    if (movement_vector.y > 0)
+    {
+        bitfield.down = true;
+    }
+    else if (movement_vector.y < 0)
+    {
+        bitfield.up = true;
+    }
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(bitfield);
     uint8_t buffer[buffer_size];
 
     std::memcpy(buffer, &code, sizeof(code));
-    std::memcpy(buffer + sizeof(code), &position.x, sizeof(position.x));
-    std::memcpy(buffer + sizeof(code) + sizeof(position.x), &position.y, sizeof(position.y));
+    std::memcpy(buffer + sizeof(code), &bitfield, sizeof(bitfield));
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -249,25 +279,38 @@ bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name
     return true;
 }
 
-bool ClientMessage::DecodePlayerState(sf::TcpSocket& socket, sf::Vector2f& out_position)
+bool ClientMessage::DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector)
 {
-    float x;
-    float y;
+    MovementVectorField bitfield;
 
-    if (!read(socket, &x, sizeof(x)))
+    if (!read(socket, &bitfield, sizeof(bitfield)))
     {
-        cerr << "Network: DecodePlayerState failed to read spawn x position." << endl;
+        cerr << "Network: DecodePlayerStateChange failed to read spawn x position." << endl;
         return false;
     }
 
-    if (!read(socket, &y, sizeof(y)))
+    out_movement_vector.x = 0;
+    out_movement_vector.y = 0;
+
+    if (bitfield.left)
     {
-        cerr << "Network: DecodePlayerState failed to read spawn y position." << endl;
-        return false;
+        --out_movement_vector.x;
     }
 
-    out_position.x = x;
-    out_position.y = y;
+    if (bitfield.right)
+    {
+        ++out_movement_vector.x;
+    }
+
+    if (bitfield.up)
+    {
+        --out_movement_vector.y;
+    }
+
+    if (bitfield.down)
+    {
+        ++out_movement_vector.y;
+    }
 
     return true;
 }
