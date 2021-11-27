@@ -17,6 +17,19 @@ namespace network {
 
 namespace {
 
+struct MovementVectorFlags
+{
+    bool left: 1;
+    bool right: 1;
+    bool up: 1;
+    bool down: 1;
+};
+
+struct PlayerActionFlags
+{
+    bool start_attack: 1;
+};
+
 // DEBUG
 [[maybe_unused]] void printBuffer(uint8_t* buffer, int length)
 {
@@ -218,31 +231,31 @@ bool ClientMessage::PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i moveme
 {
     Code code = Code::PlayerStateChange;
 
-    MovementVectorField bitfield{false, false, false, false};
+    MovementVectorFlags flags{false, false, false, false};
 
     if (movement_vector.x > 0)
     {
-        bitfield.right = true;
+        flags.right = true;
     }
     else if (movement_vector.x < 0)
     {
-        bitfield.left = true;
+        flags.left = true;
     }
 
     if (movement_vector.y > 0)
     {
-        bitfield.down = true;
+        flags.down = true;
     }
     else if (movement_vector.y < 0)
     {
-        bitfield.up = true;
+        flags.up = true;
     }
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(bitfield);
+    constexpr size_t buffer_size = sizeof(code) + sizeof(flags);
     uint8_t buffer[buffer_size];
 
     std::memcpy(buffer, &code, sizeof(code));
-    std::memcpy(buffer + sizeof(code), &bitfield, sizeof(bitfield));
+    std::memcpy(buffer + sizeof(code), &flags, sizeof(flags));
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -250,6 +263,44 @@ bool ClientMessage::PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i moveme
         return false;
     }
 
+    return true;
+}
+
+bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
+{
+    Code code = ClientMessage::Code::StartAction;
+
+    PlayerActionFlags flags{};
+    flags.start_attack = action.start_attack;
+
+    size_t buffer_size = sizeof(code) + sizeof(flags);
+    if (flags.start_attack)
+    {
+        buffer_size += sizeof(action.attack_angle);
+    }
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &flags, sizeof(flags));
+    offset += sizeof(flags);
+
+    if (flags.start_attack)
+    {
+        std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
+        offset += sizeof(action.attack_angle);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::StartAction message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
     return true;
 }
 
@@ -281,9 +332,9 @@ bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name
 
 bool ClientMessage::DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector)
 {
-    MovementVectorField bitfield;
+    MovementVectorFlags flags;
 
-    if (!read(socket, &bitfield, sizeof(bitfield)))
+    if (!read(socket, &flags, sizeof(flags)))
     {
         cerr << "Network: DecodePlayerStateChange failed to read spawn x position." << endl;
         return false;
@@ -292,25 +343,52 @@ bool ClientMessage::DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i&
     out_movement_vector.x = 0;
     out_movement_vector.y = 0;
 
-    if (bitfield.left)
+    if (flags.left)
     {
         --out_movement_vector.x;
     }
 
-    if (bitfield.right)
+    if (flags.right)
     {
         ++out_movement_vector.x;
     }
 
-    if (bitfield.up)
+    if (flags.up)
     {
         --out_movement_vector.y;
     }
 
-    if (bitfield.down)
+    if (flags.down)
     {
         ++out_movement_vector.y;
     }
+
+    return true;
+}
+
+bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action)
+{
+    PlayerActionFlags flags;
+    PlayerAction temp_action;
+
+    if (!read(socket, &flags, sizeof(flags)))
+    {
+        cerr << "Network: DecodeStartAction failed to read player action flags." << endl;
+        return false;
+    }
+
+    temp_action.start_attack = flags.start_attack;
+
+    if (flags.start_attack)
+    {
+        if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
+        {
+            cerr << "Network: DecodeStartAction failed to read an attack angle." << endl;
+            return false;
+        }
+    }
+
+    out_action = temp_action;
 
     return true;
 }
@@ -524,6 +602,46 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
     return true;
 }
 
+bool ServerMessage::StartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action)
+{
+    Code code = ServerMessage::Code::StartAction;
+
+    PlayerActionFlags flags{};
+    flags.start_attack = action.start_attack;
+
+    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(flags);
+    if (flags.start_attack)
+    {
+        buffer_size += sizeof(action.attack_angle);
+    }
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &flags, sizeof(flags));
+    offset += sizeof(flags);
+
+    if (flags.start_attack)
+    {
+        std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
+        offset += sizeof(action.attack_angle);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::StartAction message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -664,6 +782,41 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
     }
 
     out_players = players;
+
+    return true;
+}
+
+bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action)
+{
+    uint16_t id;
+    PlayerActionFlags flags;
+    PlayerAction temp_action;
+
+    if (!read(socket, &id, sizeof(id)))
+    {
+        cerr << "Network: DecodeStartAction failed to read player id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &flags, sizeof(flags)))
+    {
+        cerr << "Network: DecodeStartAction failed to read player action flags." << endl;
+        return false;
+    }
+
+    temp_action.start_attack = flags.start_attack;
+
+    if (flags.start_attack)
+    {
+        if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
+        {
+            cerr << "Network: DecodeStartAction failed to read an attack angle." << endl;
+            return false;
+        }
+    }
+
+    out_player_id = id;
+    out_action = temp_action;
 
     return true;
 }

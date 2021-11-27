@@ -30,10 +30,13 @@
 * Sent after a game is started once the server has received a `ClientMessage::LoadingComplete` message from all players
 * `[spawnpos:4][spawnpox:4]`
 
-#### `ClientMessage::PlayerStates`
+#### `ServerMessage::PlayerStates`
 * Sent every frame
 * `[playerid:2][posx:4][posy:4][playerid:2][posx:4][posy:4][...][...][...]`
 
+#### `ServerMessage::StartAction`
+* Broadcasted whenever a player starts an action
+* `[playerid:2][actionflags:1][attackangle:2][...]`
 
 ## Client Messages
 
@@ -62,3 +65,7 @@
 #### `ClientMessage::PlayerStateChange`
 * Sent whenever the player state changes
 * `[velocityflag:1]`
+
+#### `ClientMessage::StartAction`
+* Sent whenever the player takes an action the server needs to know
+* `[actionflags:1][attackangle:2][...]`

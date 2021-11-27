@@ -2,6 +2,7 @@ set(TargetName SphereDefender)
 find_package(SFML COMPONENTS graphics PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/install)
 
 set(Sources
+    src/avatar.cpp
     src/cursor_button.cpp
     src/event_handler.cpp
     src/game_manager.cpp

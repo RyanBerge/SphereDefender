@@ -26,13 +26,14 @@ public:
     void Update(sf::Time elapsed);
     void Draw();
 
-    void Load(PlayerState local, std::vector<PlayerState> other_players);
+    void Load(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void Unload();
 
     void Start(sf::Vector2f spawn_position);
 
     int GetPlayerCount();
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
+    void StartAction(uint16_t player_id, network::PlayerAction action);
 
     sf::View WorldView;
 
@@ -40,7 +41,7 @@ private:
     Gui gui;
     WorldMap world_map;
     Player local_player;
-    std::map<uint16_t, PlayerState> player_states;
+    std::map<uint16_t, Avatar> avatars;
 
     std::atomic_bool loaded = false;
     bool menu_open = false;
@@ -50,7 +51,7 @@ private:
     float target_zoom = current_zoom;
     float zoom_speed = 0;
 
-    void asyncLoad(PlayerState local, std::vector<PlayerState> other_players);
+    void asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void updateScroll(sf::Time elapsed);
 
     void onMouseMove(sf::Event event);

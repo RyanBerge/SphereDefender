@@ -40,7 +40,7 @@ MainMenu::MainMenu()
     join_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::JoinGame; setTabOrder(); });
     main_menu.buttons.push_back(join_game_button);
     CursorButton settings_button("MenuSettingsButton.png");
-    settings_button.SetPosition(1301 , 677);
+    settings_button.SetPosition(1301, 677);
     main_menu.buttons.push_back(settings_button);
     CursorButton exit_game("MenuExitButton.png");
     exit_game.SetPosition(1607, 873);

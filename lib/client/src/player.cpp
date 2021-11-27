@@ -21,54 +21,22 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
-Player::Player()
-{
-    sphere.setRadius(35);
-    sphere.setPosition(300, 300);
-    sphere.setFillColor(sf::Color(115, 180, 115));
-    sphere.setOutlineColor(sf::Color::Black);
-    sphere.setOutlineThickness(2);
-    sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
-    sword.setSize(sf::Vector2f(40, 8));
-    sword.setOrigin(sf::Vector2f(-35, 1.5));
-    sword.setFillColor(sf::Color::Red);
-    sword.setPosition(sphere.getPosition());
-}
+Player::Player() : avatar(sf::Color(115, 180, 115)) { }
 
 void Player::Update(sf::Time elapsed)
 {
-    if (attacking)
-    {
-        sword.setPosition(sphere.getPosition());
-        sword.rotate(360 * elapsed.asSeconds());
-
-        float rotation_delta = sword.getRotation() - starting_attack_angle;
-        if (rotation_delta < 0)
-        {
-            rotation_delta += 360;
-        }
-
-        if (rotation_delta > 90)
-        {
-            attacking = false;
-        }
-    }
+    avatar.Update(elapsed);
 }
 
 void Player::Draw()
 {
-    if (attacking)
-    {
-        GameManager::GetInstance().Window.draw(sword);
-    }
-
-    GameManager::GetInstance().Window.draw(sphere);
+    avatar.Draw();
 }
 
-void Player::Load(PlayerState local)
+void Player::Load(network::PlayerData data)
 {
-    name = local.data.name;
-    PlayerId = local.data.id;
+    avatar.Name = data.name;
+    PlayerId = data.id;
 }
 
 void Player::Unload()
@@ -77,12 +45,12 @@ void Player::Unload()
 
 void Player::SetPosition(sf::Vector2f position)
 {
-    sphere.setPosition(position);
+    avatar.SetPosition(position);
 }
 
 sf::Vector2f Player::GetPosition()
 {
-    return sphere.getPosition();
+    return avatar.GetPosition();
 }
 
 void Player::OnMouseMove(sf::Event::MouseMoveEvent event)
@@ -95,10 +63,8 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
     if (event.button == sf::Mouse::Button::Right)
     {
         sf::Vector2i click_point{event.x, event.y};
-        //sf::Vector2f distance_to_destination = click_point - sphere.getPosition();
-        //double length = std::hypot(distance_to_destination.x, distance_to_destination.y);
 
-        if (!attacking)
+        if (!avatar.Attacking)
         {
             startAttack(click_point);
         }
@@ -168,12 +134,17 @@ void Player::updateMovement()
 
 void Player::startAttack(sf::Vector2i point)
 {
-    sf::Vector2f distance_to_destination = GameManager::GetInstance().Window.mapPixelToCoords(point, GameManager::GetInstance().Game.WorldView) - sphere.getPosition();
+    sf::Vector2f distance_to_destination = GameManager::GetInstance().Window.mapPixelToCoords(point, GameManager::GetInstance().Game.WorldView) - avatar.GetPosition();
     float rotation = std::atan(distance_to_destination.y / distance_to_destination.x) * 180 / util::pi;
     rotation += distance_to_destination.x < 0 ? 180 : 0;
-    starting_attack_angle = (static_cast<int>(rotation) + 315) % 360;
-    sword.setRotation(starting_attack_angle);
-    attacking = true;
+    uint16_t attack_angle = (static_cast<uint16_t>(rotation) + 315) % 360;
+
+    network::PlayerAction action;
+    action.start_attack = true;
+    action.attack_angle = attack_angle;
+
+    ClientMessage::StartAction(ServerSocket, action);
+    avatar.StartAttack(attack_angle);
 }
 
 } // client

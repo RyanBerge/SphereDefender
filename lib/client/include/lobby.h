@@ -13,7 +13,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <string>
 #include "cursor_button.h"
-#include "player_state.h"
+#include "messaging.h"
 
 namespace client {
 
@@ -37,6 +37,12 @@ public:
     void LeaveLobby();
 
 private:
+    struct LobbyPlayer
+    {
+        network::PlayerData data;
+        sf::Text display_text;
+    };
+
     void onMouseDown(sf::Event event);
     void onMouseUp(sf::Event event);
 
@@ -46,8 +52,8 @@ private:
 
     bool owner = false;
     std::shared_ptr<sf::Font> font;
-    PlayerState local_player;
-    std::vector<PlayerState> player_display_list;
+    LobbyPlayer local_player;
+    std::vector<LobbyPlayer> player_display_list;
     CursorButton leave_button;
     CursorButton start_button;
 

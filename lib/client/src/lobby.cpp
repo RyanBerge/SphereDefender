@@ -52,7 +52,7 @@ void Lobby::Unload()
         EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
     }
 
-    local_player = PlayerState();
+    local_player = LobbyPlayer{};
     player_display_list.clear();
 
     // TODO: Unload UI elements as well?
@@ -104,10 +104,10 @@ void Lobby::Draw()
         start_button.Draw();
     }
 
-    GameManager::GetInstance().Window.draw(local_player.lobby_display_text);
+    GameManager::GetInstance().Window.draw(local_player.display_text);
     for (auto& display_player : player_display_list)
     {
-        GameManager::GetInstance().Window.draw(display_player.lobby_display_text);
+        GameManager::GetInstance().Window.draw(display_player.display_text);
     }
 }
 
@@ -120,7 +120,13 @@ void Lobby::StartGame()
 
     GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::LoadingScreen;
 
-    GameManager::GetInstance().Game.Load(local_player, player_display_list);
+    std::vector<network::PlayerData> data;
+    for (auto& player : player_display_list)
+    {
+        data.push_back(player.data);
+    }
+
+    GameManager::GetInstance().Game.Load(local_player.data, data);
 
     // TODO: Give the Game the player information
     Unload();
@@ -129,20 +135,20 @@ void Lobby::StartGame()
 void Lobby::AssignId(uint16_t id)
 {
     local_player.data.id = id;
-    local_player.lobby_display_text.setFont(*font);
-    local_player.lobby_display_text.setString(local_player.data.name);
-    local_player.lobby_display_text.setCharacterSize(90);
+    local_player.display_text.setFont(*font);
+    local_player.display_text.setString(local_player.data.name);
+    local_player.display_text.setCharacterSize(90);
 
     updatePlayerPositions();
 }
 
 void Lobby::AddPlayer(network::PlayerData player_data)
 {
-    PlayerState lobby_player;
+    LobbyPlayer lobby_player;
     lobby_player.data = player_data;
-    lobby_player.lobby_display_text.setFont(*font);
-    lobby_player.lobby_display_text.setString(player_data.name);
-    lobby_player.lobby_display_text.setCharacterSize(75);
+    lobby_player.display_text.setFont(*font);
+    lobby_player.display_text.setString(player_data.name);
+    lobby_player.display_text.setCharacterSize(75);
 
     player_display_list.push_back(lobby_player);
 
@@ -175,12 +181,12 @@ void Lobby::updatePlayerPositions()
 {
     int offset = 0;
 
-    local_player.lobby_display_text.setPosition(sf::Vector2f(75, 75 + offset));
+    local_player.display_text.setPosition(sf::Vector2f(75, 75 + offset));
     offset += 100;
 
     for (auto& player : player_display_list)
     {
-        player.lobby_display_text.setPosition(sf::Vector2f(75, 75 + offset));
+        player.display_text.setPosition(sf::Vector2f(75, 75 + offset));
         offset += 75;
     }
 }

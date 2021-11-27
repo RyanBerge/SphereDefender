@@ -28,6 +28,10 @@ void Game::Update(sf::Time elapsed)
     if (loaded)
     {
         local_player.Update(elapsed);
+        for (auto& avatar : avatars)
+        {
+            avatar.second.Update(elapsed);
+        }
 
         if (current_zoom != target_zoom)
         {
@@ -59,9 +63,9 @@ void Game::Draw()
 
         world_map.Draw();
         local_player.Draw();
-        for (auto& state : player_states)
+        for (auto& avatar : avatars)
         {
-            GameManager::GetInstance().Window.draw(state.second.sphere);
+            avatar.second.Draw();
         }
 
         GameManager::GetInstance().Window.setView(old_view);
@@ -75,14 +79,14 @@ void Game::Draw()
     }
 }
 
-void Game::Load(PlayerState local, std::vector<PlayerState> other_players)
+void Game::Load(network::PlayerData local, std::vector<network::PlayerData> other_players)
 {
     loaded = false;
     std::thread loading_thread(asyncLoad, this, local, other_players);
     loading_thread.detach();
 }
 
-void Game::asyncLoad(PlayerState local, std::vector<PlayerState> other_players)
+void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players)
 {
     std::cout << "Async load started..." << std::endl;
 
@@ -100,14 +104,7 @@ void Game::asyncLoad(PlayerState local, std::vector<PlayerState> other_players)
 
     for (auto& player : other_players)
     {
-        player.sphere.setRadius(35);
-        player.sphere.setPosition(300, 300);
-        player.sphere.setFillColor(sf::Color(180, 115, 150));
-        player.sphere.setOutlineColor(sf::Color::Black);
-        player.sphere.setOutlineThickness(2);
-        player.sphere.setOrigin(player.sphere.getLocalBounds().width / 2, player.sphere.getLocalBounds().height / 2);
-
-        player_states[player.data.id] = player;
+        avatars[player.id] = Avatar(sf::Color(180, 115, 150));
     }
 
     WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
@@ -140,7 +137,7 @@ void Game::Start(sf::Vector2f spawn_position)
 
 int Game::GetPlayerCount()
 {
-    return player_states.size() + 1;
+    return avatars.size() + 1;
 }
 
 void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
@@ -153,8 +150,21 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
         }
         else
         {
-            player_states[player.id].data.position = player.position;
-            player_states[player.id].sphere.setPosition(player.position);
+            avatars[player.id].SetPosition(player.position);
+        }
+    }
+}
+
+void Game::StartAction(uint16_t player_id, network::PlayerAction action)
+{
+    if (local_player.PlayerId == player_id)
+    {
+    }
+    else
+    {
+        if (action.start_attack)
+        {
+            avatars[player_id].StartAttack(action.attack_angle);
         }
     }
 }

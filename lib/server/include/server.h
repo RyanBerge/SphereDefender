@@ -12,6 +12,7 @@
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/System/Clock.hpp>
 #include "messaging.h"
+#include "player_info.h"
 #include <memory>
 #include <vector>
 
@@ -20,23 +21,6 @@ namespace server {
 class Server
 {
 public:
-    struct PlayerInfo
-    {
-        enum class Status
-        {
-            Uninitialized,
-            Disconnected,
-            Menus,
-            Alive
-        };
-
-        std::shared_ptr<sf::TcpSocket> socket;
-        Status status;
-        network::PlayerData data;
-        sf::Vector2f velocity;
-        double movement_speed = 200; // pixels per second
-    };
-
     enum class GameState : uint8_t
     {
         Uninitialized,
@@ -70,6 +54,7 @@ private:
     void loadingComplete(PlayerInfo& player);
     void leaveGame(PlayerInfo& player);
     void updatePlayerState(PlayerInfo& player);
+    void startPlayerAction(PlayerInfo& player);
 
     void broadcastStates();
 };

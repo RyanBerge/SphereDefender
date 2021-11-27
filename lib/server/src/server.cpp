@@ -63,7 +63,7 @@ void Server::update()
     for (auto iter = players.begin(); iter != players.end(); ++iter)
     {
         auto& player = *iter;
-        if (player.status != PlayerInfo::Status::Disconnected)
+        if (player.Status != PlayerInfo::PlayerStatus::Disconnected)
         {
             checkMessages(player);
         }
@@ -79,8 +79,9 @@ void Server::update()
     {
         for (auto& player : players)
         {
-            player.data.position += player.velocity * elapsed.asSeconds();
+            player.Update(elapsed);
         }
+
         static float broadcast_delta = 0;
         broadcast_delta += elapsed.asSeconds();
 
@@ -107,10 +108,10 @@ void Server::listen()
     }
 
     PlayerInfo player;
-    player.socket = player_socket;
-    player.socket->setBlocking(false);
-    player.data.name = "";
-    player.status = PlayerInfo::Status::Uninitialized;
+    player.Socket = player_socket;
+    player.Socket->setBlocking(false);
+    player.Data.name = "";
+    player.Status = PlayerInfo::PlayerStatus::Uninitialized;
 
     cout << "New player connected to server." << endl;
 
@@ -120,12 +121,12 @@ void Server::listen()
 void Server::checkMessages(PlayerInfo& player)
 {
     ClientMessage::Code code;
-    bool success = ClientMessage::PollForCode(*player.socket, code);
+    bool success = ClientMessage::PollForCode(*player.Socket, code);
     if (!success)
     {
-        cerr << "Player disconnected unexpectedly: " << player.data.name << endl;
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        cerr << "Player disconnected unexpectedly: " << player.Data.name << endl;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
 
         leaveGame(player);
         return;
@@ -173,6 +174,11 @@ void Server::checkMessages(PlayerInfo& player)
             updatePlayerState(player);
         }
         break;
+        case ClientMessage::Code::StartAction:
+        {
+            startPlayerAction(player);
+        }
+        break;
         default:
         {
             cerr << "Unrecognized code." << endl;
@@ -183,96 +189,96 @@ void Server::checkMessages(PlayerInfo& player)
 
 void Server::initLobby(PlayerInfo& player)
 {
-    if (!ClientMessage::DecodeInitLobby(*player.socket, player.data.name))
+    if (!ClientMessage::DecodeInitLobby(*player.Socket, player.Data.name))
     {
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Uninitialized)
     {
-        cerr << player.data.name << " tried to initialize a server that was already initialized." << endl;
+        cerr << player.Data.name << " tried to initialize a server that was already initialized." << endl;
         return;
     }
 
-    if (player.status != PlayerInfo::Status::Uninitialized)
+    if (player.Status != PlayerInfo::PlayerStatus::Uninitialized)
     {
-        cerr << player.data.name << " is already initialized." << endl;
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        cerr << player.Data.name << " is already initialized." << endl;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
         return;
     }
 
     uint16_t id = getPlayerUid();
 
-    if (ServerMessage::PlayerId(*player.socket, id))
+    if (ServerMessage::PlayerId(*player.Socket, id))
     {
-        player.data.id = id;
-        owner = player.data.id;
-        cout << "Server initialized by " << player.data.name << "." << endl;
-        player.status = PlayerInfo::Status::Menus;
+        player.Data.id = id;
+        owner = player.Data.id;
+        cout << "Server initialized by " << player.Data.name << "." << endl;
+        player.Status = PlayerInfo::PlayerStatus::Menus;
         game_state = GameState::Lobby;
     }
     else
     {
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
 }
 
 void Server::playerJoined(PlayerInfo& player)
 {
-    if (!ClientMessage::DecodeJoinLobby(*player.socket, player.data.name))
+    if (!ClientMessage::DecodeJoinLobby(*player.Socket, player.Data.name))
     {
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Lobby)
     {
-        cerr << player.data.name << " tried to join a game that was not in the lobby." << endl;
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        cerr << player.Data.name << " tried to join a game that was not in the lobby." << endl;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
         return;
     }
 
-    if (player.status != PlayerInfo::Status::Uninitialized)
+    if (player.Status != PlayerInfo::PlayerStatus::Uninitialized)
     {
-        cerr << player.data.name << " is already initialized." << endl;
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        cerr << player.Data.name << " is already initialized." << endl;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
         return;
     }
 
-    player.data.id = getPlayerUid();
+    player.Data.id = getPlayerUid();
     std::vector<network::PlayerData> players_in_lobby;
 
     for (auto& p : players)
     {
-        if (player.data.id != p.data.id)
+        if (player.Data.id != p.Data.id)
         {
-            if (p.data.id == owner)
+            if (p.Data.id == owner)
             {
-                players_in_lobby.insert(players_in_lobby.begin(), p.data);
+                players_in_lobby.insert(players_in_lobby.begin(), p.Data);
             }
             else
             {
-                players_in_lobby.push_back(p.data);
+                players_in_lobby.push_back(p.Data);
             }
 
-            ServerMessage::PlayerJoined(*p.socket, player.data);
+            ServerMessage::PlayerJoined(*p.Socket, player.Data);
         }
     }
 
-    if (ServerMessage::PlayersInLobby(*player.socket, player.data.id, players_in_lobby))
+    if (ServerMessage::PlayersInLobby(*player.Socket, player.Data.id, players_in_lobby))
     {
-        cout << player.data.name << " joined the lobby" << endl;
-        player.status = PlayerInfo::Status::Menus;
+        cout << player.Data.name << " joined the lobby" << endl;
+        player.Status = PlayerInfo::PlayerStatus::Menus;
     }
     else
     {
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
 }
 
@@ -280,24 +286,24 @@ void Server::startGame(PlayerInfo& player)
 {
     if (game_state != GameState::Lobby)
     {
-        cerr << player.data.name << " tried to start a game that wasn't in the lobby." << endl;
+        cerr << player.Data.name << " tried to start a game that wasn't in the lobby." << endl;
         return;
     }
 
-    if (player.data.id != owner)
+    if (player.Data.id != owner)
     {
-        cerr << player.data.name << " tried to start a game without being the owner." << endl;
+        cerr << player.Data.name << " tried to start a game without being the owner." << endl;
         return;
     }
 
-    cout << player.data.name << " started the game!" << endl;
+    cout << player.Data.name << " started the game!" << endl;
     game_state = GameState::Loading;
 
     for (auto& p : players)
     {
-        if (p.data.id != owner)
+        if (p.Data.id != owner)
         {
-            ServerMessage::StartGame(*p.socket);
+            ServerMessage::StartGame(*p.Socket);
         }
     }
 }
@@ -306,12 +312,12 @@ void Server::loadingComplete(PlayerInfo& player)
 {
     if (game_state == GameState::Loading)
     {
-        cout << player.data.name << " has finished loading." << endl;
-        player.status = PlayerInfo::Status::Alive;
+        cout << player.Data.name << " has finished loading." << endl;
+        player.Status = PlayerInfo::PlayerStatus::Alive;
 
         for (auto& p : players)
         {
-            if (p.status != PlayerInfo::Status::Alive)
+            if (p.Status != PlayerInfo::PlayerStatus::Alive)
             {
                 return;
             }
@@ -324,7 +330,8 @@ void Server::loadingComplete(PlayerInfo& player)
         {
             // TODO: Magic numbers for distance
             sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
-            ServerMessage::AllPlayersLoaded(*players[i].socket, spawn_position);
+            ServerMessage::AllPlayersLoaded(*players[i].Socket, spawn_position);
+            players[i].Data.position = spawn_position;
         }
 
         game_state = GameState::Game;
@@ -335,21 +342,21 @@ void Server::loadingComplete(PlayerInfo& player)
 
 void Server::leaveGame(PlayerInfo& player)
 {
-    cout << player.data.name << " left the server." << endl;
-    player.socket->disconnect();
-    player.status = PlayerInfo::Status::Disconnected;
+    cout << player.Data.name << " left the server." << endl;
+    player.Socket->disconnect();
+    player.Status = PlayerInfo::PlayerStatus::Disconnected;
 
     for (auto& p : players)
     {
-        if (p.data.id != player.data.id)
+        if (p.Data.id != player.Data.id)
         {
-            if (player.data.id == owner)
+            if (player.Data.id == owner)
             {
-                ServerMessage::OwnerLeft(*p.socket);
+                ServerMessage::OwnerLeft(*p.Socket);
             }
             else
             {
-                ServerMessage::PlayerLeft(*p.socket, player.data.id);
+                ServerMessage::PlayerLeft(*p.Socket, player.Data.id);
             }
         }
     }
@@ -358,29 +365,47 @@ void Server::leaveGame(PlayerInfo& player)
 void Server::updatePlayerState(PlayerInfo& player)
 {
     sf::Vector2i movement_vector;
-    if (!ClientMessage::DecodePlayerStateChange(*player.socket, movement_vector))
+    if (!ClientMessage::DecodePlayerStateChange(*player.Socket, movement_vector))
     {
-        player.socket->disconnect();
-        player.status = PlayerInfo::Status::Disconnected;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Game)
     {
-        cerr << "wtf" << endl;
+        cerr << "Server received a player update when not in game." << endl;
         return;
     }
 
-    double hyp = std::hypot(movement_vector.x, movement_vector.y);
+    player.UpdatePlayerState(movement_vector);
+}
 
-    if (hyp == 0)
+void Server::startPlayerAction(PlayerInfo& player)
+{
+    network::PlayerAction action;
+    if (!ClientMessage::DecodeStartAction(*player.Socket, action))
     {
-        player.velocity.x = 0;
-        player.velocity.y = 0;
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
     }
-    else
+
+    if (game_state != GameState::Game)
     {
-        player.velocity.x = (movement_vector.x / hyp) * player.movement_speed;
-        player.velocity.y = (movement_vector.y / hyp) * player.movement_speed;
+        cerr << "Server received a player action when not in game." << endl;
+        return;
+    }
+
+    if (action.start_attack)
+    {
+        player.StartAttack(action.attack_angle);
+    }
+
+    for (auto& p : players)
+    {
+        if (p.Data.id != player.Data.id)
+        {
+            ServerMessage::StartAction(*p.Socket, player.Data.id, action);
+        }
     }
 }
 
@@ -390,12 +415,12 @@ void Server::broadcastStates()
 
     for (auto& player : players)
     {
-        player_list.push_back(player.data);
+        player_list.push_back(player.Data);
     }
 
     for (auto& player : players)
     {
-        ServerMessage::PlayerStates(*player.socket, player_list);
+        ServerMessage::PlayerStates(*player.Socket, player_list);
     }
 }
 

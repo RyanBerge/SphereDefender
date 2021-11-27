@@ -3,6 +3,7 @@ find_package(SFML COMPONENTS network PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/
 
 set(Sources
     src/main.cpp
+    src/player_info.cpp
     src/server.cpp
 )
 

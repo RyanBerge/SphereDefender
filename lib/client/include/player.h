@@ -10,10 +10,9 @@
 #pragma once
 
 #include <SFML/System/Time.hpp>
-#include <SFML/Graphics/CircleShape.hpp>
-#include "SFML/Graphics/RectangleShape.hpp"
 #include <SFML/Window/Event.hpp>
-#include "player_state.h"
+#include "avatar.h"
+#include "messaging.h"
 
 namespace client {
 
@@ -25,7 +24,7 @@ public:
     void Update(sf::Time elapsed);
     void Draw();
 
-    void Load(PlayerState local);
+    void Load(network::PlayerData data);
     void Unload();
 
     void SetPosition(sf::Vector2f position);
@@ -41,12 +40,7 @@ public:
     uint16_t PlayerId;
 
 private:
-    sf::Vector2i velocity{0, 0};
-    sf::CircleShape sphere;
-    sf::RectangleShape sword;
-    std::string name;
-    bool attacking = false;
-    float starting_attack_angle;
+    Avatar avatar;
 
     void updateMovement();
     void startAttack(sf::Vector2i point);

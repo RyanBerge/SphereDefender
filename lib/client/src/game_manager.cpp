@@ -338,6 +338,16 @@ void GameManager::checkMessages()
             }
         }
         break;
+        case ServerMessage::Code::StartAction:
+        {
+            uint16_t player_id;
+            network::PlayerAction action;
+            if (ServerMessage::DecodeStartAction(ServerSocket, player_id, action))
+            {
+                Game.StartAction(player_id, action);
+            }
+        }
+        break;
         default:
         {
             cerr << "Unrecognized code." << endl;
