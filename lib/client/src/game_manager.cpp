@@ -132,6 +132,7 @@ void GameManager::Reset()
                 {
                     ClientMessage::LeaveGame(ServerSocket);
                     DisconnectFromServer();
+                    MainMenu.CurrentMenu = MainMenu::MenuType::Main;
                 }
                 default:
                 {
@@ -237,7 +238,7 @@ void GameManager::checkMessages()
                             break;
                             case MainMenu::MenuType::LoadingScreen:
                             {
-                                // TODO: Handle this
+                                Game.RemovePlayer(player_id);
                             }
                             break;
                             default:
@@ -249,7 +250,7 @@ void GameManager::checkMessages()
                     break;
                     case GameState::Game:
                     {
-                        // TODO: Handle this
+                        Game.RemovePlayer(player_id);
                     }
                     break;
                 }
@@ -258,6 +259,7 @@ void GameManager::checkMessages()
         break;
         case ServerMessage::Code::OwnerLeft:
         {
+            cout << "The host left the game and the session was terminated." << endl;
             switch (State)
             {
                 case GameState::MainMenu:
@@ -271,8 +273,7 @@ void GameManager::checkMessages()
                         break;
                         case MainMenu::MenuType::LoadingScreen:
                         {
-                            // TODO: Handle this
-                            // TODO: Add a message sequents that aborts loading the game if someone disconnects during loading
+                            Reset();
                         }
                         break;
                         default:
@@ -284,7 +285,7 @@ void GameManager::checkMessages()
                 break;
                 case GameState::Game:
                 {
-                    // TODO: Handle this
+                    Reset();
                 }
                 break;
             }
@@ -331,7 +332,7 @@ void GameManager::checkMessages()
         break;
         case ServerMessage::Code::PlayerStates:
         {
-            std::vector<network::PlayerData> player_list(Game.GetPlayerCount());
+            std::vector<network::PlayerData> player_list;
             if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
             {
                 Game.UpdatePlayerStates(player_list);

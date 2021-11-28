@@ -21,7 +21,7 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
-Player::Player() : avatar(sf::Color(115, 180, 115)) { }
+Player::Player() : avatar(sf::Color(115, 180, 115), "") { }
 
 void Player::Update(sf::Time elapsed)
 {

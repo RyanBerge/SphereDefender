@@ -125,9 +125,6 @@ void Server::checkMessages(PlayerInfo& player)
     if (!success)
     {
         cerr << "Player disconnected unexpectedly: " << player.Data.name << endl;
-        player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
-
         leaveGame(player);
         return;
     }

@@ -34,6 +34,7 @@ public:
     int GetPlayerCount();
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void StartAction(uint16_t player_id, network::PlayerAction action);
+    void RemovePlayer(uint16_t player_id);
 
     sf::View WorldView;
 

@@ -17,7 +17,7 @@ namespace client {
 
 Avatar::Avatar() { }
 
-Avatar::Avatar(sf::Color color)
+Avatar::Avatar(sf::Color color, std::string name) : Name{name}
 {
     sphere.setRadius(35);
     sphere.setPosition(300, 300);

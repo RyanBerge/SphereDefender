@@ -104,7 +104,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
 
     for (auto& player : other_players)
     {
-        avatars[player.id] = Avatar(sf::Color(180, 115, 150));
+        avatars[player.id] = Avatar(sf::Color(180, 115, 150), player.name);
     }
 
     WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
@@ -124,6 +124,7 @@ void Game::Unload()
         EventHandler::GetInstance().UnregisterCallback(event.first, event.second);
     }
 
+    // TODO: These load/unload functions probably need to be protected by mutexes in case the host leaves when the game is loading
     world_map.Unload();
     gui.Unload();
     local_player.Unload();
@@ -167,6 +168,13 @@ void Game::StartAction(uint16_t player_id, network::PlayerAction action)
             avatars[player_id].StartAttack(action.attack_angle);
         }
     }
+}
+
+void Game::RemovePlayer(uint16_t player_id)
+{
+    // TODO: Thread-safety
+    cout << avatars[player_id].Name << " disconnected." << endl;
+    avatars.erase(player_id);
 }
 
 void Game::updateScroll(sf::Time elapsed)

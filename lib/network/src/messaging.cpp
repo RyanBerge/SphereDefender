@@ -573,13 +573,16 @@ bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_p
 bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players)
 {
     Code code = Code::PlayerStates;
+    uint8_t num_players = static_cast<uint8_t>(players.size());
 
-    size_t buffer_size = sizeof(code) + ((sizeof(uint16_t) + sizeof(float) * 2) * players.size());
+    size_t buffer_size = sizeof(code) + sizeof(num_players) + ((sizeof(uint16_t) + sizeof(float) * 2) * players.size());
     uint8_t* buffer = new uint8_t[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
+    std::memcpy(buffer + offset, &num_players, sizeof(num_players));
+    offset += sizeof(num_players);
 
     for (auto& player : players)
     {
@@ -593,7 +596,7 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ServerMessage::AllPlayersLoaded message" << endl;
+        cerr << "Network: Failed to send ServerMessage::PlayerStates message" << endl;
         delete[] buffer;
         return false;
     }
@@ -758,27 +761,37 @@ bool ServerMessage::DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& 
 
 bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players)
 {
-    std::vector<PlayerData> players = out_players;
+    std::vector<PlayerData> players;
+    uint8_t num_players;
 
-    for (size_t i = 0; i < players.size(); ++i)
+    if (!read(socket, &num_players, sizeof(num_players)))
     {
-        if (!read(socket, &players[i].id, sizeof(players[i].id)))
+        cerr << "Network: DecodePlayerStates failed to read num players." << endl;
+        return false;
+    }
+
+    for (size_t i = 0; i < num_players; ++i)
+    {
+        PlayerData data;
+        if (!read(socket, &data.id, sizeof(data.id)))
         {
             cerr << "Network: DecodePlayerStates failed to read a player id." << endl;
             return false;
         }
 
-        if (!read(socket, &players[i].position.x, sizeof(players[i].position.x)))
+        if (!read(socket, &data.position.x, sizeof(data.position.x)))
         {
             cerr << "Network: DecodePlayerStates failed to read an x position." << endl;
             return false;
         }
 
-        if (!read(socket, &players[i].position.y, sizeof(players[i].position.y)))
+        if (!read(socket, &data.position.y, sizeof(data.position.y)))
         {
             cerr << "Network: DecodePlayerStates failed to read a y position." << endl;
             return false;
         }
+
+        players.push_back(data);
     }
 
     out_players = players;

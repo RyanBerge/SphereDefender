@@ -20,7 +20,7 @@ namespace client {
 class Avatar {
 public:
     Avatar();
-    Avatar(sf::Color color);
+    Avatar(sf::Color color, std::string name);
 
     void Update(sf::Time elapsed);
     void Draw();
