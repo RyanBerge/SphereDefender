@@ -1,5 +1,37 @@
 # Network Protocol
 
+## Client Messages
+
+#### `ClientMessage::InitLobby`
+* Sent immediately after a client launches a new server process by creating a game lobby
+* Server responds with a `ServerMessage::PlayerId` message
+* `[playername:string]`
+
+#### `ClientMessage::JoinLobby`
+* Sent whenever a player joins a lobby, just after connecting to the server in question
+* Server responds with a `ServerMessage::PlayersInLobby` message and by broadcasting a `ServerMessage::PlayerJoined` message to all _other_ players
+* `[playername:string]`
+
+#### `ClientMessage::StartGame`
+* Sent when the owner of a lobby begins a game
+* Server responds by broadcasting a `ServerMessage::StartGame` message to all players
+
+#### `ClientMessage::LoadingComplete`
+* Sent after the server starts a game when the game environment is finished loading
+* Server responds after all players have finished loading with a `ServerMessage::AllPlayersLoaded` message
+
+#### `ClientMessage::LeaveGame`
+* Sent whenever a player intentionally leaves a game
+* Server responds by broadcasting a `ServerMessage::PlayerLeft` message to all _other_ players
+
+#### `ClientMessage::PlayerStateChange`
+* Sent whenever the player state changes
+* `[velocityflag:1]`
+
+#### `ClientMessage::StartAction`
+* Sent whenever the player takes an action the server needs to know
+* `[actionflags:1][attackangle:2][...]`
+
 ## Server Messages
 
 #### `ServerMessage::PlayerId`
@@ -34,46 +66,18 @@
 * Sent every frame
 * `[numstates:1][playerid:2][posx:4][posy:4][playerid:2][posx:4][posy:4][...][...][...]`
 
-#### `ServerMessage::StartAction`
+#### `ServerMessage::PlayerStartAction`
 * Broadcasted whenever a player starts an action
 * `[playerid:2][actionflags:1][attackangle:2][...]`
 
+#### `ServerMessage::EnemyStartAction`
+* Sent whenever an enemy begins an action
+* `[enemyid:2][actionflags:1][attackvector:8]`
+
 #### `ServerMessage::RegionInfo`
 * Sent when a region is created
-* `[numenemies:2][id:2][type:1][position:8][health:1][...]`
+* `[convoyposition:8][convoyorientation:1][numenemies:2][id:2][type:1][position:8][health:1][...]`
 
 #### `ServerMessage::EnemyUpdate`
 * Broadcasted every frame
 * `[numenemies:2][id:2][position:8][health:1][...]`
-
-## Client Messages
-
-#### `ClientMessage::InitLobby`
-* Sent immediately after a client launches a new server process by creating a game lobby
-* Server responds with a `ServerMessage::PlayerId` message
-* `[playername:string]`
-
-#### `ClientMessage::JoinLobby`
-* Sent whenever a player joins a lobby, just after connecting to the server in question
-* Server responds with a `ServerMessage::PlayersInLobby` message and by broadcasting a `ServerMessage::PlayerJoined` message to all _other_ players
-* `[playername:string]`
-
-#### `ClientMessage::StartGame`
-* Sent when the owner of a lobby begins a game
-* Server responds by broadcasting a `ServerMessage::StartGame` message to all players
-
-#### `ClientMessage::LoadingComplete`
-* Sent after the server starts a game when the game environment is finished loading
-* Server responds after all players have finished loading with a `ServerMessage::AllPlayersLoaded` message
-
-#### `ClientMessage::LeaveGame`
-* Sent whenever a player intentionally leaves a game
-* Server responds by broadcasting a `ServerMessage::PlayerLeft` message to all _other_ players
-
-#### `ClientMessage::PlayerStateChange`
-* Sent whenever the player state changes
-* `[velocityflag:1]`
-
-#### `ClientMessage::StartAction`
-* Sent whenever the player takes an action the server needs to know
-* `[actionflags:1][attackangle:2][...]`

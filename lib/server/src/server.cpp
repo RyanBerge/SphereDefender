@@ -410,7 +410,7 @@ void Server::startPlayerAction(PlayerInfo& player)
     {
         if (p.Data.id != player.Data.id)
         {
-            ServerMessage::StartAction(*p.Socket, player.Data.id, action);
+            ServerMessage::PlayerStartAction(*p.Socket, player.Data.id, action);
         }
     }
 }
@@ -425,7 +425,7 @@ void Server::broadcastStates()
         player_list.push_back(player.Data);
     }
 
-    for (auto& enemy : region.enemies)
+    for (auto& enemy : region.Enemies)
     {
         enemy_list.push_back(enemy.Data);
     }
@@ -441,15 +441,15 @@ void Server::initializeRegion()
 {
     region = Region();
 
-    std::vector<network::EnemyData> enemies;
-    for (auto& enemy : region.enemies)
+    std::vector<network::EnemyData> enemy_list;
+    for (auto& enemy : region.Enemies)
     {
-        enemies.push_back(enemy.Data);
+        enemy_list.push_back(enemy.Data);
     }
 
     for (auto& player : players)
     {
-        ServerMessage::RegionInfo(*player.Socket, enemies);
+        ServerMessage::RegionInfo(*player.Socket, region.Convoy, enemy_list);
     }
 }
 
@@ -457,13 +457,9 @@ void Server::checkAttack(PlayerInfo& player)
 {
     util::LineSegment sword = player.GetSwordLocation();
 
-    for (auto& enemy : region.enemies)
+    for (auto& enemy : region.Enemies)
     {
-        sf::FloatRect bounds;
-        bounds.left = enemy.Data.position.x;
-        bounds.top = enemy.Data.position.y;
-        bounds.width = enemy.Bounds.x;
-        bounds.height = enemy.Bounds.y;
+        sf::FloatRect bounds = enemy.GetBounds();
 
         if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
         {

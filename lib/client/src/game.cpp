@@ -142,13 +142,15 @@ void Game::Start(sf::Vector2f spawn_position)
     WorldView.setCenter(spawn_position);
 }
 
-void Game::InitializeRegion(std::vector<network::EnemyData> enemy_list)
+void Game::InitializeRegion(network::ConvoyData convoy_data, std::vector<network::EnemyData> enemy_list)
 {
     for (auto& enemy : enemy_list)
     {
         enemies[enemy.id] = Enemy();
         enemies[enemy.id].UpdateData(enemy);
     }
+
+    region_map.InitializeRegion(convoy_data);
 }
 
 int Game::GetPlayerCount()
@@ -195,6 +197,11 @@ void Game::StartAction(uint16_t player_id, network::PlayerAction action)
             avatars[player_id].StartAttack(action.attack_angle);
         }
     }
+}
+
+void Game::StartEnemyAction(uint16_t enemy_id, network::EnemyAction action)
+{
+    enemies[enemy_id].StartAction(action);
 }
 
 void Game::RemovePlayer(uint16_t player_id)

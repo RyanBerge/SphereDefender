@@ -30,6 +30,11 @@ struct PlayerActionFlags
     bool start_attack: 1;
 };
 
+struct EnemyActionFlags
+{
+    bool start_attack: 1;
+};
+
 // DEBUG
 [[maybe_unused]] void printBuffer(uint8_t* buffer, int length)
 {
@@ -605,9 +610,9 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
     return true;
 }
 
-bool ServerMessage::StartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action)
+bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action)
 {
-    Code code = ServerMessage::Code::StartAction;
+    Code code = ServerMessage::Code::EnemyStartAction;
 
     PlayerActionFlags flags{};
     flags.start_attack = action.start_attack;
@@ -636,7 +641,7 @@ bool ServerMessage::StartAction(sf::TcpSocket& socket, uint16_t player_id, Playe
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ClientMessage::StartAction message" << endl;
+        cerr << "Network: Failed to send ServerMessage::PlayerStartAction message" << endl;
         delete[] buffer;
         return false;
     }
@@ -645,20 +650,68 @@ bool ServerMessage::StartAction(sf::TcpSocket& socket, uint16_t player_id, Playe
     return true;
 }
 
-bool ServerMessage::RegionInfo(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
+bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, EnemyAction action)
 {
-    Code code = ServerMessage::Code::RegionInfo;
+    Code code = ServerMessage::Code::PlayerStartAction;
 
-    uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
+    EnemyActionFlags flags{};
+    flags.start_attack = action.start_attack;
 
-    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::type) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
-    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
+    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(flags);
+    if (flags.start_attack)
+    {
+        buffer_size += sizeof(action.attack_vector.x) + sizeof(action.attack_vector.y);
+    }
 
     uint8_t* buffer = new uint8_t[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &flags, sizeof(flags));
+    offset += sizeof(flags);
+
+    if (flags.start_attack)
+    {
+        std::memcpy(buffer + offset, &action.attack_vector.x, sizeof(action.attack_vector.x));
+        offset += sizeof(action.attack_vector.x);
+        std::memcpy(buffer + offset, &action.attack_vector.y, sizeof(action.attack_vector.y));
+        offset += sizeof(action.attack_vector.y);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::EnemyStartAction message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
+bool ServerMessage::RegionInfo(sf::TcpSocket& socket, ConvoyData convoy, std::vector<EnemyData> enemies)
+{
+    Code code = ServerMessage::Code::RegionInfo;
+
+    uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
+
+    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::type) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
+    size_t buffer_size = sizeof(code) + sizeof(float) * 2 + sizeof(convoy.orientation) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &convoy.position.x, sizeof(convoy.position.x));
+    offset += sizeof(convoy.position.x);
+    std::memcpy(buffer + offset, &convoy.position.y, sizeof(convoy.position.y));
+    offset += sizeof(convoy.position.y);
+    std::memcpy(buffer + offset, &convoy.orientation, sizeof(convoy.orientation));
+    offset += sizeof(convoy.orientation);
     std::memcpy(buffer + offset, &num_enemies, sizeof(num_enemies));
     offset += sizeof(num_enemies);
 
@@ -881,7 +934,7 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
     return true;
 }
 
-bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action)
+bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action)
 {
     uint16_t id;
     PlayerActionFlags flags;
@@ -889,13 +942,13 @@ bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_playe
 
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodeStartAction failed to read player id." << endl;
+        cerr << "Network: DecodePlayerStartAction failed to read player id." << endl;
         return false;
     }
 
     if (!read(socket, &flags, sizeof(flags)))
     {
-        cerr << "Network: DecodeStartAction failed to read player action flags." << endl;
+        cerr << "Network: DecodePlayerStartAction failed to read player action flags." << endl;
         return false;
     }
 
@@ -905,7 +958,7 @@ bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_playe
     {
         if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
         {
-            cerr << "Network: DecodeStartAction failed to read an attack angle." << endl;
+            cerr << "Network: DecodePlayerStartAction failed to read an attack angle." << endl;
             return false;
         }
     }
@@ -916,10 +969,70 @@ bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_playe
     return true;
 }
 
-bool ServerMessage::DecodeRegionInfo(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies)
+bool ServerMessage::DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, EnemyAction& out_action)
+{
+    uint16_t id;
+    EnemyActionFlags flags;
+    EnemyAction temp_action;
+
+    if (!read(socket, &id, sizeof(id)))
+    {
+        cerr << "Network: DecodeEnemyStartAction failed to read player id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &flags, sizeof(flags)))
+    {
+        cerr << "Network: DecodeEnemyStartAction failed to read player action flags." << endl;
+        return false;
+    }
+
+    temp_action.start_attack = flags.start_attack;
+
+    if (flags.start_attack)
+    {
+        if (!read(socket, &temp_action.attack_vector.x, sizeof(temp_action.attack_vector.x)))
+        {
+            cerr << "Network: DecodeEnemyStartAction failed to read an attack vector x." << endl;
+            return false;
+        }
+
+        if (!read(socket, &temp_action.attack_vector.y, sizeof(temp_action.attack_vector.y)))
+        {
+            cerr << "Network: DecodeEnemyStartAction failed to read an attack vector y." << endl;
+            return false;
+        }
+    }
+
+    out_player_id = id;
+    out_action = temp_action;
+
+    return true;
+}
+
+bool ServerMessage::DecodeRegionInfo(sf::TcpSocket& socket, ConvoyData& out_convoy, std::vector<EnemyData>& out_enemies)
 {
     uint16_t num_enemies;
     std::vector<EnemyData> enemies;
+    ConvoyData convoy;
+
+    if (!read(socket, &convoy.position.x, sizeof(convoy.position.x)))
+    {
+        cerr << "Network: DecodeRegionInfo failed to read an x position." << endl;
+        return false;
+    }
+
+    if (!read(socket, &convoy.position.y, sizeof(convoy.position.y)))
+    {
+        cerr << "Network: DecodeRegionInfo failed to read an y position." << endl;
+        return false;
+    }
+
+    if (!read(socket, &convoy.orientation, sizeof(convoy.orientation)))
+    {
+        cerr << "Network: DecodeRegionInfo failed to read a convoy orientation." << endl;
+        return false;
+    }
 
     if (!read(socket, &num_enemies, sizeof(num_enemies)))
     {
@@ -964,6 +1077,7 @@ bool ServerMessage::DecodeRegionInfo(sf::TcpSocket& socket, std::vector<EnemyDat
         enemies.push_back(data);
     }
 
+    out_convoy = convoy;
     out_enemies = enemies;
     return true;
 }

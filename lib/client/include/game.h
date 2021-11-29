@@ -30,7 +30,7 @@ public:
     void Load(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void Unload();
 
-    void InitializeRegion(std::vector<network::EnemyData> enemy_list);
+    void InitializeRegion(network::ConvoyData convoy, std::vector<network::EnemyData> enemy_list);
 
     void Start(sf::Vector2f spawn_position);
 
@@ -38,6 +38,7 @@ public:
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void StartAction(uint16_t player_id, network::PlayerAction action);
+    void StartEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void RemovePlayer(uint16_t player_id);
 
     sf::View WorldView;

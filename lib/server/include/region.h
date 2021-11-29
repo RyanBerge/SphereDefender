@@ -25,7 +25,8 @@ public:
     void Update(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void Cull();
 
-    std::list<Enemy> enemies;
+    network::ConvoyData Convoy;
+    std::list<Enemy> Enemies;
 
 private:
 

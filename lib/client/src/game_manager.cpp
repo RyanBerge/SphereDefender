@@ -339,22 +339,33 @@ void GameManager::checkMessages()
             }
         }
         break;
-        case ServerMessage::Code::StartAction:
+        case ServerMessage::Code::PlayerStartAction:
         {
             uint16_t player_id;
             network::PlayerAction action;
-            if (ServerMessage::DecodeStartAction(ServerSocket, player_id, action))
+            if (ServerMessage::DecodePlayerStartAction(ServerSocket, player_id, action))
             {
                 Game.StartAction(player_id, action);
             }
         }
         break;
+        case ServerMessage::Code::EnemyStartAction:
+        {
+            uint16_t enemy_id;
+            network::EnemyAction action;
+            if (ServerMessage::DecodeEnemyStartAction(ServerSocket, enemy_id, action))
+            {
+                Game.StartEnemyAction(enemy_id, action);
+            }
+        }
+        break;
         case ServerMessage::Code::RegionInfo:
         {
+            network::ConvoyData convoy;
             std::vector<network::EnemyData> enemy_list;
-            if (ServerMessage::DecodeRegionInfo(ServerSocket, enemy_list))
+            if (ServerMessage::DecodeRegionInfo(ServerSocket, convoy, enemy_list))
             {
-                Game.InitializeRegion(enemy_list);
+                Game.InitializeRegion(convoy, enemy_list);
             }
         }
         break;

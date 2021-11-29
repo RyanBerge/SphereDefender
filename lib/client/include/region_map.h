@@ -11,6 +11,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include "spritesheet.h"
+#include "entity_data.h"
 
 namespace client {
 
@@ -25,9 +26,11 @@ public:
     void Load();
     void Unload();
 
+    void InitializeRegion(network::ConvoyData convoy_data);
+
 private:
     Spritesheet background;
-    std::vector<sf::RectangleShape> buildings;
+    sf::RectangleShape convoy;
 };
 
 } // client
