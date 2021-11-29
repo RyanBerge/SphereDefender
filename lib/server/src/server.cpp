@@ -11,8 +11,8 @@
 #include <cstring>
 #include <iostream>
 #include <cmath>
-
 #include "messaging.h"
+#include "game_math.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -20,7 +20,6 @@ using network::ClientMessage, network::ServerMessage;
 namespace server {
 
 namespace {
-    constexpr double pi = 3.141592653589793238462643383279502884L;
     constexpr float MAX_BROADCAST_RATE = 120; // Hz
 } // anonymous namespace
 
@@ -39,6 +38,8 @@ void Server::Start()
     {
         update();
     }
+
+    //while(true);
 }
 
 uint16_t Server::getPlayerUid()
@@ -77,9 +78,15 @@ void Server::update()
 
     if (game_state == GameState::Game)
     {
+        region.Update(elapsed, players);
+
         for (auto& player : players)
         {
             player.Update(elapsed);
+            if (player.Attacking)
+            {
+                checkAttack(player);
+            }
         }
 
         static float broadcast_delta = 0;
@@ -89,6 +96,7 @@ void Server::update()
         {
             broadcastStates();
             broadcast_delta = 0;
+            region.Cull();
         }
     }
 }
@@ -321,7 +329,7 @@ void Server::loadingComplete(PlayerInfo& player)
         }
 
         // Determine spawn positions
-        float angle = 2 * pi / players.size();
+        float angle = 2 * util::pi / players.size();
 
         for (size_t i = 0; i < players.size(); ++i)
         {
@@ -332,6 +340,7 @@ void Server::loadingComplete(PlayerInfo& player)
         }
 
         game_state = GameState::Game;
+        initializeRegion();
 
         cout << "All players have loaded!" << endl;
     }
@@ -409,15 +418,57 @@ void Server::startPlayerAction(PlayerInfo& player)
 void Server::broadcastStates()
 {
     std::vector<network::PlayerData> player_list;
+    std::vector<network::EnemyData> enemy_list;
 
     for (auto& player : players)
     {
         player_list.push_back(player.Data);
     }
 
+    for (auto& enemy : region.enemies)
+    {
+        enemy_list.push_back(enemy.Data);
+    }
+
     for (auto& player : players)
     {
         ServerMessage::PlayerStates(*player.Socket, player_list);
+        ServerMessage::EnemyUpdate(*player.Socket, enemy_list);
+    }
+}
+
+void Server::initializeRegion()
+{
+    region = Region();
+
+    std::vector<network::EnemyData> enemies;
+    for (auto& enemy : region.enemies)
+    {
+        enemies.push_back(enemy.Data);
+    }
+
+    for (auto& player : players)
+    {
+        ServerMessage::RegionInfo(*player.Socket, enemies);
+    }
+}
+
+void Server::checkAttack(PlayerInfo& player)
+{
+    util::LineSegment sword = player.GetSwordLocation();
+
+    for (auto& enemy : region.enemies)
+    {
+        sf::FloatRect bounds;
+        bounds.left = enemy.Data.position.x;
+        bounds.top = enemy.Data.position.y;
+        bounds.width = enemy.Bounds.x;
+        bounds.height = enemy.Bounds.y;
+
+        if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
+        {
+            enemy.Data.health = 0;
+        }
     }
 }
 

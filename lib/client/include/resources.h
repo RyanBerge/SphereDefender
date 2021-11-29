@@ -1,7 +1,7 @@
 /**************************************************************************************************
- *  File:       util.h
+ *  File:       resources.h
  *
- *  Purpose:    Miscellaneous utility functions
+ *  Purpose:    Utility functions for managing SFML resources
  *
  *  Author:     Ryan Berge
  *
@@ -13,10 +13,8 @@
 #include <memory>
 #include <cmath>
 
-namespace client::util
+namespace client::resources
 {
-    constexpr double pi = 3.141592653589793238462643383279502884L;
-
     std::shared_ptr<sf::Texture> AllocTexture(std::string filename);
     std::shared_ptr<sf::Font> AllocFont(std::string filename);
 }

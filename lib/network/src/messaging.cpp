@@ -645,6 +645,88 @@ bool ServerMessage::StartAction(sf::TcpSocket& socket, uint16_t player_id, Playe
     return true;
 }
 
+bool ServerMessage::RegionInfo(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
+{
+    Code code = ServerMessage::Code::RegionInfo;
+
+    uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
+
+    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::type) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
+    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &num_enemies, sizeof(num_enemies));
+    offset += sizeof(num_enemies);
+
+    for (auto& enemy : enemies)
+    {
+        std::memcpy(buffer + offset, &enemy.id, sizeof(enemy.id));
+        offset += sizeof(enemy.id);
+        std::memcpy(buffer + offset, &enemy.type, sizeof(enemy.type));
+        offset += sizeof(enemy.type);
+        std::memcpy(buffer + offset, &enemy.position.x, sizeof(enemy.position.x));
+        offset += sizeof(enemy.position.x);
+        std::memcpy(buffer + offset, &enemy.position.y, sizeof(enemy.position.y));
+        offset += sizeof(enemy.position.y);
+        std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
+        offset += sizeof(enemy.health);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::RegionInfo message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
+bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
+{
+    Code code = ServerMessage::Code::EnemyUpdate;
+
+    uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
+
+    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
+    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &num_enemies, sizeof(num_enemies));
+    offset += sizeof(num_enemies);
+
+    for (auto& enemy : enemies)
+    {
+        std::memcpy(buffer + offset, &enemy.id, sizeof(enemy.id));
+        offset += sizeof(enemy.id);
+        std::memcpy(buffer + offset, &enemy.position.x, sizeof(enemy.position.x));
+        offset += sizeof(enemy.position.x);
+        std::memcpy(buffer + offset, &enemy.position.y, sizeof(enemy.position.y));
+        offset += sizeof(enemy.position.y);
+        std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
+        offset += sizeof(enemy.health);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::RegionInfo message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -831,6 +913,104 @@ bool ServerMessage::DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_playe
     out_player_id = id;
     out_action = temp_action;
 
+    return true;
+}
+
+bool ServerMessage::DecodeRegionInfo(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies)
+{
+    uint16_t num_enemies;
+    std::vector<EnemyData> enemies;
+
+    if (!read(socket, &num_enemies, sizeof(num_enemies)))
+    {
+        cerr << "Network: DecodeRegionInfo failed to read num enemies." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < num_enemies; ++i)
+    {
+        EnemyData data;
+
+        if (!read(socket, &data.id, sizeof(data.id)))
+        {
+            cerr << "Network: DecodeRegionInfo failed to read an enemy id." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.type, sizeof(data.type)))
+        {
+            cerr << "Network: DecodeRegionInfo failed to read an enemy type." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.position.x, sizeof(data.position.x)))
+        {
+            cerr << "Network: DecodeRegionInfo failed to read an enemy position.x." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.position.y, sizeof(data.position.y)))
+        {
+            cerr << "Network: DecodeRegionInfo failed to read an enemy position.y." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.health, sizeof(data.health)))
+        {
+            cerr << "Network: DecodeRegionInfo failed to read an enemy health." << endl;
+            return false;
+        }
+
+        enemies.push_back(data);
+    }
+
+    out_enemies = enemies;
+    return true;
+}
+
+bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies)
+{
+    uint16_t num_enemies;
+    std::vector<EnemyData> enemies;
+
+    if (!read(socket, &num_enemies, sizeof(num_enemies)))
+    {
+        cerr << "Network: DecodeEnemyUpdate failed to read num enemies." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < num_enemies; ++i)
+    {
+        EnemyData data;
+
+        if (!read(socket, &data.id, sizeof(data.id)))
+        {
+            cerr << "Network: DecodeEnemyUpdate failed to read an enemy id." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.position.x, sizeof(data.position.x)))
+        {
+            cerr << "Network: DecodeEnemyUpdate failed to read an enemy position.x." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.position.y, sizeof(data.position.y)))
+        {
+            cerr << "Network: DecodeEnemyUpdate failed to read an enemy position.y." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.health, sizeof(data.health)))
+        {
+            cerr << "Network: DecodeEnemyUpdate failed to read an enemy health." << endl;
+            return false;
+        }
+
+        enemies.push_back(data);
+    }
+
+    out_enemies = enemies;
     return true;
 }
 

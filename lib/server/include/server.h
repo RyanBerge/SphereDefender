@@ -13,6 +13,7 @@
 #include <SFML/System/Clock.hpp>
 #include "messaging.h"
 #include "player_info.h"
+#include "region.h"
 #include <memory>
 #include <vector>
 
@@ -40,6 +41,7 @@ private:
     uint16_t owner = 0;
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
+    Region region;
 
     void update();
 
@@ -57,6 +59,8 @@ private:
     void startPlayerAction(PlayerInfo& player);
 
     void broadcastStates();
+    void initializeRegion();
+    void checkAttack(PlayerInfo& player);
 };
 
 } // server

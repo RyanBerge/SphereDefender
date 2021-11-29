@@ -11,15 +11,9 @@
 #include <SFML/Network/TcpSocket.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <string>
+#include "entity_data.h"
 
 namespace network {
-
-struct PlayerData
-{
-    uint16_t id;
-    std::string name;
-    sf::Vector2f position;
-};
 
 struct PlayerAction
 {
@@ -78,8 +72,11 @@ public:
         StartGame,
         AllPlayersLoaded,
 
+        RegionInfo,
+
         PlayerStates,
         StartAction,
+        EnemyUpdate,
 
         Error = 0xFF
     };
@@ -95,6 +92,8 @@ public:
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool StartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
+    static bool RegionInfo(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
+    static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -103,6 +102,8 @@ public:
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
+    static bool DecodeRegionInfo(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
+    static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
 };
 
 } // network

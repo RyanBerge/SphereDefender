@@ -349,9 +349,27 @@ void GameManager::checkMessages()
             }
         }
         break;
+        case ServerMessage::Code::RegionInfo:
+        {
+            std::vector<network::EnemyData> enemy_list;
+            if (ServerMessage::DecodeRegionInfo(ServerSocket, enemy_list))
+            {
+                Game.InitializeRegion(enemy_list);
+            }
+        }
+        break;
+        case ServerMessage::Code::EnemyUpdate:
+        {
+            std::vector<network::EnemyData> enemy_list;
+            if (ServerMessage::DecodeEnemyUpdate(ServerSocket, enemy_list))
+            {
+                Game.UpdateEnemies(enemy_list);
+            }
+        }
+        break;
         default:
         {
-            cerr << "Unrecognized code." << endl;
+            cerr << "Unrecognized code: " << static_cast<int>(code) << endl;
         }
     }
 }

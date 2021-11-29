@@ -9,7 +9,7 @@
  *
  *************************************************************************************************/
 #include "spritesheet.h"
-#include "util.h"
+#include "resources.h"
 #include "game_manager.h"
 #include <iostream>
 
@@ -43,7 +43,7 @@ void Spritesheet::Draw()
 
 bool Spritesheet::LoadTexture(std::string filename)
 {
-    texture = util::AllocTexture(filename);
+    texture = resources::AllocTexture(filename);
     if (texture == nullptr)
     {
         return false;

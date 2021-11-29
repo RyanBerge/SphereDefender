@@ -10,7 +10,8 @@
 #include "player.h"
 #include "game_manager.h"
 #include "settings.h"
-#include "util.h"
+#include "game_math.h"
+#include "resources.h"
 #include <iostream>
 #include <cmath>
 #include <complex>

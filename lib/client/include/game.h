@@ -15,6 +15,7 @@
 #include "world_map.h"
 #include "gui.h"
 #include "player.h"
+#include "enemy.h"
 
 namespace client {
 
@@ -29,10 +30,13 @@ public:
     void Load(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void Unload();
 
+    void InitializeRegion(std::vector<network::EnemyData> enemy_list);
+
     void Start(sf::Vector2f spawn_position);
 
     int GetPlayerCount();
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
+    void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void RemovePlayer(uint16_t player_id);
 
@@ -43,6 +47,7 @@ private:
     WorldMap world_map;
     Player local_player;
     std::map<uint16_t, Avatar> avatars;
+    std::map<uint16_t, Enemy> enemies;
 
     std::atomic_bool loaded = false;
     bool menu_open = false;

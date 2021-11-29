@@ -11,7 +11,7 @@
 #include "main_menu.h"
 #include "event_handler.h"
 #include "game_manager.h"
-#include "util.h"
+#include "resources.h"
 
 using std::cout, std::endl;
 
@@ -19,7 +19,7 @@ namespace client {
 
 MainMenu::MainMenu()
 {
-    std::shared_ptr<sf::Font> font = util::AllocFont("Vera.ttf");
+    std::shared_ptr<sf::Font> font = resources::AllocFont("Vera.ttf");
 
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));

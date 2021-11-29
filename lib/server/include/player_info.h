@@ -11,7 +11,8 @@
 
 #include <SFML/Network/TcpSocket.hpp>
 #include <memory>
-#include "messaging.h"
+#include "entity_data.h"
+#include "game_math.h"
 
 namespace server {
 
@@ -29,18 +30,22 @@ public:
     void Update(sf::Time elapsed);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
+    util::LineSegment GetSwordLocation();
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;
     network::PlayerData Data;
 
+    bool Attacking = false;
+
 private:
     double movement_speed = 200; // pixels per second
     int swing_speed = 360; // degrees per second
     int swing_arc = 90; // degrees
+    int sword_offset = 35;
+    int sword_length = 40;
 
     sf::Vector2f velocity;
-    bool attacking = false;
     double starting_attack_angle;
     double current_attack_angle;
 

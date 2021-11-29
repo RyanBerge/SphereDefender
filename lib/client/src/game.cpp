@@ -46,10 +46,11 @@ void Game::Update(sf::Time elapsed)
             WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
         }
 
-        if (GameManager::GetInstance().Window.hasFocus() && !menu_open)
-        {
-            updateScroll(elapsed);
-        }
+//        if (GameManager::GetInstance().Window.hasFocus() && !menu_open)
+//        {
+//            updateScroll(elapsed);
+//        }
+        WorldView.setCenter(local_player.GetPosition());
     }
 }
 
@@ -66,6 +67,11 @@ void Game::Draw()
         for (auto& avatar : avatars)
         {
             avatar.second.Draw();
+        }
+
+        for (auto& enemy : enemies)
+        {
+            enemy.second.Draw();
         }
 
         GameManager::GetInstance().Window.setView(old_view);
@@ -136,6 +142,15 @@ void Game::Start(sf::Vector2f spawn_position)
     WorldView.setCenter(spawn_position);
 }
 
+void Game::InitializeRegion(std::vector<network::EnemyData> enemy_list)
+{
+    for (auto& enemy : enemy_list)
+    {
+        enemies[enemy.id] = Enemy();
+        enemies[enemy.id].UpdateData(enemy);
+    }
+}
+
 int Game::GetPlayerCount()
 {
     return avatars.size() + 1;
@@ -152,6 +167,18 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
         else
         {
             avatars[player.id].SetPosition(player.position);
+        }
+    }
+}
+
+void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
+{
+    for (auto& enemy : enemy_list)
+    {
+        enemies[enemy.id].UpdateData(enemy);
+        if (enemies[enemy.id].GetData().health == 0)
+        {
+            enemies.erase(enemy.id);
         }
     }
 }

@@ -8,7 +8,7 @@
  *
  *************************************************************************************************/
 #include "textbox.h"
-#include "util.h"
+#include "resources.h"
 #include "event_handler.h"
 #include "game_manager.h"
 #include <functional>
@@ -34,7 +34,7 @@ Textbox::Textbox(std::string font_filename, sf::Vector2u box_size, sf::Color fon
     box.setOutlineThickness(box_size.y * 0.05);
     box.setSize(sf::Vector2f(box_size.x, box_size.y));
 
-    font = util::AllocFont(font_filename);
+    font = resources::AllocFont(font_filename);
 
     if (font != nullptr)
     {

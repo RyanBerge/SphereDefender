@@ -1,19 +1,19 @@
 /**************************************************************************************************
- *  File:       util.h
+ *  File:       resources.cpp
  *
- *  Purpose:    Miscellaneous utility functions
+ *  Purpose:    Utility functions for managing SFML resources
  *
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
 #include <SFML/Graphics/Texture.hpp>
-#include "util.h"
+#include "resources.h"
 #include <iostream>
 #include <map>
 
 using std::cout, std::endl;
 
-namespace client::util {
+namespace client::resources {
 
 namespace {
     std::map<std::string, std::weak_ptr<sf::Texture>> texture_map;

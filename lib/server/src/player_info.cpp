@@ -9,7 +9,12 @@
  *************************************************************************************************/
 
 #include "player_info.h"
+#include "game_math.h"
 #include <cmath>
+#include <iostream>
+#include "SFML/Graphics/Vertex.hpp"
+
+using std::cout, std::endl;
 
 namespace server {
 
@@ -17,12 +22,18 @@ void PlayerInfo::Update(sf::Time elapsed)
 {
     Data.position += velocity * elapsed.asSeconds();
 
-    current_attack_angle = std::fmod(swing_speed * elapsed.asSeconds(), 360);
-    float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
-
-    if (rotation_delta > swing_arc)
+    if (Attacking)
     {
-        attacking = false;
+        current_attack_angle = std::fmod(current_attack_angle + swing_speed * elapsed.asSeconds(), 360);
+        float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
+
+        //cout << "Angle: " << current_attack_angle << ", Delta: " << rotation_delta << endl;
+        //cout << current_attack_angle << endl;
+
+        if (rotation_delta > swing_arc)
+        {
+            Attacking = false;
+        }
     }
 }
 
@@ -46,7 +57,17 @@ void PlayerInfo::StartAttack(uint16_t attack_angle)
 {
     starting_attack_angle = attack_angle;
     current_attack_angle = starting_attack_angle;
-    attacking = true;
+    Attacking = true;
+}
+
+util::LineSegment PlayerInfo::GetSwordLocation()
+{
+    util::LineSegment sword;
+    sword.p1.x = sword_offset * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
+    sword.p1.y = sword_offset * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
+    sword.p2.x = (sword_offset + sword_length) * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
+    sword.p2.y = (sword_offset + sword_length) * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
+    return sword;
 }
 
 } // server

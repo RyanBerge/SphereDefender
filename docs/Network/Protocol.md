@@ -38,6 +38,14 @@
 * Broadcasted whenever a player starts an action
 * `[playerid:2][actionflags:1][attackangle:2][...]`
 
+#### `ServerMessage::RegionInfo`
+* Sent when a region is created
+* `[numenemies:2][id:2][type:1][position:8][health:1][...]`
+
+#### `ServerMessage::EnemyUpdate`
+* Broadcasted every frame
+* `[numenemies:2][id:2][position:8][health:1][...]`
+
 ## Client Messages
 
 #### `ClientMessage::InitLobby`

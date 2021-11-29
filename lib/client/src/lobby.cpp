@@ -10,7 +10,7 @@
 #include "lobby.h"
 #include "event_handler.h"
 #include "game_manager.h"
-#include "util.h"
+#include "resources.h"
 #include "messaging.h"
 #include <iostream>
 
@@ -30,7 +30,7 @@ Lobby::Lobby()
     start_button.SetPosition(795, 850);
     start_button.RegisterLeftMouseDown(std::bind(&Lobby::StartGame, this));
 
-    font = util::AllocFont("Vera.ttf");
+    font = resources::AllocFont("Vera.ttf");
 
     if (font == nullptr)
     {
