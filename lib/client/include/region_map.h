@@ -1,6 +1,6 @@
 /**************************************************************************************************
- *  File:       world_map.h
- *  Class:      WorldMap
+ *  File:       region_map.h
+ *  Class:      RegionMap
  *
  *  Purpose:    Represents the world map
  *
@@ -14,10 +14,10 @@
 
 namespace client {
 
-class WorldMap
+class RegionMap
 {
 public:
-    WorldMap();
+    RegionMap();
 
     void Update(sf::Time elapsed);
     void Draw();

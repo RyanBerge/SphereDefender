@@ -12,7 +12,7 @@
 #include <SFML/System/Time.hpp>
 #include <atomic>
 #include <map>
-#include "world_map.h"
+#include "region_map.h"
 #include "gui.h"
 #include "player.h"
 #include "enemy.h"
@@ -44,7 +44,7 @@ public:
 
 private:
     Gui gui;
-    WorldMap world_map;
+    RegionMap region_map;
     Player local_player;
     std::map<uint16_t, Avatar> avatars;
     std::map<uint16_t, Enemy> enemies;

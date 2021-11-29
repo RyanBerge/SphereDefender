@@ -62,7 +62,7 @@ void Game::Draw()
         WorldView.setViewport(old_view.getViewport());
         GameManager::GetInstance().Window.setView(WorldView);
 
-        world_map.Draw();
+        region_map.Draw();
         local_player.Draw();
         for (auto& avatar : avatars)
         {
@@ -104,7 +104,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     event_id_map[sf::Event::EventType::KeyReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyReleased, std::bind(&Game::onKeyReleased, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseWheelScrolled] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseWheelScrolled, std::bind(&Game::onMouseWheel, this, std::placeholders::_1));
 
-    world_map.Load();
+    region_map.Load();
     gui.Load();
     local_player.Load(local);
 
@@ -131,7 +131,7 @@ void Game::Unload()
     }
 
     // TODO: These load/unload functions probably need to be protected by mutexes in case the host leaves when the game is loading
-    world_map.Unload();
+    region_map.Unload();
     gui.Unload();
     local_player.Unload();
 }
@@ -267,16 +267,7 @@ void Game::onKeyPressed(sf::Event event)
 
     if (event.key.code == Settings::GetInstance().Bindings.Pause)
     {
-        if (!menu_open)
-        {
-            Settings::GetInstance().Open();
-            menu_open = true;
-        }
-        else
-        {
-            Settings::GetInstance().Close();
-            menu_open = false;
-        }
+        gui.InMenus = !gui.InMenus;
     }
 }
 

@@ -26,6 +26,7 @@ public:
     void Unload();
 
     sf::View GuiView;
+    bool InMenus = false;
 
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
@@ -35,7 +36,13 @@ public:
 private:
     void exitGame();
 
-    Spritesheet action_bar;
+    Spritesheet ui_frame;
+    CursorButton menu_button;
+
+    Spritesheet menu;
+    CursorButton resume_button;
+    CursorButton save_button;
+    CursorButton settings_button;
     CursorButton exit_button;
 };
 

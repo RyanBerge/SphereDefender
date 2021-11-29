@@ -28,6 +28,7 @@ Enemy::Enemy()
 
 void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
 {
+    return;
     sf::Vector2f target{0, 0};
     double origin_distance = util::Distance(Data.position, target);
     double current_distance = origin_distance;

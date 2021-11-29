@@ -17,7 +17,7 @@ set(Sources
     src/settings.cpp
     src/spritesheet.cpp
     src/textbox.cpp
-    src/world_map.cpp
+    src/region_map.cpp
 )
 
 add_executable(${TargetName} ${Sources})

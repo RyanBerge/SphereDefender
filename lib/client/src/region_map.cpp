@@ -1,29 +1,29 @@
 /**************************************************************************************************
- *  File:       world_map.cpp
- *  Class:      WorldMap
+ *  File:       region_map.cpp
+ *  Class:      RegionMap
  *
  *  Purpose:    Represents the world map
  *
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
-#include "world_map.h"
+#include "region_map.h"
 #include "game_manager.h"
 #include <SFML/System/Time.hpp>
 
 namespace client {
 
-WorldMap::WorldMap()
+RegionMap::RegionMap()
 {
 
 }
 
-void WorldMap::Update(sf::Time elapsed)
+void RegionMap::Update(sf::Time elapsed)
 {
     (void)elapsed;
 }
 
-void WorldMap::Draw()
+void RegionMap::Draw()
 {
     background.Draw();
 
@@ -33,20 +33,20 @@ void WorldMap::Draw()
     }
 }
 
-void WorldMap::Load()
+void RegionMap::Load()
 {
     background.LoadTexture("Background.png");
     background.SetTiling(true);
-    background.SetPosition(-2000, -2000);
+    background.SetPosition(-6000, -6000);
 
-    sf::RectangleShape building(sf::Vector2f(300, 150));
+    sf::RectangleShape building(sf::Vector2f(300, 800));
     building.setFillColor(sf::Color(115, 150, 180));
     building.setOutlineColor(sf::Color::Black);
     building.setOutlineThickness(5);
-    building.setPosition(-400, -400);
+    building.setPosition(-600, -400);
     buildings.push_back(building);
 }
 
-void WorldMap::Unload() { }
+void RegionMap::Unload() { }
 
 } // client

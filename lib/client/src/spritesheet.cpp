@@ -72,8 +72,8 @@ void Spritesheet::SetTiling(bool tiled)
     texture->setRepeated(tiled);
     tiled_sprite.setTexture(*texture);
 
-    sprite.setTextureRect(sf::Rect{0, 0, 6000, 6000 });
-    tiled_sprite.setTextureRect(sf::Rect{0, 0, 6000, 6000 });
+    sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
+    tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
 }
 
 } // client
