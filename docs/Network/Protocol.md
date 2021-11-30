@@ -64,7 +64,7 @@
 
 #### `ServerMessage::PlayerStates`
 * Sent every frame
-* `[numstates:1][playerid:2][posx:4][posy:4][playerid:2][posx:4][posy:4][...][...][...]`
+* `[numstates:1][playerid:2][position:8][health:1][...]`
 
 #### `ServerMessage::PlayerStartAction`
 * Broadcasted whenever a player starts an action

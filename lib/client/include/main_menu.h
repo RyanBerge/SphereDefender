@@ -59,6 +59,7 @@ private:
     void onTextEntered(sf::Event event);
 
     std::map<sf::Event::EventType, uint64_t> event_id_map;
+    std::shared_ptr<sf::Font> font;
 
     std::map<MenuType, Menu> menus;
 

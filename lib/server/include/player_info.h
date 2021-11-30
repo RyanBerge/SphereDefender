@@ -24,13 +24,15 @@ public:
         Uninitialized,
         Disconnected,
         Menus,
-        Alive
+        Alive,
+        Dead
     };
 
     void Update(sf::Time elapsed);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     util::LineSegment GetSwordLocation();
+    void Damage(int damage_value);
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;

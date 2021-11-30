@@ -580,7 +580,7 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
     Code code = Code::PlayerStates;
     uint8_t num_players = static_cast<uint8_t>(players.size());
 
-    size_t buffer_size = sizeof(code) + sizeof(num_players) + ((sizeof(uint16_t) + sizeof(float) * 2) * players.size());
+    size_t buffer_size = sizeof(code) + sizeof(num_players) + ((sizeof(uint16_t) + sizeof(float) * 2 + sizeof(PlayerData::health)) * players.size());
     uint8_t* buffer = new uint8_t[buffer_size];
 
     int offset = 0;
@@ -597,6 +597,8 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
         offset += sizeof(player.position.x);
         std::memcpy(buffer + offset, &player.position.y, sizeof(player.position.y));
         offset += sizeof(player.position.y);
+        std::memcpy(buffer + offset, &player.health, sizeof(player.health));
+        offset += sizeof(player.health);
     }
 
     if (!writeBuffer(socket, buffer, buffer_size))
@@ -923,6 +925,12 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
         if (!read(socket, &data.position.y, sizeof(data.position.y)))
         {
             cerr << "Network: DecodePlayerStates failed to read a y position." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.health, sizeof(data.health)))
+        {
+            cerr << "Network: DecodePlayerStates failed to read a health value." << endl;
             return false;
         }
 

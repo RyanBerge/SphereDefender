@@ -56,7 +56,6 @@ std::shared_ptr<sf::Font> AllocFont(std::string filename)
 
         if (font->loadFromFile(filepath))
         {
-            // cout << "Loaded font: " << filepath << endl;
             font_map[filepath] = font;
             return font;
         }

@@ -20,6 +20,7 @@ struct PlayerData
     uint16_t id;
     std::string name;
     sf::Vector2f position;
+    uint8_t health;
 };
 
 struct ConvoyData

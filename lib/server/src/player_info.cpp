@@ -70,4 +70,17 @@ util::LineSegment PlayerInfo::GetSwordLocation()
     return sword;
 }
 
+void PlayerInfo::Damage(int damage_value)
+{
+    if (Data.health < damage_value)
+    {
+        Data.health = 0;
+        Status = PlayerStatus::Dead;
+    }
+    else
+    {
+        Data.health -= damage_value;
+    }
+}
+
 } // server

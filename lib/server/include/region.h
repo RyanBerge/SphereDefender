@@ -12,7 +12,8 @@
 #include "enemy.h"
 #include "player_info.h"
 #include <list>
-#include "SFML/System/Time.hpp"
+#include <random>
+#include "SFML/System/Clock.hpp"
 
 namespace server
 {
@@ -21,6 +22,7 @@ class Region
 {
 public:
     Region();
+    Region(unsigned num_players);
 
     void Update(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void Cull();
@@ -29,7 +31,10 @@ public:
     std::list<Enemy> Enemies;
 
 private:
+    unsigned num_players;
+    sf::Clock spawn_timer;
 
+    void spawnEnemy();
 };
 
 } // namespace server

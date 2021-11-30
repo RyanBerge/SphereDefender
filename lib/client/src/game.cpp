@@ -110,7 +110,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
 
     for (auto& player : other_players)
     {
-        avatars[player.id] = Avatar(sf::Color(180, 115, 150), player.name);
+        avatars[player.id] = Avatar(sf::Color(180, 115, 150), player);
     }
 
     WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
@@ -162,13 +162,16 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
 {
     for (auto& player : player_list)
     {
-        if (player.id == local_player.PlayerId)
+        if (player.id == local_player.Avatar.Data.id)
         {
             local_player.SetPosition(player.position);
+            local_player.Avatar.UpdateHealth(player.health);
+            gui.UpdateHealth(player.health);
         }
         else
         {
             avatars[player.id].SetPosition(player.position);
+            avatars[player.id].UpdateHealth(player.health);
         }
     }
 }
@@ -187,7 +190,7 @@ void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
 
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
 {
-    if (local_player.PlayerId == player_id)
+    if (local_player.Avatar.Data.id == player_id)
     {
     }
     else
@@ -207,7 +210,7 @@ void Game::StartEnemyAction(uint16_t enemy_id, network::EnemyAction action)
 void Game::RemovePlayer(uint16_t player_id)
 {
     // TODO: Thread-safety
-    cout << avatars[player_id].Name << " disconnected." << endl;
+    cout << avatars[player_id].Data.name << " disconnected." << endl;
     avatars.erase(player_id);
 }
 

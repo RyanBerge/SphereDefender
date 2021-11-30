@@ -11,6 +11,7 @@
 #include "game_manager.h"
 #include "messaging.h"
 #include "settings.h"
+#include "resources.h"
 #include <iostream>
 
 using std::cout, std::cerr, std::endl;
@@ -27,6 +28,33 @@ Gui::Gui()
     menu_button = CursorButton("MenuButton.png");
     menu_button.SetPosition(1803, 14);
     menu_button.RegisterLeftMouseDown([this](void){ InMenus = true; });
+
+    healthbar.setSize(sf::Vector2f{40, 200});
+    healthbar.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
+    healthbar.setPosition(sf::Vector2f{70, 1210});
+    healthbar.setFillColor(sf::Color::Green);
+
+    healthbar_frame.setSize(sf::Vector2f{40, 200});
+    healthbar_frame.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
+    healthbar_frame.setPosition(sf::Vector2f{70, 1210});
+    healthbar_frame.setFillColor(sf::Color::Transparent);
+    healthbar_frame.setOutlineColor(sf::Color::Black);
+    healthbar_frame.setOutlineThickness(4);
+
+    font = resources::AllocFont("Vera.ttf");
+    death_text.setFont(*font);
+    death_text.setString("You are dead.");
+    death_text.setCharacterSize(120);
+    sf::FloatRect bounds = death_text.getGlobalBounds();
+    sf::Vector2f resolution = Settings::GetInstance().WindowResolution;
+    death_text.setPosition(sf::Vector2f{resolution.x / 2 - bounds.width / 2, resolution.y / 2 - bounds.height / 2});
+    death_text.setFillColor(sf::Color::Black);
+    death_text.setOutlineColor(sf::Color::White);
+    death_text.setOutlineThickness(2);
+
+    death_tint.setSize(Settings::GetInstance().WindowResolution);
+    death_tint.setPosition(0, 0);
+    death_tint.setFillColor(sf::Color{100, 100, 100, 150});
 
     menu.LoadTexture("Menu.png");
     menu.SetPosition(613, 95);
@@ -57,6 +85,15 @@ void Gui::Draw()
     ui_frame.Draw();
     menu_button.Draw();
 
+    GameManager::GetInstance().Window.draw(healthbar);
+    GameManager::GetInstance().Window.draw(healthbar_frame);
+
+    if (Health == 0)
+    {
+        GameManager::GetInstance().Window.draw(death_tint);
+        GameManager::GetInstance().Window.draw(death_text);
+    }
+
     if (InMenus)
     {
         menu.Draw();
@@ -77,6 +114,12 @@ void Gui::Load()
 void Gui::Unload()
 {
 
+}
+
+void Gui::UpdateHealth(uint8_t value)
+{
+    Health = value;
+    healthbar.setScale(sf::Vector2f{1, static_cast<float>(Health) / 100});
 }
 
 

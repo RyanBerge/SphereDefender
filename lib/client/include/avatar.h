@@ -14,13 +14,14 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include <cstdint>
 #include <string>
+#include "entity_data.h"
 
 namespace client {
 
 class Avatar {
 public:
     Avatar();
-    Avatar(sf::Color color, std::string name);
+    Avatar(sf::Color color, network::PlayerData data);
 
     void Update(sf::Time elapsed);
     void Draw();
@@ -29,8 +30,9 @@ public:
     sf::Vector2f GetPosition();
 
     void StartAttack(uint16_t attack_angle);
+    void UpdateHealth(uint8_t health);
 
-    std::string Name;
+    network::PlayerData Data;
     bool Attacking = false;
 
 private:

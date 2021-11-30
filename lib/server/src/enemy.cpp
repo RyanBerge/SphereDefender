@@ -51,6 +51,11 @@ void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, network::
         }
         else if (attack_timer.getElapsedTime().asMilliseconds() < attack_duration)
         {
+            if (!attack_flag)
+            {
+                checkAttack(players, convoy);
+                attack_flag = true;
+            }
             velocity.x = (-attack_vector.x / hyp) * movement_speed * 1.25;
             velocity.y = (-attack_vector.y / hyp) * movement_speed * 1.25;
             Data.position += velocity * elapsed.asSeconds();
@@ -133,12 +138,15 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::Co
 
     for (auto& player : players)
     {
-        double new_distance = util::Distance(Data.position, player.Data.position);
-        if (new_distance < current_distance && new_distance < AGGRO_THRESHOLD)
+        if (player.Status == PlayerInfo::PlayerStatus::Alive)
         {
-            current_distance = new_distance;
-            target = player.Data.position;
-            player_target = true;
+            double new_distance = util::Distance(Data.position, player.Data.position);
+            if (new_distance < current_distance && new_distance < AGGRO_THRESHOLD)
+            {
+                current_distance = new_distance;
+                target = player.Data.position;
+                player_target = true;
+            }
         }
     }
 
@@ -158,6 +166,7 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::Co
         velocity.x = 0;
         velocity.y = 0;
         attacking = true;
+        attack_flag = false;
         attack_timer.restart();
         attack_vector = sf::Vector2f{static_cast<float>(movement_vector.x / hyp), static_cast<float>(movement_vector.y / hyp)};
         starting_attack_position = Data.position;
@@ -169,6 +178,23 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::Co
     }
 
     Data.position += velocity * elapsed.asSeconds();
+}
+
+void Enemy::checkAttack(std::vector<PlayerInfo>& players, network::ConvoyData convoy)
+{
+    (void)convoy;
+
+    for (auto& player : players)
+    {
+        if (player.Status == PlayerInfo::PlayerStatus::Alive)
+        {
+            sf::FloatRect bounds(player.Data.position.x - 35, player.Data.position.y - 35, 70, 70);
+            if (bounds.intersects(GetBounds()))
+            {
+                player.Damage(attack_damage);
+            }
+        }
+    }
 }
 
 } // server

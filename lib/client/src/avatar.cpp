@@ -22,7 +22,7 @@ namespace {
 
 Avatar::Avatar() { }
 
-Avatar::Avatar(sf::Color color, std::string name) : Name{name}
+Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
     sphere.setRadius(35);
     sphere.setPosition(300, 300);
@@ -38,42 +38,49 @@ Avatar::Avatar(sf::Color color, std::string name) : Name{name}
 
 void Avatar::Update(sf::Time elapsed)
 {
-    if (Attacking)
+    if (Data.health > 0)
     {
-        sword.setPosition(sphere.getPosition());
-        sword.rotate(360 * elapsed.asSeconds());
-
-        float rotation_delta = sword.getRotation() - starting_attack_angle;
-        if (rotation_delta < 0)
+        if (Attacking)
         {
-            rotation_delta += 360;
-        }
+            sword.setPosition(sphere.getPosition());
+            sword.rotate(360 * elapsed.asSeconds());
 
-        if (rotation_delta > 90)
-        {
-            Attacking = false;
+            float rotation_delta = sword.getRotation() - starting_attack_angle;
+            if (rotation_delta < 0)
+            {
+                rotation_delta += 360;
+            }
+
+            if (rotation_delta > 90)
+            {
+                Attacking = false;
+            }
         }
     }
 }
 
 void Avatar::Draw()
 {
-    if (Attacking)
+    if (Data.health > 0)
     {
-        GameManager::GetInstance().Window.draw(sword);
-    }
+        if (Attacking)
+        {
+            GameManager::GetInstance().Window.draw(sword);
+        }
 
-    GameManager::GetInstance().Window.draw(sphere);
+        GameManager::GetInstance().Window.draw(sphere);
+    }
 }
 
 void Avatar::SetPosition(sf::Vector2f position)
 {
+    Data.position = position;
     sphere.setPosition(position);
 }
 
 sf::Vector2f Avatar::GetPosition()
 {
-    return sphere.getPosition();
+    return Data.position;
 }
 
 void Avatar::StartAttack(uint16_t attack_angle)
@@ -81,6 +88,12 @@ void Avatar::StartAttack(uint16_t attack_angle)
     starting_attack_angle = attack_angle;
     sword.setRotation(starting_attack_angle);
     Attacking = true;
+}
+
+void Avatar::UpdateHealth(uint8_t health)
+{
+    // TODO: Play animation if you take damage?
+    Data.health = health;
 }
 
 } // client

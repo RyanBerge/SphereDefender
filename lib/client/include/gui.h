@@ -12,6 +12,8 @@
 #include "cursor_button.h"
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 namespace client {
 
@@ -25,8 +27,11 @@ public:
     void Load();
     void Unload();
 
+    void UpdateHealth(uint8_t value);
+
     sf::View GuiView;
     bool InMenus = false;
+    uint8_t Health = 100;
 
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
@@ -38,6 +43,12 @@ private:
 
     Spritesheet ui_frame;
     CursorButton menu_button;
+
+    sf::RectangleShape healthbar;
+    sf::RectangleShape healthbar_frame;
+    sf::RectangleShape death_tint;
+    std::shared_ptr<sf::Font> font;
+    sf::Text death_text;
 
     Spritesheet menu;
     CursorButton resume_button;

@@ -37,11 +37,9 @@ public:
     void OnKeyPressed(sf::Event::KeyEvent event);
     void OnKeyReleased(sf::Event::KeyEvent event);
 
-    uint16_t PlayerId;
+    Avatar Avatar;
 
 private:
-    Avatar avatar;
-
     void updateMovement();
     void startAttack(sf::Vector2i point);
 

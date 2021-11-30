@@ -82,10 +82,13 @@ void Server::update()
 
         for (auto& player : players)
         {
-            player.Update(elapsed);
-            if (player.Attacking)
+            if (player.Status == PlayerInfo::PlayerStatus::Alive)
             {
-                checkAttack(player);
+                player.Update(elapsed);
+                if (player.Attacking)
+                {
+                    checkAttack(player);
+                }
             }
         }
 
@@ -319,6 +322,7 @@ void Server::loadingComplete(PlayerInfo& player)
     {
         cout << player.Data.name << " has finished loading." << endl;
         player.Status = PlayerInfo::PlayerStatus::Alive;
+        player.Data.health = 100;
 
         for (auto& p : players)
         {
@@ -383,6 +387,12 @@ void Server::updatePlayerState(PlayerInfo& player)
         return;
     }
 
+    if (player.Status != PlayerInfo::PlayerStatus::Alive)
+    {
+        cerr << "Player attempted to change states while not alive." << endl;
+        return;
+    }
+
     player.UpdatePlayerState(movement_vector);
 }
 
@@ -398,6 +408,12 @@ void Server::startPlayerAction(PlayerInfo& player)
     if (game_state != GameState::Game)
     {
         cerr << "Server received a player action when not in game." << endl;
+        return;
+    }
+
+    if (player.Status != PlayerInfo::PlayerStatus::Alive)
+    {
+        cerr << "Player attempted to take an action while not alive." << endl;
         return;
     }
 
@@ -439,7 +455,7 @@ void Server::broadcastStates()
 
 void Server::initializeRegion()
 {
-    region = Region();
+    region = Region(players.size());
 
     std::vector<network::EnemyData> enemy_list;
     for (auto& enemy : region.Enemies)
