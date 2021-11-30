@@ -104,6 +104,17 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     event_id_map[sf::Event::EventType::KeyReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::KeyReleased, std::bind(&Game::onKeyReleased, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseWheelScrolled] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseWheelScrolled, std::bind(&Game::onMouseWheel, this, std::placeholders::_1));
 
+    menu_open = false;
+    zoom_factor = 0;
+    current_zoom = 1;
+    target_zoom = current_zoom;
+    zoom_speed = 0;
+
+    avatars.clear();
+    enemies.clear();
+
+    local_player = Player();
+
     region_map.Load();
     gui.Load();
     local_player.Load(local);
@@ -247,61 +258,82 @@ void Game::updateScroll(sf::Time elapsed)
 // TODO: Ensure that these are only updated for elements that can be controlled at that time
 void Game::onMouseMove(sf::Event event)
 {
-    gui.OnMouseMove(event.mouseMove);
-    local_player.OnMouseMove(event.mouseMove);
+    if (loaded)
+    {
+        gui.OnMouseMove(event.mouseMove);
+        local_player.OnMouseMove(event.mouseMove);
+    }
 }
 
 void Game::onMouseDown(sf::Event event)
 {
-    gui.OnMouseDown(event.mouseButton);
-    local_player.OnMouseDown(event.mouseButton);
+    if (loaded)
+    {
+        gui.OnMouseDown(event.mouseButton);
+        local_player.OnMouseDown(event.mouseButton);
+    }
 }
 
 void Game::onMouseUp(sf::Event event)
 {
-    gui.OnMouseUp(event.mouseButton);
-    local_player.OnMouseUp(event.mouseButton);
+    if (loaded)
+    {
+        gui.OnMouseUp(event.mouseButton);
+        local_player.OnMouseUp(event.mouseButton);
+    }
 }
 
 void Game::onTextEntered(sf::Event event)
 {
-    gui.OnTextEntered(event.text);
-    local_player.OnTextEntered(event.text);
+    if (loaded)
+    {
+        gui.OnTextEntered(event.text);
+        local_player.OnTextEntered(event.text);
+    }
 }
 
 void Game::onKeyPressed(sf::Event event)
 {
-    if (!menu_open) {
-        local_player.OnKeyPressed(event.key);
-    }
-
-    if (event.key.code == Settings::GetInstance().Bindings.Pause)
+    if (loaded)
     {
-        gui.InMenus = !gui.InMenus;
+        if (!menu_open) {
+            local_player.OnKeyPressed(event.key);
+        }
+
+        if (event.key.code == Settings::GetInstance().Bindings.Pause)
+        {
+            gui.InMenus = !gui.InMenus;
+        }
     }
 }
 
 void Game::onKeyReleased(sf::Event event)
 {
-    local_player.OnKeyReleased(event.key);
+    if (loaded)
+    {
+        local_player.OnKeyReleased(event.key);
+    }
 }
 
 void Game::onMouseWheel(sf::Event event)
 {
-    Settings& settings = Settings::GetInstance();
-
-    zoom_factor -= event.mouseWheelScroll.delta;
-    if (zoom_factor < settings.MinZoomFactor)
+    if (loaded)
     {
-        zoom_factor = settings.MinZoomFactor;
-    }
-    else if (zoom_factor > settings.MaxZoomFactor)
-    {
-        zoom_factor = settings.MaxZoomFactor;
-    }
+        Settings& settings = Settings::GetInstance();
 
-    target_zoom = 1 + static_cast<float>(zoom_factor) / 10;
-    zoom_speed = target_zoom - current_zoom;
+        zoom_factor -= event.mouseWheelScroll.delta;
+        if (zoom_factor < settings.MinZoomFactor)
+        {
+            zoom_factor = settings.MinZoomFactor;
+        }
+        else if (zoom_factor > settings.MaxZoomFactor)
+        {
+            zoom_factor = settings.MaxZoomFactor;
+        }
+
+        target_zoom = 1 + static_cast<float>(zoom_factor) / 10;
+        zoom_speed = target_zoom - current_zoom;
+    }
 }
 
 } // client

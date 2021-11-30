@@ -40,6 +40,7 @@ public:
 
     KeyBindings Bindings;
     network::ServerSettings ServerSettings;
+    std::string DefaultServerIp;
     sf::Vector2f WindowResolution;
     int32_t ScrollSpeed;
     int MaxZoomFactor;

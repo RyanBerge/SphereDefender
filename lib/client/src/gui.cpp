@@ -108,7 +108,8 @@ void Gui::Draw()
 
 void Gui::Load()
 {
-
+    InMenus = false;
+    UpdateHealth(100);
 }
 
 void Gui::Unload()
@@ -131,28 +132,37 @@ void Gui::exitGame()
 void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
     menu_button.UpdateMousePosition(event);
-    resume_button.UpdateMousePosition(event);
-    save_button.UpdateMousePosition(event);
-    settings_button.UpdateMousePosition(event);
-    exit_button.UpdateMousePosition(event);
+    if (InMenus)
+    {
+        resume_button.UpdateMousePosition(event);
+        save_button.UpdateMousePosition(event);
+        settings_button.UpdateMousePosition(event);
+        exit_button.UpdateMousePosition(event);
+    }
 }
 
 void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
 {
     menu_button.UpdateMouseState(event, CursorButton::State::Down);
-    resume_button.UpdateMouseState(event, CursorButton::State::Down);
-    save_button.UpdateMouseState(event, CursorButton::State::Down);
-    settings_button.UpdateMouseState(event, CursorButton::State::Down);
-    exit_button.UpdateMouseState(event, CursorButton::State::Down);
+    if (InMenus)
+    {
+        resume_button.UpdateMouseState(event, CursorButton::State::Down);
+        save_button.UpdateMouseState(event, CursorButton::State::Down);
+        settings_button.UpdateMouseState(event, CursorButton::State::Down);
+        exit_button.UpdateMouseState(event, CursorButton::State::Down);
+    }
 }
 
 void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
 {
     menu_button.UpdateMouseState(event, CursorButton::State::Up);
-    resume_button.UpdateMouseState(event, CursorButton::State::Up);
-    save_button.UpdateMouseState(event, CursorButton::State::Up);
-    settings_button.UpdateMouseState(event, CursorButton::State::Up);
-    exit_button.UpdateMouseState(event, CursorButton::State::Up);
+    if (InMenus)
+    {
+        resume_button.UpdateMouseState(event, CursorButton::State::Up);
+        save_button.UpdateMouseState(event, CursorButton::State::Up);
+        settings_button.UpdateMouseState(event, CursorButton::State::Up);
+        exit_button.UpdateMouseState(event, CursorButton::State::Up);
+    }
 }
 
 void Gui::OnTextEntered(sf::Event::TextEvent event)

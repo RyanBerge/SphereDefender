@@ -35,6 +35,7 @@ public:
     bool UpdateTextInput(sf::Event::TextEvent text_event);
 
     sf::Text& GetText();
+    void SetText(std::string text);
     void SetPosition(sf::Vector2f position);
     void SetTabNext(Textbox* next);
 

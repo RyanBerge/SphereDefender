@@ -23,6 +23,7 @@ Settings::Settings()
     Bindings.Pause = sf::Keyboard::Key::Escape;
 
     ServerSettings.ServerPort = 49879;
+    DefaultServerIp = "127.0.0.1";
     WindowResolution = sf::Vector2f{1920, 1280};
     ScrollSpeed = 600;
 

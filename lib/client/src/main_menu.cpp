@@ -12,6 +12,7 @@
 #include "event_handler.h"
 #include "game_manager.h"
 #include "resources.h"
+#include "settings.h"
 
 using std::cout, std::endl;
 
@@ -88,6 +89,7 @@ MainMenu::MainMenu()
     join_game.textboxes.push_back(name_box_join);
     Textbox ip_box("Vera.ttf", sf::Vector2u(1280, 120), sf::Color::White, sf::Color::Black);
     ip_box.SetPosition(sf::Vector2f(320, 600));
+    ip_box.SetText(Settings::GetInstance().DefaultServerIp);
     join_game.textboxes.push_back(ip_box);
     join_game.text.push_back(name_label_text);
     join_game.text.push_back(ip_label_text);

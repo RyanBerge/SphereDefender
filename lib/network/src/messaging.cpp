@@ -614,7 +614,7 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
 
 bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action)
 {
-    Code code = ServerMessage::Code::EnemyStartAction;
+    Code code = ServerMessage::Code::PlayerStartAction;
 
     PlayerActionFlags flags{};
     flags.start_attack = action.start_attack;
@@ -654,7 +654,7 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
 
 bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, EnemyAction action)
 {
-    Code code = ServerMessage::Code::PlayerStartAction;
+    Code code = ServerMessage::Code::EnemyStartAction;
 
     EnemyActionFlags flags{};
     flags.start_attack = action.start_attack;
@@ -985,7 +985,7 @@ bool ServerMessage::DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_
 
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodeEnemyStartAction failed to read player id." << endl;
+        cerr << "Network: DecodeEnemyStartAction failed to read an enemy id." << endl;
         return false;
     }
 

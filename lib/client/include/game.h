@@ -47,16 +47,17 @@ private:
     Gui gui;
     RegionMap region_map;
     Player local_player;
+
     std::map<uint16_t, Avatar> avatars;
     std::map<uint16_t, Enemy> enemies;
 
     std::atomic_bool loaded = false;
     bool menu_open = false;
 
-    int zoom_factor = 0;
-    float current_zoom = 1;
-    float target_zoom = current_zoom;
-    float zoom_speed = 0;
+    int zoom_factor;
+    float current_zoom;
+    float target_zoom;
+    float zoom_speed;
 
     void asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void updateScroll(sf::Time elapsed);

@@ -136,10 +136,14 @@ bool Textbox::UpdateTextInput(sf::Event::TextEvent text_event)
     return false;
 }
 
-
 sf::Text& Textbox::GetText()
 {
     return text;
+}
+
+void Textbox::SetText(std::string text)
+{
+    this->text.setString(text);
 }
 
 void Textbox::SetPosition(sf::Vector2f position)

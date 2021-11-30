@@ -77,6 +77,8 @@ build() {
         cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll publish/bin
         cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll publish/bin
         cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll publish/bin
+
+        dig +short myip.opendns.com @resolver1.opendns.com > publish/bin/config.ini
     fi
 }
 
