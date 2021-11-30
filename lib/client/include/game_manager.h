@@ -36,8 +36,8 @@ public:
     // TODO: Should this just be a map of menus instead of a state enum?
     GameState State = GameState::MainMenu;
 
-    Game Game;
-    MainMenu MainMenu;
+    client::Game Game;
+    client::MainMenu MainMenu;
 
     sf::RenderWindow Window;
     sf::TcpSocket ServerSocket;

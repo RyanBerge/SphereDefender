@@ -50,7 +50,7 @@ public:
     void Unload();
 
     MenuType CurrentMenu;
-    Lobby Lobby;
+    client::Lobby Lobby;
 
 private:
     void onMouseMove(sf::Event event);

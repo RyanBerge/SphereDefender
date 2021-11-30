@@ -62,7 +62,12 @@ bool Lobby::Create(std::string player_name)
 {
     // launch server
     cerr << "Launching server..." << endl;
+
+#if __linux__
+    std::system("start Server");
+#else
     std::system("start Server.exe");
+#endif
 
     if (!GameManager::GetInstance().ConnectToServer("127.0.0.1"))
     {

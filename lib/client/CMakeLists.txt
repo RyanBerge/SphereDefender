@@ -1,6 +1,9 @@
 set(TargetName SphereDefender)
 find_package(SFML COMPONENTS graphics PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/install)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 set(Sources
     src/avatar.cpp
     src/cursor_button.cpp
@@ -32,4 +35,5 @@ target_include_directories(${TargetName} PRIVATE
 target_link_libraries(${TargetName}
     network
     sfml-graphics
+    Threads::Threads
 )

@@ -37,7 +37,7 @@ public:
     void OnKeyPressed(sf::Event::KeyEvent event);
     void OnKeyReleased(sf::Event::KeyEvent event);
 
-    Avatar Avatar;
+    client::Avatar Avatar;
 
 private:
     void updateMovement();

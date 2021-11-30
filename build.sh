@@ -2,6 +2,7 @@
 
 COMMAND="build"
 BUILD=Debug
+ARCHITECTURE=Win32
 
 for i in "$@"
 do
@@ -18,6 +19,10 @@ do
         BUILD=Release
         shift
         ;;
+        "--linux"*)
+        ARCHITECTURE=Linux
+        shift
+        ;;
         *)
         echo "Unknown option: ${i}"
         shift
@@ -26,11 +31,11 @@ do
 done
 
 clean() {
-    rm -rf build
-    rm -rf bin
-    rm -rf publish
-    rm -rf externals/sfml/install
-    rm -rf externals/sfml/SFML/cmake/build
+    sudo rm -rf build
+    sudo rm -rf bin
+    sudo rm -rf publish
+    sudo rm -rf externals/sfml/install
+    sudo rm -rf externals/sfml/SFML/cmake/build
 }
 
 build() {
@@ -39,31 +44,46 @@ build() {
         exit
     fi
 
+    GENERATOR="MinGW Makefiles"
+    MAKE=mingw32-make.exe
+    CMAKE=cmake.exe
+
+    if [ ${ARCHITECTURE} == Linux ]; then
+        GENERATOR="Unix Makefiles"
+        MAKE=make
+        CMAKE=cmake
+    fi
+
     if [ ! -d externals/sfml/install ]; then
         mkdir -p externals/sfml/install
         mkdir -p externals/sfml/SFML/cmake/build
 
         pushd externals/sfml/SFML/cmake/build
 
-        cmake.exe \
-            -G "MinGW Makefiles" \
+        ${CMAKE} \
+            -G "${GENERATOR}" \
             -DCMAKE_INSTALL_PREFIX=../../../install \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_BUILD_TYPE=${BUILD} \
             ../..
 
-        mingw32-make.exe --no-print-directory
-        mingw32-make.exe install --no-print-directory
+        ${MAKE} --no-print-directory
+        ${MAKE} install --no-print-directory
 
         popd
     fi
 
     mkdir -p build
     pushd build
-    cmake.exe -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=${BUILD} ../
-    mingw32-make.exe --no-print-directory
+    ${CMAKE} -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=${BUILD} ../
+    ${MAKE} --no-print-directory
     popd
-    cp externals/sfml/install/bin/*.dll bin/
+
+    if [ ${ARCHITECTURE} == Win32 ]; then
+        cp externals/sfml/install/bin/*.dll bin/
+    elif [ ${ARCHITECTURE} == Linux ]; then
+        cp externals/sfml/install/lib/*.so* bin/
+    fi
 
     if [ ${BUILD} == Release ]; then
         echo "Publishing..."
@@ -72,8 +92,14 @@ build() {
         mkdir -p publish/assets
         cp -r assets/*.png publish/assets
         cp -r assets/*.ttf publish/assets
-        cp bin/*.exe publish/bin/
-        cp bin/*.dll publish/bin/
+
+        if [ ${ARCHITECTURE} == Win32 ]; then
+            cp bin/*.exe publish/bin/
+            cp bin/*.dll publish/bin/
+        elif [ ${ARCHITECTURE} == Linux ]; then
+            cp bin/* publish/bin/
+        fi
+
         cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll publish/bin
         cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll publish/bin
         cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll publish/bin
@@ -83,9 +109,9 @@ build() {
 }
 
 rebuild() {
-    rm -rf build
-    rm -rf bin
-    rm -rf publish
+    sudo rm -rf build
+    sudo rm -rf bin
+    sudo rm -rf publish
     build
 }
 

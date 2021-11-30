@@ -88,7 +88,7 @@ void Game::Draw()
 void Game::Load(network::PlayerData local, std::vector<network::PlayerData> other_players)
 {
     loaded = false;
-    std::thread loading_thread(asyncLoad, this, local, other_players);
+    std::thread loading_thread(&Game::asyncLoad, this, local, other_players);
     loading_thread.detach();
 }
 
