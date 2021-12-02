@@ -74,10 +74,6 @@
 * Sent whenever an enemy begins an action
 * `[enemyid:2][actionflags:1][attackvector:8]`
 
-#### `ServerMessage::RegionInfo`
-* Sent when a region is created
-* `[convoyposition:8][convoyorientation:1][numenemies:2][id:2][type:1][position:8][health:1][...]`
-
 #### `ServerMessage::EnemyUpdate`
 * Broadcasted every frame
 * `[numenemies:2][id:2][position:8][health:1][...]`

@@ -59,7 +59,6 @@ private:
     void startPlayerAction(PlayerInfo& player);
 
     void broadcastStates();
-    void initializeRegion();
     void checkAttack(PlayerInfo& player);
 };
 

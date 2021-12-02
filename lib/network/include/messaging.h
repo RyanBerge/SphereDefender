@@ -100,7 +100,6 @@ public:
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, EnemyAction action);
-    static bool RegionInfo(sf::TcpSocket& socket, ConvoyData convoy, std::vector<EnemyData> enemies);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
@@ -111,7 +110,6 @@ public:
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, EnemyAction& out_action);
-    static bool DecodeRegionInfo(sf::TcpSocket& socket, ConvoyData& out_convoy, std::vector<EnemyData>& out_enemies);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
 };
 

@@ -23,5 +23,6 @@ namespace util
     };
 
     bool Contains(sf::FloatRect rect, sf::Vector2f point);
+    bool Intersects(sf::FloatRect rect, LineSegment line);
     double Distance(sf::Vector2f p1, sf::Vector2f p2);
 }

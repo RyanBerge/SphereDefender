@@ -8,9 +8,8 @@
  *
  *************************************************************************************************/
 #include "region.h"
+#include "region_definitions.h"
 #include <algorithm>
-
-using network::ConvoyData;
 
 namespace {
     const int MAX_ENEMIES = 5;
@@ -24,8 +23,13 @@ Region::Region() : Region(1) { }
 
 Region::Region(unsigned num_players) : num_players{num_players}
 {
-    Convoy.orientation = ConvoyData::Orientation::North;
-    Convoy.position = sf::Vector2f(-600, 0);
+    Convoy.orientation = shared::GetRegionDefinition("default").convoy.orientation;
+    Convoy.position = shared::GetRegionDefinition("default").convoy.position;
+
+    for (auto& obstacle : shared::GetRegionDefinition("default").obstacles)
+    {
+        Obstacles.push_back(obstacle.bounds);
+    }
 
     for (unsigned i = 0; i < num_players * 3; ++i)
     {
@@ -38,7 +42,7 @@ void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
     (void)elapsed;
     for (auto& enemy : Enemies)
     {
-        enemy.Update(elapsed, players, Convoy);
+        enemy.Update(elapsed, players, Convoy, Obstacles);
     }
 
     if (Enemies.size() < num_players * MAX_ENEMIES)
@@ -67,6 +71,7 @@ void Region::spawnEnemy()
 
     enemy.Data.position.x = distribution_x(random_generator);
     enemy.Data.position.y = distribution_y(random_generator);
+    //enemy.Data.position = sf::Vector2f{900, 0};
     Enemies.push_back(enemy);
     spawn_timer.restart();
 }

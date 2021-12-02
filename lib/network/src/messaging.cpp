@@ -694,54 +694,6 @@ bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, 
     return true;
 }
 
-bool ServerMessage::RegionInfo(sf::TcpSocket& socket, ConvoyData convoy, std::vector<EnemyData> enemies)
-{
-    Code code = ServerMessage::Code::RegionInfo;
-
-    uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
-
-    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::type) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
-    size_t buffer_size = sizeof(code) + sizeof(float) * 2 + sizeof(convoy.orientation) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
-
-    uint8_t* buffer = new uint8_t[buffer_size];
-
-    int offset = 0;
-    std::memcpy(buffer, &code, sizeof(code));
-    offset += sizeof(code);
-    std::memcpy(buffer + offset, &convoy.position.x, sizeof(convoy.position.x));
-    offset += sizeof(convoy.position.x);
-    std::memcpy(buffer + offset, &convoy.position.y, sizeof(convoy.position.y));
-    offset += sizeof(convoy.position.y);
-    std::memcpy(buffer + offset, &convoy.orientation, sizeof(convoy.orientation));
-    offset += sizeof(convoy.orientation);
-    std::memcpy(buffer + offset, &num_enemies, sizeof(num_enemies));
-    offset += sizeof(num_enemies);
-
-    for (auto& enemy : enemies)
-    {
-        std::memcpy(buffer + offset, &enemy.id, sizeof(enemy.id));
-        offset += sizeof(enemy.id);
-        std::memcpy(buffer + offset, &enemy.type, sizeof(enemy.type));
-        offset += sizeof(enemy.type);
-        std::memcpy(buffer + offset, &enemy.position.x, sizeof(enemy.position.x));
-        offset += sizeof(enemy.position.x);
-        std::memcpy(buffer + offset, &enemy.position.y, sizeof(enemy.position.y));
-        offset += sizeof(enemy.position.y);
-        std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
-        offset += sizeof(enemy.health);
-    }
-
-    if (!writeBuffer(socket, buffer, buffer_size))
-    {
-        cerr << "Network: Failed to send ClientMessage::RegionInfo message" << endl;
-        delete[] buffer;
-        return false;
-    }
-
-    delete[] buffer;
-    return true;
-}
-
 bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
 {
     Code code = ServerMessage::Code::EnemyUpdate;
@@ -1015,78 +967,6 @@ bool ServerMessage::DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_
     out_player_id = id;
     out_action = temp_action;
 
-    return true;
-}
-
-bool ServerMessage::DecodeRegionInfo(sf::TcpSocket& socket, ConvoyData& out_convoy, std::vector<EnemyData>& out_enemies)
-{
-    uint16_t num_enemies;
-    std::vector<EnemyData> enemies;
-    ConvoyData convoy;
-
-    if (!read(socket, &convoy.position.x, sizeof(convoy.position.x)))
-    {
-        cerr << "Network: DecodeRegionInfo failed to read an x position." << endl;
-        return false;
-    }
-
-    if (!read(socket, &convoy.position.y, sizeof(convoy.position.y)))
-    {
-        cerr << "Network: DecodeRegionInfo failed to read an y position." << endl;
-        return false;
-    }
-
-    if (!read(socket, &convoy.orientation, sizeof(convoy.orientation)))
-    {
-        cerr << "Network: DecodeRegionInfo failed to read a convoy orientation." << endl;
-        return false;
-    }
-
-    if (!read(socket, &num_enemies, sizeof(num_enemies)))
-    {
-        cerr << "Network: DecodeRegionInfo failed to read num enemies." << endl;
-        return false;
-    }
-
-    for (int i = 0; i < num_enemies; ++i)
-    {
-        EnemyData data;
-
-        if (!read(socket, &data.id, sizeof(data.id)))
-        {
-            cerr << "Network: DecodeRegionInfo failed to read an enemy id." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.type, sizeof(data.type)))
-        {
-            cerr << "Network: DecodeRegionInfo failed to read an enemy type." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.x, sizeof(data.position.x)))
-        {
-            cerr << "Network: DecodeRegionInfo failed to read an enemy position.x." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.y, sizeof(data.position.y)))
-        {
-            cerr << "Network: DecodeRegionInfo failed to read an enemy position.y." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.health, sizeof(data.health)))
-        {
-            cerr << "Network: DecodeRegionInfo failed to read an enemy health." << endl;
-            return false;
-        }
-
-        enemies.push_back(data);
-    }
-
-    out_convoy = convoy;
-    out_enemies = enemies;
     return true;
 }
 

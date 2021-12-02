@@ -344,7 +344,6 @@ void Server::loadingComplete(PlayerInfo& player)
         }
 
         game_state = GameState::Game;
-        initializeRegion();
 
         cout << "All players have loaded!" << endl;
     }
@@ -450,22 +449,6 @@ void Server::broadcastStates()
     {
         ServerMessage::PlayerStates(*player.Socket, player_list);
         ServerMessage::EnemyUpdate(*player.Socket, enemy_list);
-    }
-}
-
-void Server::initializeRegion()
-{
-    region = Region(players.size());
-
-    std::vector<network::EnemyData> enemy_list;
-    for (auto& enemy : region.Enemies)
-    {
-        enemy_list.push_back(enemy.Data);
-    }
-
-    for (auto& player : players)
-    {
-        ServerMessage::RegionInfo(*player.Socket, region.Convoy, enemy_list);
     }
 }
 

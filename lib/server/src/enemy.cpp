@@ -8,6 +8,7 @@
  *
  *************************************************************************************************/
 #include "enemy.h"
+#include "pathfinding.h"
 #include <iostream>
 
 using std::cout, std::endl;
@@ -25,6 +26,7 @@ Enemy::Enemy()
     Data.id = identifier++;
     Data.health = 100;
     Data.type = network::EnemyData::EnemyType::SmallDemon;
+    destination = Data.position;
 }
 
 sf::FloatRect Enemy::GetBounds()
@@ -32,11 +34,11 @@ sf::FloatRect Enemy::GetBounds()
     return sf::FloatRect(Data.position.x - 25, Data.position.y - 25, 50, 50);
 }
 
-void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, network::ConvoyData convoy)
+void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
     if (!attacking)
     {
-        move(elapsed, players, convoy);
+        move(elapsed, players, convoy, obstacles);
     }
     else
     {
@@ -68,17 +70,17 @@ void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, network::
     }
 }
 
-void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::ConvoyData convoy)
+void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
     sf::Vector2f target;
     sf::FloatRect bounds;
     bool player_target = false;
 
-    if (convoy.orientation == network::ConvoyData::Orientation::North || convoy.orientation == network::ConvoyData::Orientation::South)
+    if (convoy.orientation == shared::Orientation::North || convoy.orientation == shared::Orientation::South)
     {
         bounds = sf::FloatRect(convoy.position.x - convoy.WIDTH / 2, convoy.position.y - convoy.HEIGHT / 2, convoy.WIDTH, convoy.HEIGHT);
     }
-    else if (convoy.orientation == network::ConvoyData::Orientation::East || convoy.orientation == network::ConvoyData::Orientation::West)
+    else if (convoy.orientation == shared::Orientation::East || convoy.orientation == shared::Orientation::West)
     {
         bounds = sf::FloatRect(convoy.position.x - convoy.HEIGHT / 2, convoy.position.y - convoy.WIDTH / 2, convoy.HEIGHT, convoy.WIDTH);
     }
@@ -150,10 +152,14 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::Co
         }
     }
 
+    util::PathingGraph graph = util::CreatePathingGraph(Data.position, target, obstacles, sf::Vector2f{50, 50});
+    std::list<sf::Vector2f> path = util::GetPath(graph);
+
+    target = path.front();
     sf::Vector2f movement_vector = target - Data.position;
     sf::Vector2f velocity{};
 
-    double hyp = std::hypot(movement_vector.x, movement_vector.y);
+    double distance = std::hypot(movement_vector.x, movement_vector.y);
 
     int range_threshold = attack_range;
     if (player_target)
@@ -161,26 +167,26 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::Co
         range_threshold += 35;
     }
 
-    if (hyp < range_threshold)
+    if (path.size() == 1 && distance < range_threshold)
     {
         velocity.x = 0;
         velocity.y = 0;
         attacking = true;
         attack_flag = false;
         attack_timer.restart();
-        attack_vector = sf::Vector2f{static_cast<float>(movement_vector.x / hyp), static_cast<float>(movement_vector.y / hyp)};
+        attack_vector = sf::Vector2f{static_cast<float>(movement_vector.x / distance), static_cast<float>(movement_vector.y / distance)};
         starting_attack_position = Data.position;
     }
     else
     {
-        velocity.x = (movement_vector.x / hyp) * movement_speed;
-        velocity.y = (movement_vector.y / hyp) * movement_speed;
+        velocity.x = (movement_vector.x / distance) * movement_speed;
+        velocity.y = (movement_vector.y / distance) * movement_speed;
     }
 
     Data.position += velocity * elapsed.asSeconds();
 }
 
-void Enemy::checkAttack(std::vector<PlayerInfo>& players, network::ConvoyData convoy)
+void Enemy::checkAttack(std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy)
 {
     (void)convoy;
 

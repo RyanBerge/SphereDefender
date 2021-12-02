@@ -27,8 +27,9 @@ public:
     void Update(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void Cull();
 
-    network::ConvoyData Convoy;
+    shared::ConvoyDefinition Convoy;
     std::list<Enemy> Enemies;
+    std::vector<sf::FloatRect> Obstacles;
 
 private:
     unsigned num_players;

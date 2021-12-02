@@ -115,7 +115,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
 
     local_player = Player();
 
-    region_map.Load();
+    region_map.Load("default");
     gui.Load();
     local_player.Load(local);
 
@@ -151,17 +151,6 @@ void Game::Start(sf::Vector2f spawn_position)
 {
     local_player.SetPosition(spawn_position);
     WorldView.setCenter(spawn_position);
-}
-
-void Game::InitializeRegion(network::ConvoyData convoy_data, std::vector<network::EnemyData> enemy_list)
-{
-    for (auto& enemy : enemy_list)
-    {
-        enemies[enemy.id] = Enemy();
-        enemies[enemy.id].UpdateData(enemy);
-    }
-
-    region_map.InitializeRegion(convoy_data);
 }
 
 int Game::GetPlayerCount()

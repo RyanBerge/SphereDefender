@@ -1,14 +1,13 @@
-set(TargetName util)
+set(TargetName shared)
 
 set(Sources
-    src/game_math.cpp
-    src/pathfinding.cpp
+    src/region_definitions.cpp
 )
 
 add_library(${TargetName} ${Sources})
 
 target_include_directories(${TargetName} PRIVATE
-    ${PROJECT_SOURCE_DIR}/lib/util/include
+    ${PROJECT_SOURCE_DIR}/lib/shared/include
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
 )
 

@@ -23,22 +23,6 @@ struct PlayerData
     uint8_t health;
 };
 
-struct ConvoyData
-{
-    enum class Orientation : uint8_t
-    {
-        //North, Northwest, West, Southwest,
-        //South, Southeast, East, Northeast
-        North, South, East, West
-    };
-
-    sf::Vector2f position;
-    Orientation orientation;
-
-    constexpr static int WIDTH = 300;
-    constexpr static int HEIGHT = 800;
-};
-
 struct EnemyData
 {
     enum class EnemyType : uint8_t

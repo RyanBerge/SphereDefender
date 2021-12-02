@@ -359,16 +359,6 @@ void GameManager::checkMessages()
             }
         }
         break;
-        case ServerMessage::Code::RegionInfo:
-        {
-            network::ConvoyData convoy;
-            std::vector<network::EnemyData> enemy_list;
-            if (ServerMessage::DecodeRegionInfo(ServerSocket, convoy, enemy_list))
-            {
-                Game.InitializeRegion(convoy, enemy_list);
-            }
-        }
-        break;
         case ServerMessage::Code::EnemyUpdate:
         {
             std::vector<network::EnemyData> enemy_list;

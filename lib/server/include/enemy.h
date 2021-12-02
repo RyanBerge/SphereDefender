@@ -12,8 +12,10 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/System/Clock.hpp"
 #include <cstdint>
+#include <list>
 #include "entity_data.h"
 #include "player_info.h"
+#include "region_definitions.h"
 
 namespace server {
 
@@ -22,13 +24,15 @@ class Enemy
 public:
     Enemy();
 
-    void Update(sf::Time elapsed, std::vector<PlayerInfo>& players, network::ConvoyData convoy);
+    void Update(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
 
     sf::FloatRect GetBounds();
     network::EnemyData Data;
 
 private:
     double movement_speed = 210;
+    sf::Vector2f destination;
+    std::list<sf::Vector2f> path;
     double attack_range = 35;
     int attack_damage = 30;
     bool attacking = false;
@@ -39,8 +43,8 @@ private:
     int attack_duration = 250; // milliseconds
     int attack_cooldown = 500; // milliseconds
 
-    void move(sf::Time elapsed, std::vector<PlayerInfo>& players, network::ConvoyData convoy);
-    void checkAttack(std::vector<PlayerInfo>& players, network::ConvoyData convoy);
+    void move(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void checkAttack(std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy);
 };
 
 } // server

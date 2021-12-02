@@ -30,8 +30,6 @@ public:
     void Load(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void Unload();
 
-    void InitializeRegion(network::ConvoyData convoy, std::vector<network::EnemyData> enemy_list);
-
     void Start(sf::Vector2f spawn_position);
 
     int GetPlayerCount();

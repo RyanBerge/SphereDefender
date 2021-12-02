@@ -20,10 +20,94 @@ bool Contains(sf::FloatRect rect, sf::Vector2f point)
            point.y > rect.top && point.y < rect.top + rect.height;
 }
 
+bool Intersects(sf::FloatRect rect, LineSegment line)
+{
+    // Simple case: out of range
+    if ((line.p1.x < rect.left && line.p2.x < rect.left) ||
+        (line.p1.x > rect.left + rect.width && line.p2.x > rect.left + rect.width))
+    {
+        return false;
+    }
+
+    if ((line.p1.y < rect.top && line.p2.y < rect.top) ||
+        (line.p1.y > rect.top + rect.height && line.p2.y > rect.top + rect.height))
+    {
+        return false;
+    }
+
+    // Simple cases, horizontal and vertical segments
+    // vertical
+    if (line.p1.x == line.p2.x)
+    {
+        if (line.p1.x >= rect.left && line.p1.x <= rect.left + rect.width)
+        {
+            return true;
+        }
+    }
+
+    // horizontal
+    if (line.p1.y == line.p2.y)
+    {
+        if (line.p1.y >= rect.top && line.p1.y <= rect.top + rect.height)
+        {
+            return true;
+        }
+    }
+
+
+    float slope = (line.p2.y - line.p1.y) / (line.p2.x - line.p1.x);
+
+    // top
+    if ((rect.top >= line.p1.y && rect.top <= line.p2.y) ||
+        (rect.top >= line.p2.y && rect.top <= line.p1.y))
+    {
+        float x = (rect.top - line.p2.y) / slope + line.p2.x;
+        if (x >= rect.left && x <= rect.left + rect.width)
+        {
+            return true;
+        }
+    }
+
+    // bottom
+    if ((rect.top + rect.height >= line.p1.y && rect.top + rect.height <= line.p2.y) ||
+        (rect.top + rect.height >= line.p2.y && rect.top + rect.height <= line.p1.y))
+    {
+        float x = (rect.top + rect.height - line.p2.y) / slope + line.p2.x;
+        if (x >= rect.left && x <= rect.left + rect.width)
+        {
+            return true;
+        }
+    }
+
+    // left
+    if ((rect.left >= line.p1.x && rect.left <= line.p2.x) ||
+        (rect.left >= line.p2.x && rect.left <= line.p1.x))
+    {
+        float y = slope * (rect.left - line.p2.x) + line.p2.y;
+        if (y >= rect.top && y <= rect.top + rect.height)
+        {
+            return true;
+        }
+    }
+
+    // right
+    if ((rect.left + rect.width >= line.p1.x && rect.left + rect.width <= line.p2.x) ||
+        (rect.left + rect.width >= line.p2.x && rect.left + rect.width <= line.p1.x))
+    {
+        float y = slope * (rect.left + rect.width - line.p2.x) + line.p2.y;
+        if (y >= rect.top && y <= rect.top + rect.height)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 double Distance(sf::Vector2f p1, sf::Vector2f p2)
 {
     sf::Vector2f delta = p2 - p1;
-    return std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    return std::hypot(delta.x, delta.y);
 }
 
 } // util
