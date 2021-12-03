@@ -25,7 +25,7 @@ public:
 
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(400, 50, 100, 300)});
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, -200, 100, 300)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 50, 100, 300)});
+        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 250, 100, 300)});
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-250, -600, 200, 500)});
 
         Regions["default"] = region;

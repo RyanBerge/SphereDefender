@@ -64,7 +64,7 @@ bool Lobby::Create(std::string player_name)
     cerr << "Launching server..." << endl;
 
 #if __linux__
-    std::system("start Server");
+    std::system("./Server");
 #else
     std::system("start Server.exe");
 #endif

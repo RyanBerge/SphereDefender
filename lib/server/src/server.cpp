@@ -84,7 +84,7 @@ void Server::update()
         {
             if (player.Status == PlayerInfo::PlayerStatus::Alive)
             {
-                player.Update(elapsed);
+                player.Update(elapsed, region.Obstacles);
                 if (player.Attacking)
                 {
                     checkAttack(player);

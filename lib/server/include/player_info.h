@@ -28,7 +28,7 @@ public:
         Dead
     };
 
-    void Update(sf::Time elapsed);
+    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     util::LineSegment GetSwordLocation();
@@ -41,6 +41,8 @@ public:
     bool Attacking = false;
 
 private:
+    sf::FloatRect GetBoundingBox(sf::Vector2f position);
+
     double movement_speed = 200; // pixels per second
     int swing_speed = 360; // degrees per second
     int swing_arc = 90; // degrees

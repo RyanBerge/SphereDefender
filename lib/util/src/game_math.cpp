@@ -104,6 +104,31 @@ bool Intersects(sf::FloatRect rect, LineSegment line)
     return false;
 }
 
+bool Intersects(sf::FloatRect rect1, sf::FloatRect rect2)
+{
+    if (rect1.left > rect2.left + rect2.width)
+    {
+        return false;
+    }
+
+    if (rect1.left + rect1.width < rect2.left)
+    {
+        return false;
+    }
+
+    if (rect1.top > rect2.top + rect2.height)
+    {
+        return false;
+    }
+
+    if (rect1.top + rect1.height < rect2.top)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 double Distance(sf::Vector2f p1, sf::Vector2f p2)
 {
     sf::Vector2f delta = p2 - p1;

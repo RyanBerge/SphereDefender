@@ -43,24 +43,22 @@ PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
     finish_node.position = finish;
     graph.nodes.push_back(finish_node); // finish: index == 1
 
-    entity_size = sf::Vector2f{1, 1};
-
     for (auto& rect : obstacles)
     {
         PathingNode upper_left{};
-        upper_left.position = sf::Vector2f{rect.left - entity_size.x, rect.top - entity_size.y};
+        upper_left.position = sf::Vector2f{rect.left - (entity_size.x / 2 + 1), rect.top - (entity_size.y / 2 + 1)};
         graph.nodes.push_back(upper_left);
 
         PathingNode upper_right{};
-        upper_right.position = sf::Vector2f{rect.left + rect.width + entity_size.x, rect.top - entity_size.y};
+        upper_right.position = sf::Vector2f{rect.left + rect.width + (entity_size.x / 2 + 1), rect.top - (entity_size.y / 2 + 1)};
         graph.nodes.push_back(upper_right);
 
         PathingNode lower_left{};
-        lower_left.position = sf::Vector2f{rect.left - entity_size.x, rect.top + rect.height + entity_size.y};
+        lower_left.position = sf::Vector2f{rect.left - (entity_size.x / 2 + 1), rect.top + rect.height + (entity_size.y / 2 + 1)};
         graph.nodes.push_back(lower_left);
 
         PathingNode lower_right{};
-        lower_right.position = sf::Vector2f{rect.left + rect.width + entity_size.x, rect.top + rect.height + entity_size.y};
+        lower_right.position = sf::Vector2f{rect.left + rect.width + (entity_size.x / 2 + 1), rect.top + rect.height + (entity_size.y / 2 + 1)};
         graph.nodes.push_back(lower_right);
     }
 
@@ -70,12 +68,25 @@ PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
         for (unsigned j = i + 1; j < graph.nodes.size(); ++j)
         {
             PathingNode& other_node = graph.nodes[j];
-            LineSegment line{current_node.position, other_node.position};
+
+            sf::Vector2f path_vector = other_node.position - current_node.position;
+            float length = std::hypot(path_vector.x, path_vector.y);
+            sf::Vector2f left_orthogonal{-path_vector.y / length * entity_size.x / 2, path_vector.x / length * entity_size.y / 2};
+            sf::Vector2f right_orthogonal{path_vector.y / length * entity_size.x / 2, -path_vector.x / length * entity_size.y / 2};
+
+            LineSegment left_bound{current_node.position + left_orthogonal, other_node.position + left_orthogonal};
+            LineSegment right_bound{current_node.position + right_orthogonal, other_node.position + right_orthogonal};
 
             bool line_of_sight = true;
             for (auto& rect : obstacles)
             {
-                if (Intersects(rect, line))
+                if (Intersects(rect, left_bound))
+                {
+                    line_of_sight = false;
+                    break;
+                }
+
+                if (Intersects(rect, right_bound))
                 {
                     line_of_sight = false;
                     break;

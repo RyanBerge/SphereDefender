@@ -18,17 +18,47 @@ using std::cout, std::endl;
 
 namespace server {
 
-void PlayerInfo::Update(sf::Time elapsed)
+namespace {
+    const int PLAYER_WIDTH = 70;
+    const int PLAYER_HEIGHT = 70;
+}
+
+void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
 {
-    Data.position += velocity * elapsed.asSeconds();
+    sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
+    bool collision = false;
+    for (auto& obstacle : obstacles)
+    {
+        if (util::Intersects(GetBoundingBox(new_position), obstacle))
+        {
+            // Try it with only a partial movement vector
+            sf::Vector2f partial_x{new_position.x, Data.position.y};
+            sf::Vector2f partial_y{Data.position.x, new_position.y};
+            if (!util::Intersects(GetBoundingBox(partial_x), obstacle))
+            {
+                new_position = partial_x;
+            }
+            else if (!util::Intersects(GetBoundingBox(partial_y), obstacle))
+            {
+                new_position = partial_y;
+            }
+            else
+            {
+                collision = true;
+                break;
+            }
+        }
+    }
+
+    if (!collision)
+    {
+        Data.position = new_position;
+    }
 
     if (Attacking)
     {
         current_attack_angle = std::fmod(current_attack_angle + swing_speed * elapsed.asSeconds(), 360);
         float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
-
-        //cout << "Angle: " << current_attack_angle << ", Delta: " << rotation_delta << endl;
-        //cout << current_attack_angle << endl;
 
         if (rotation_delta > swing_arc)
         {
@@ -81,6 +111,17 @@ void PlayerInfo::Damage(int damage_value)
     {
         Data.health -= damage_value;
     }
+}
+
+sf::FloatRect PlayerInfo::GetBoundingBox(sf::Vector2f position)
+{
+    sf::FloatRect rect;
+    rect.width = PLAYER_WIDTH;
+    rect.height = PLAYER_HEIGHT;
+    rect.left = position.x - PLAYER_WIDTH / 2;
+    rect.top = position.y - PLAYER_HEIGHT / 2;
+
+    return rect;
 }
 
 } // server
