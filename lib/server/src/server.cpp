@@ -118,10 +118,11 @@ void Server::listen()
         return;
     }
 
-    PlayerInfo player;
+    PlayerInfo player{};
     player.Socket = player_socket;
     player.Socket->setBlocking(false);
     player.Data.name = "";
+    player.Data.properties.player_class = network::PlayerClass::Melee;
     player.Status = PlayerInfo::PlayerStatus::Uninitialized;
 
     cout << "New player connected to server." << endl;
@@ -160,6 +161,11 @@ void Server::checkMessages(PlayerInfo& player)
         case ClientMessage::Code::JoinLobby:
         {
             playerJoined(player);
+        }
+        break;
+        case ClientMessage::Code::ChangePlayerProperty:
+        {
+            changePlayerProperty(player);
         }
         break;
         case ClientMessage::Code::StartGame:
@@ -287,6 +293,30 @@ void Server::playerJoined(PlayerInfo& player)
     {
         player.Socket->disconnect();
         player.Status = PlayerInfo::PlayerStatus::Disconnected;
+    }
+}
+
+void Server::changePlayerProperty(PlayerInfo& player)
+{
+    if (game_state != GameState::Lobby)
+    {
+        cerr << player.Data.name << " tried to change properties while not in the lobby." << endl;
+        return;
+    }
+
+    if (!ClientMessage::DecodeChangePlayerProperty(*player.Socket, player.Data.properties))
+    {
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        return;
+    }
+
+    for (auto& p : players)
+    {
+        if (p.Data.id != player.Data.id)
+        {
+            ServerMessage::ChangePlayerProperty(*p.Socket, player.Data.id, player.Data.properties);
+        }
     }
 }
 
@@ -454,16 +484,94 @@ void Server::broadcastStates()
 
 void Server::checkAttack(PlayerInfo& player)
 {
-    util::LineSegment sword = player.GetSwordLocation();
-
-    for (auto& enemy : region.Enemies)
+    switch (player.Data.properties.player_class)
     {
-        sf::FloatRect bounds = enemy.GetBounds();
-
-        if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
+        case network::PlayerClass::Melee:
         {
-            enemy.Data.health = 0;
+            util::LineSegment sword = player.GetSwordLocation();
+
+            for (auto& enemy : region.Enemies)
+            {
+                sf::FloatRect bounds = enemy.GetBounds();
+
+                if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
+                {
+                    if (!enemy.Invulnerable)
+                    {
+                        enemy.Damage(player.GetWeaponDamage());
+                        enemy.SetKnockback(player.GetWeaponKnockback(), enemy.Data.position - player.Data.position);
+                    }
+                }
+            }
         }
+        break;
+        case network::PlayerClass::Ranged:
+        {
+            sf::Vector2f attack_vector = player.GetAttackVector();
+
+            bool collision = false;
+            sf::Vector2f point;
+            for (auto& rect : region.Obstacles)
+            {
+                sf::Vector2f temp;
+                if (util::IntersectionPoint(rect, util::LineVector{player.Data.position, attack_vector}, temp))
+                {
+                    if (!collision)
+                    {
+                        collision = true;
+                        point = temp;
+                    }
+                    else if (util::Distance(player.Data.position, temp) < util::Distance(player.Data.position, point))
+                    {
+                        point = temp;
+                    }
+                }
+            }
+
+            uint16_t target_enemy_id = region.Enemies.front().Data.id;
+            bool enemy_hit = false;
+            for (auto& enemy : region.Enemies)
+            {
+                sf::Vector2f temp;
+                if (util::IntersectionPoint(enemy.GetBounds(), util::LineVector{player.Data.position, attack_vector}, temp))
+                {
+                    if (!collision)
+                    {
+                        collision = true;
+                        point = temp;
+                        enemy_hit = true;
+                        target_enemy_id = enemy.Data.id;
+                    }
+                    else if (util::Distance(player.Data.position, temp) < util::Distance(player.Data.position, point))
+                    {
+                        point = temp;
+                        enemy_hit = true;
+                        target_enemy_id = enemy.Data.id;
+                    }
+                }
+            }
+
+            if (enemy_hit)
+            {
+                for (auto& enemy : region.Enemies)
+                {
+                    if (enemy.Data.id == target_enemy_id)
+                    {
+                        if (enemy.Data.health <= 10)
+                        {
+                            enemy.Data.health = 0;
+                        }
+                        else
+                        {
+                            enemy.Damage(player.GetWeaponDamage());
+                        }
+                    }
+                }
+            }
+
+            player.Attacking = false;
+        }
+        break;
     }
 }
 

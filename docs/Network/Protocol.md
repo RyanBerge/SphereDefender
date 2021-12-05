@@ -12,6 +12,10 @@
 * Server responds with a `ServerMessage::PlayersInLobby` message and by broadcasting a `ServerMessage::PlayerJoined` message to all _other_ players
 * `[playername:string]`
 
+#### `ClientMessage::ChangePlayerProperty`
+* Sent whenever a player changes a property while in the lobby
+* `[class:1]`
+
 #### `ClientMessage::StartGame`
 * Sent when the owner of a lobby begins a game
 * Server responds by broadcasting a `ServerMessage::StartGame` message to all players
@@ -52,7 +56,11 @@
 #### `ServerMessage::PlayersInLobby`
 * Sent immediately to a player after that player joins the game lobby
 * The unique Player Id is sent first, then all players are listed, starting with the lobby owner
-* `[playerid:2][numplayers:1][lobbyownerid:2][lobbyownername:string][playerid:2][playername:string][...][...]`
+* `[playerid:2][numplayers:1][lobbyownerid:2][lobbyownername:string][ownerclass:1][playerid:2][playername:string][playerclass:1][...][...]`
+
+#### `ClientMessage::ChangePlayerProperty`
+* Broadcasted to all other players after a player changes a property while in the lobby
+* `[playerid:2][class:1]`
 
 #### `ServerMessage::StartGame`
 * Broadcast to all players after the owner of the game lobby starts the game

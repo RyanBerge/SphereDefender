@@ -28,10 +28,19 @@ public:
         Dead
     };
 
+    struct WeaponKnockback
+    {
+        float distance; // total distance over duration in pixels
+        int duration; // duration in milliseconds
+    };
+
     void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     util::LineSegment GetSwordLocation();
+    sf::Vector2f GetAttackVector();
+    uint8_t GetWeaponDamage();
+    WeaponKnockback GetWeaponKnockback();
     void Damage(int damage_value);
 
     std::shared_ptr<sf::TcpSocket> Socket;

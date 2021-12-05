@@ -179,7 +179,7 @@ bool ClientMessage::JoinLobby(sf::TcpSocket& socket, std::string name)
     uint8_t* buffer = new uint8_t[buffer_len];
 
     std::memcpy(buffer, &code, sizeof(code));
-    std::memcpy(buffer + sizeof(code), &str_len, 2);
+    std::memcpy(buffer + sizeof(code), &str_len, sizeof(str_len));
     std::memcpy(buffer + sizeof(code) + sizeof(str_len), name.c_str(), str_len);
 
     if (!writeBuffer(socket, buffer, buffer_len))
@@ -190,6 +190,25 @@ bool ClientMessage::JoinLobby(sf::TcpSocket& socket, std::string name)
     }
 
     delete[] buffer;
+    return true;
+}
+
+bool ClientMessage::ChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties properties)
+{
+    Code code = Code::ChangePlayerProperty;
+
+    constexpr size_t buffer_len = sizeof(code) + sizeof(properties);
+    uint8_t buffer[buffer_len];
+
+    std::memcpy(buffer, &code, sizeof(code));
+    std::memcpy(buffer + sizeof(code), &properties, sizeof(properties));
+
+    if (!writeBuffer(socket, buffer, buffer_len))
+    {
+        cerr << "Network: Failed to send ClientMessage::ChangePlayerProperty message" << endl;
+        return false;
+    }
+
     return true;
 }
 
@@ -332,6 +351,19 @@ bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name
     }
 
     out_name = name;
+    return true;
+}
+
+bool ClientMessage::DecodeChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties& out_properties)
+{
+    PlayerProperties properties;
+    if (!read(socket, &properties, sizeof(properties)))
+    {
+        cerr << "Network: DecodeChangePlayerProperty failed to read player properties." << endl;
+        return false;
+    }
+
+    out_properties = properties;
     return true;
 }
 
@@ -493,6 +525,7 @@ bool ServerMessage::PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, st
         buffer_len += sizeof(player.id);
         buffer_len += 2;
         buffer_len += player.name.size();
+        buffer_len += sizeof(player.properties);
     }
 
     uint8_t* buffer = new uint8_t[buffer_len];
@@ -516,6 +549,8 @@ bool ServerMessage::PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, st
         offset += sizeof(str_len);
         std::memcpy(buffer + offset, player.name.c_str(), str_len);
         offset += str_len;
+        std::memcpy(buffer + offset, &player.properties, sizeof(player.properties));
+        offset += sizeof(player.properties);
     }
 
     if (!writeBuffer(socket, buffer, buffer_len))
@@ -526,6 +561,31 @@ bool ServerMessage::PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, st
     }
 
     delete[] buffer;
+    return true;
+}
+
+bool ServerMessage::ChangePlayerProperty(sf::TcpSocket& socket, uint16_t player_id, PlayerProperties properties)
+{
+    Code code = Code::ChangePlayerProperty;
+
+    constexpr size_t buffer_len = sizeof(code) + sizeof(player_id) + sizeof(properties);
+    uint8_t buffer[buffer_len];
+
+    int offset = 0;
+
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &properties, sizeof(properties));
+    offset += sizeof(properties);
+
+    if (!writeBuffer(socket, buffer, buffer_len))
+    {
+        cerr << "Network: Failed to send ClientMessage::ChangePlayerProperty message" << endl;
+        return false;
+    }
+
     return true;
 }
 
@@ -816,12 +876,40 @@ bool ServerMessage::DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id
             return false;
         }
 
+        if (!read(socket, &data.properties, sizeof(data.properties)))
+        {
+            cerr << "Network: DecodePlayersInLobby failed to read a player id." << endl;
+            return false;
+        }
+
         players.push_back(data);
     }
 
     out_players = players;
     out_id = player_id;
 
+    return true;
+}
+
+bool ServerMessage::DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties)
+{
+    uint16_t player_id;
+    PlayerProperties properties;
+
+    if (!read(socket, &player_id, sizeof(player_id)))
+    {
+        cerr << "Network: DecodeChangePlayerProperty failed to read a player id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &properties, sizeof(properties)))
+    {
+        cerr << "Network: DecodeChangePlayerProperty failed to read player properties." << endl;
+        return false;
+    }
+
+    out_player_id = player_id;
+    out_properties = properties;
     return true;
 }
 

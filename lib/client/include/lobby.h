@@ -12,6 +12,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <string>
+#include <array>
 #include "cursor_button.h"
 #include "messaging.h"
 
@@ -34,6 +35,7 @@ public:
     void AssignId(uint16_t id);
     void AddPlayer(network::PlayerData player_data);
     void RemovePlayer(uint16_t player_id);
+    void SetPlayerProperties(uint16_t player_id, network::PlayerProperties properties);
     void LeaveLobby();
 
 private:
@@ -41,6 +43,7 @@ private:
     {
         network::PlayerData data;
         sf::Text display_text;
+        std::array<sf::Text, 2> class_options;
     };
 
     void onMouseDown(sf::Event event);
@@ -54,10 +57,13 @@ private:
     std::shared_ptr<sf::Font> font;
     LobbyPlayer local_player;
     std::vector<LobbyPlayer> player_display_list;
+    CursorButton class_select_left;
+    CursorButton class_select_right;
     CursorButton leave_button;
     CursorButton start_button;
 
     void updatePlayerPositions();
+    void scrollClassOption(int displacement);
 };
 
 } // client

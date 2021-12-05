@@ -33,6 +33,11 @@ void Game::Update(sf::Time elapsed)
             avatar.second.Update(elapsed);
         }
 
+        for (auto& enemy : enemies)
+        {
+            enemy.second.Update(elapsed);
+        }
+
         if (current_zoom != target_zoom)
         {
             current_zoom += zoom_speed * elapsed.asSeconds();

@@ -40,10 +40,11 @@ public:
     void RemovePlayer(uint16_t player_id);
 
     sf::View WorldView;
+    RegionMap region_map;
 
 private:
     Gui gui;
-    RegionMap region_map;
+    
     Player local_player;
 
     std::map<uint16_t, Avatar> avatars;

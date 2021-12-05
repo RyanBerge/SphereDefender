@@ -67,6 +67,11 @@ void Spritesheet::SetPosition(float x, float y)
     }
 }
 
+void Spritesheet::SetPosition(sf::Vector2f position)
+{
+    SetPosition(position.x, position.y);
+}
+
 void Spritesheet::SetTiling(bool tiled)
 {
     texture->setRepeated(tiled);

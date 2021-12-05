@@ -25,9 +25,12 @@ public:
     Enemy();
 
     void Update(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void Damage(uint8_t value);
+    void SetKnockback(PlayerInfo::WeaponKnockback knockback, sf::Vector2f direction);
 
     sf::FloatRect GetBounds();
     network::EnemyData Data;
+    bool Invulnerable = false;
 
 private:
     double movement_speed = 210;
@@ -38,12 +41,19 @@ private:
     bool attacking = false;
     bool attack_flag = false;
     sf::Clock attack_timer;
+    sf::Clock invulnerability_timer;
     sf::Vector2f attack_vector;
     sf::Vector2f starting_attack_position;
     int attack_duration = 250; // milliseconds
     int attack_cooldown = 500; // milliseconds
 
+    bool knockback = false;
+    sf::Clock knockback_timer;
+    float knockback_duration = 0;
+    sf::Vector2f knockback_vector;
+
     void move(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void moveKnockback(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
     void checkAttack(std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy);
 };
 

@@ -9,11 +9,12 @@
  *************************************************************************************************/
 #pragma once
 
-#include <SFML/System/Time.hpp>
+#include <SFML/System/Clock.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include "SFML/Graphics/RectangleShape.hpp"
 #include <cstdint>
 #include <string>
+#include "spritesheet.h"
 #include "entity_data.h"
 
 namespace client {
@@ -38,8 +39,12 @@ public:
 private:
     sf::CircleShape sphere;
     sf::RectangleShape sword;
+    sf::RectangleShape gun;
+    Spritesheet gunshot;
+    sf::CircleShape gun_impact;
 
     float starting_attack_angle;
+    sf::Clock attack_timer;
 
 };
 

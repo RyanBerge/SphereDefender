@@ -20,6 +20,7 @@ class Enemy
 public:
     Enemy();
 
+    void Update(sf::Time elapsed);
     void Draw();
 
     network::EnemyData GetData();
@@ -34,6 +35,8 @@ private:
     sf::Vector2f attack_vector;
     sf::Vector2f attack_starting_position;
 
+    bool damage_flash = false;
+    sf::Clock damage_timer;
 };
 
 } // namespace client

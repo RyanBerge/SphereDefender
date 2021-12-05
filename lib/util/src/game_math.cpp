@@ -129,6 +129,114 @@ bool Intersects(sf::FloatRect rect1, sf::FloatRect rect2)
     return true;
 }
 
+bool IntersectionPoint(sf::FloatRect rect, LineVector line, sf::Vector2f& out_intersection_point)
+{
+    // Check if line is even facing in a valid direction
+    if (rect.left > line.starting_point.x && line.direction.x <= 0)
+    {
+        return false;
+    }
+
+    if (rect.left + rect.width < line.starting_point.x && line.direction.x >= 0)
+    {
+        return false;
+    }
+
+    if (rect.top > line.starting_point.y && line.direction.y <= 0)
+    {
+        return false;
+    }
+
+    if (rect.top + rect.height < line.starting_point.y && line.direction.y >= 0)
+    {
+        return false;
+    }
+
+    // Check vertical
+    if (line.direction.x == 0)
+    {
+        if (line.starting_point.x >= rect.left && line.starting_point.x <= rect.left + rect.width)
+        {
+            if (line.direction.y > 0 && rect.top >= line.starting_point.y)
+            {
+                out_intersection_point = sf::Vector2f{line.starting_point.x, rect.top};
+                return true;
+            }
+
+            if (line.direction.y < 0 && rect.top + rect.height <= line.starting_point.y)
+            {
+                out_intersection_point = sf::Vector2f{line.starting_point.x, rect.top + rect.height};
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    // Check horizontal
+    if (line.direction.y == 0)
+    {
+        if (line.starting_point.y >= rect.top && line.starting_point.y <= rect.top + rect.height)
+        {
+            if (line.direction.x > 0 && rect.left >= line.starting_point.x)
+            {
+                out_intersection_point = sf::Vector2f{rect.left, line.starting_point.y};
+                return true;
+            }
+
+            if (line.direction.x < 0 && rect.left + rect.width <= line.starting_point.x)
+            {
+                out_intersection_point = sf::Vector2f{rect.left + rect.width, line.starting_point.y};
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    float slope = line.direction.y / line.direction.x;
+
+    if (line.direction.x > 0)
+    {
+        float y = slope * (rect.left - line.starting_point.x) + line.starting_point.y;
+        if (y >= rect.top && y <= rect.top + rect.height)
+        {
+            out_intersection_point = sf::Vector2f{rect.left, y};
+            return true;
+        }
+    }
+    else if (line.direction.x < 0)
+    {
+        float y = slope * (rect.left + rect.width - line.starting_point.x) + line.starting_point.y;
+        if (y >= rect.top && y <= rect.top + rect.height)
+        {
+            out_intersection_point = sf::Vector2f{rect.left + rect.width, y};
+            return true;
+        }
+    }
+
+    if (line.direction.y > 0)
+    {
+        float x = (rect.top - line.starting_point.y) / slope + line.starting_point.x;
+        if (x >= rect.left && x <= rect.left + rect.width)
+        {
+            out_intersection_point = sf::Vector2f{x, rect.top};
+            return true;
+        }
+    }
+    else if (line.direction.y < 0)
+    {
+        float x = (rect.top + rect.height - line.starting_point.y) / slope + line.starting_point.x;
+        if (x >= rect.left && x <= rect.left + rect.width)
+        {
+            out_intersection_point = sf::Vector2f{x, rect.top + rect.height};
+            return true;
+        }
+    }
+
+    return false;
+}
+
 double Distance(sf::Vector2f p1, sf::Vector2f p2)
 {
     sf::Vector2f delta = p2 - p1;

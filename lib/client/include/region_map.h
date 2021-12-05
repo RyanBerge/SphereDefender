@@ -29,11 +29,13 @@ public:
 
     void InitializeRegion(shared::RegionDefinition definition);
 
+    std::vector<sf::RectangleShape> obstacles;
+
 private:
     Spritesheet background;
     sf::RectangleShape convoy;
 
-    std::vector<sf::RectangleShape> obstacles;
+    
 };
 
 } // client

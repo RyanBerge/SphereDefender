@@ -206,7 +206,7 @@ void GameManager::checkMessages()
         break;
         case ServerMessage::Code::PlayerJoined:
         {
-            network::PlayerData data;
+            network::PlayerData data{};
             if (ServerMessage::DecodePlayerJoined(ServerSocket, data))
             {
                 if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
@@ -304,6 +304,19 @@ void GameManager::checkMessages()
                     {
                         MainMenu.Lobby.AddPlayer(data);
                     }
+                }
+            }
+        }
+        break;
+        case ServerMessage::Code::ChangePlayerProperty:
+        {
+            uint16_t player_id;
+            network::PlayerProperties properties;
+            if (ServerMessage::DecodeChangePlayerProperty(ServerSocket, player_id, properties))
+            {
+                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                {
+                    MainMenu.Lobby.SetPlayerProperties(player_id, properties);
                 }
             }
         }

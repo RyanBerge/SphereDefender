@@ -10,13 +10,15 @@
 #include "enemy.h"
 #include "pathfinding.h"
 #include <iostream>
+#include <SFML/System/Sleep.hpp>
 
 using std::cout, std::endl;
 
 namespace server {
 
 namespace {
-    const int AGGRO_THRESHOLD = 350; // pixels
+    constexpr int AGGRO_THRESHOLD = 350; // pixels
+    constexpr int INVULNERABILITY_WINDOW = 200; // milliseconds
 }
 
 Enemy::Enemy()
@@ -36,7 +38,15 @@ sf::FloatRect Enemy::GetBounds()
 
 void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
-    if (!attacking)
+    if (!knockback && knockback_timer.getElapsedTime().asMilliseconds() < knockback_duration * 3)
+    {
+        return;
+    }
+    else if (knockback)
+    {
+        moveKnockback(elapsed, convoy, obstacles);
+    }
+    else if (!attacking)
     {
         move(elapsed, players, convoy, obstacles);
     }
@@ -68,6 +78,38 @@ void Enemy::Update(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::C
             Data.position = starting_attack_position;
         }
     }
+
+    if (Invulnerable && invulnerability_timer.getElapsedTime().asMilliseconds() >= INVULNERABILITY_WINDOW)
+    {
+        Invulnerable = false;
+    }
+}
+
+void Enemy::Damage(uint8_t value)
+{
+    if (!Invulnerable)
+    {
+        if (Data.health < value)
+        {
+            Data.health = 0;
+        }
+        else
+        {
+            Data.health -= value;
+        }
+
+        Invulnerable = true;
+        invulnerability_timer.restart();
+    }
+}
+
+void Enemy::SetKnockback(PlayerInfo::WeaponKnockback weapon_knockback, sf::Vector2f direction)
+{
+    knockback = true;
+    knockback_vector = (direction / std::hypot(direction.x, direction.y)) * (weapon_knockback.distance / weapon_knockback.duration);
+    knockback_duration = weapon_knockback.duration;
+    knockback_timer.restart();
+    attacking = false;
 }
 
 void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
@@ -184,6 +226,50 @@ void Enemy::move(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::Con
     }
 
     Data.position += velocity * elapsed.asSeconds();
+}
+
+void Enemy::moveKnockback(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
+{
+    bool collision = false;
+    sf::Vector2f new_position = Data.position + knockback_vector * (elapsed.asSeconds() * 1000);
+    sf::FloatRect new_bounds = GetBounds();
+    new_bounds.left = new_position.x;
+    new_bounds.top = new_position.y;
+
+    for (auto& obstacle : obstacles)
+    {
+        if (util::Intersects(new_bounds, obstacle))
+        {
+            collision = true;
+        }
+    }
+
+    sf::FloatRect convoy_bounds;
+    if (convoy.orientation == shared::Orientation::North || convoy.orientation == shared::Orientation::South)
+    {
+        convoy_bounds = sf::FloatRect(convoy.position, sf::Vector2f{convoy.WIDTH, convoy.HEIGHT});
+    }
+    else
+    {
+        convoy_bounds = sf::FloatRect(convoy.position, sf::Vector2f{convoy.HEIGHT, convoy.WIDTH});
+    }
+
+    if (util::Intersects(new_bounds, convoy_bounds))
+    {
+        collision = true;
+    }
+
+    if (!collision)
+    {
+        Data.position = new_position;
+    }
+
+    if (knockback_timer.getElapsedTime().asMilliseconds() >= knockback_duration)
+    {
+        knockback = false;
+    }
+
+    return;
 }
 
 void Enemy::checkAttack(std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy)

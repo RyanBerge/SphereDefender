@@ -15,12 +15,29 @@
 namespace network
 {
 
+struct WeaponKnockback
+{
+    float distance; // total distance over duration in pixels
+    int duration; // duration in millisecondss
+};
+
+enum class PlayerClass : uint8_t
+{
+    Melee, Ranged
+};
+
+struct PlayerProperties
+{
+    PlayerClass player_class;
+};
+
 struct PlayerData
 {
     uint16_t id;
     std::string name;
     sf::Vector2f position;
     uint8_t health;
+    PlayerProperties properties;
 };
 
 struct EnemyData
@@ -35,6 +52,5 @@ struct EnemyData
     sf::Vector2f position;
     uint8_t health;
 };
-
 
 } // namespace network

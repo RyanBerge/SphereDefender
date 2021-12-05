@@ -52,6 +52,7 @@ private:
 
     void initLobby(PlayerInfo& player);
     void playerJoined(PlayerInfo& player);
+    void changePlayerProperty(PlayerInfo& player);
     void startGame(PlayerInfo& player);
     void loadingComplete(PlayerInfo& player);
     void leaveGame(PlayerInfo& player);

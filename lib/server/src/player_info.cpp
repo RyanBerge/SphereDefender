@@ -57,12 +57,22 @@ void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
 
     if (Attacking)
     {
-        current_attack_angle = std::fmod(current_attack_angle + swing_speed * elapsed.asSeconds(), 360);
-        float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
-
-        if (rotation_delta > swing_arc)
+        switch (Data.properties.player_class)
         {
-            Attacking = false;
+            case network::PlayerClass::Melee:
+            {
+                current_attack_angle = std::fmod(current_attack_angle + swing_speed * elapsed.asSeconds(), 360);
+                float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
+
+                if (rotation_delta > swing_arc)
+                {
+                    Attacking = false;
+                }
+            }
+            break;
+            default:
+            {
+            }
         }
     }
 }
@@ -98,6 +108,49 @@ util::LineSegment PlayerInfo::GetSwordLocation()
     sword.p2.x = (sword_offset + sword_length) * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
     sword.p2.y = (sword_offset + sword_length) * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
     return sword;
+}
+
+sf::Vector2f PlayerInfo::GetAttackVector()
+{
+    return sf::Vector2f{static_cast<float>(std::cos(current_attack_angle * util::pi / 180)), static_cast<float>(std::sin(current_attack_angle * util::pi / 180))};
+}
+
+uint8_t PlayerInfo::GetWeaponDamage()
+{
+    switch (Data.properties.player_class)
+    {
+        case network::PlayerClass::Melee:
+        {
+            return 50;
+        }
+        break;
+        case network::PlayerClass::Ranged:
+        {
+            return 20;
+        }
+        break;
+        default:
+        {
+            return 0;
+        }
+    }
+}
+
+PlayerInfo::WeaponKnockback PlayerInfo::GetWeaponKnockback()
+{
+    switch (Data.properties.player_class)
+    {
+        case network::PlayerClass::Melee:
+        {
+            return WeaponKnockback{50, 100};
+        }
+        break;
+        default:
+        {
+            return WeaponKnockback{0, 0};
+        }
+        break;
+    }
 }
 
 void PlayerInfo::Damage(int damage_value)

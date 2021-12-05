@@ -10,9 +10,12 @@
 #include "region.h"
 #include "region_definitions.h"
 #include <algorithm>
+#include <iostream>
+
+using std::cout, std::endl;
 
 namespace {
-    const int MAX_ENEMIES = 5;
+    const int MAX_ENEMIES = 3;
     const float SPAWN_TIMER = 1; // seconds
 }
 

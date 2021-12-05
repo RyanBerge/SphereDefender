@@ -40,6 +40,9 @@ public:
     client::Avatar Avatar;
 
 private:
+    bool attacking = false;
+    sf::Clock attack_timer;
+
     void updateMovement();
     void startAttack(sf::Vector2i point);
 

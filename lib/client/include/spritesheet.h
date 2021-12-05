@@ -29,6 +29,7 @@ public:
     bool LoadTexture(std::string filename);
 
     void SetPosition(float x, float y);
+    void SetPosition(sf::Vector2f position);
     void SetTiling(bool tiled);
 
 private:

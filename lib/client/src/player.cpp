@@ -21,12 +21,24 @@ using network::ClientMessage, network::ServerMessage;
 #define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
+namespace {
+    constexpr int GUN_ATTACK_COOLDOWN = 300; // milliseconds
+}
 
 Player::Player() : Avatar(sf::Color(115, 180, 115), network::PlayerData{}) { }
 
 void Player::Update(sf::Time elapsed)
 {
     Avatar.Update(elapsed);
+
+    if (Avatar.Data.properties.player_class == network::PlayerClass::Ranged)
+    {
+        if (attacking && attack_timer.getElapsedTime().asMilliseconds() >= GUN_ATTACK_COOLDOWN)
+        {
+            startAttack(sf::Mouse::getPosition(GameManager::GetInstance().Window));
+            attack_timer.restart();
+        }
+    }
 }
 
 void Player::Draw()
@@ -36,9 +48,9 @@ void Player::Draw()
 
 void Player::Load(network::PlayerData data)
 {
-    Avatar.SetPosition(data.position);
+    Avatar.Data = data;
     Avatar.Data.health = 100;
-    Avatar.Data.id = data.id;
+    Avatar.SetPosition(data.position);
 }
 
 void Player::Unload()
@@ -66,16 +78,34 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
     {
         sf::Vector2i click_point{event.x, event.y};
 
-        if (!Avatar.Attacking)
+        switch (Avatar.Data.properties.player_class)
         {
-            startAttack(click_point);
+            case network::PlayerClass::Melee:
+            {
+                if (!Avatar.Attacking)
+                {
+                    startAttack(click_point);
+                }
+            }
+            break;
+            case network::PlayerClass::Ranged:
+            {
+                if (attack_timer.getElapsedTime().asMilliseconds() >= GUN_ATTACK_COOLDOWN)
+                {
+                    startAttack(click_point);
+                }
+            }
+            break;
         }
     }
 }
 
 void Player::OnMouseUp(sf::Event::MouseButtonEvent event)
 {
-    (void)event;
+    if (event.button == sf::Mouse::Button::Right && attacking)
+    {
+        attacking = false;
+    }
 }
 
 void Player::OnTextEntered(sf::Event::TextEvent event)
@@ -142,9 +172,17 @@ void Player::startAttack(sf::Vector2i point)
     if (Avatar.Data.health > 0)
     {
         sf::Vector2f distance_to_destination = GameManager::GetInstance().Window.mapPixelToCoords(point, GameManager::GetInstance().Game.WorldView) - Avatar.GetPosition();
-        float rotation = std::atan(distance_to_destination.y / distance_to_destination.x) * 180 / util::pi;
-        rotation += distance_to_destination.x < 0 ? 180 : 0;
-        uint16_t attack_angle = (static_cast<uint16_t>(rotation) + 315) % 360;
+        float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
+
+        uint16_t attack_angle = 0;
+        if (Avatar.Data.properties.player_class == network::PlayerClass::Melee)
+        {
+            attack_angle = (static_cast<uint16_t>(rotation + 315)) % 360;
+        }
+        else if (Avatar.Data.properties.player_class == network::PlayerClass::Ranged)
+        {
+            attack_angle = (static_cast<uint16_t>(rotation + 360)) % 360;
+        }
 
         network::PlayerAction action;
         action.start_attack = true;
@@ -152,6 +190,9 @@ void Player::startAttack(sf::Vector2i point)
 
         ClientMessage::StartAction(ServerSocket, action);
         Avatar.StartAttack(attack_angle);
+
+        attacking = true;
+        attack_timer.restart();
     }
 }
 

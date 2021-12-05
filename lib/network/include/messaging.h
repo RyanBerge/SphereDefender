@@ -35,6 +35,7 @@ public:
         None = 0,
         InitLobby,
         JoinLobby,
+        ChangePlayerProperty,
 
         StartGame,
         LoadingComplete,
@@ -51,6 +52,7 @@ public:
 
     static bool InitLobby(sf::TcpSocket& socket, std::string name);
     static bool JoinLobby(sf::TcpSocket& socket, std::string name);
+    static bool ChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties properties);
     static bool StartGame(sf::TcpSocket& socket);
     static bool LoadingComplete(sf::TcpSocket& socket);
     static bool LeaveGame(sf::TcpSocket& socket);
@@ -59,6 +61,7 @@ public:
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
     static bool DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name);
+    static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties& out_properties);
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
 };
@@ -74,6 +77,7 @@ public:
         PlayerLeft,
         OwnerLeft,
         PlayersInLobby,
+        ChangePlayerProperty,
 
         StartGame,
         AllPlayersLoaded,
@@ -94,6 +98,7 @@ public:
     static bool PlayerJoined(sf::TcpSocket& socket, PlayerData player);
     static bool PlayerLeft(sf::TcpSocket& socket, uint16_t player_id);
     static bool PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, std::vector<PlayerData> players);
+    static bool ChangePlayerProperty(sf::TcpSocket& socket, uint16_t player_id, PlayerProperties properties);
     static bool OwnerLeft(sf::TcpSocket& socket);
     static bool StartGame(sf::TcpSocket& socket);
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
@@ -106,6 +111,7 @@ public:
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
     static bool DecodePlayerLeft(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id, std::vector<PlayerData>& out_players);
+    static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties);
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
