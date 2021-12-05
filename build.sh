@@ -73,6 +73,26 @@ build() {
         popd
     fi
 
+    if [ ! -d externals/Json/install ]; then
+        mkdir -p externals/Json/install
+        mkdir -p externals/Json/json/cmake/build
+
+        pushd externals/Json/json/cmake/build
+
+        ${CMAKE} \
+            -G "${GENERATOR}" \
+            -DCMAKE_INSTALL_PREFIX=../../../install \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_BUILD_TYPE=${BUILD} \
+            -DJSON_BuildTests=OFF \
+            ../..
+
+        ${MAKE} --no-print-directory
+        ${MAKE} install --no-print-directory
+
+        popd
+    fi
+
     mkdir -p build
     pushd build
     ${CMAKE} -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=${BUILD} ../

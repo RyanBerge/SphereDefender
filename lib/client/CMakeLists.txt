@@ -1,5 +1,6 @@
 set(TargetName SphereDefender)
 find_package(SFML COMPONENTS graphics PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/install)
+find_package(nlohmann_json 3.2.0 REQUIRED PATHS ${PROJECT_SOURCE_DIR}/externals/Json/install)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -31,6 +32,7 @@ target_include_directories(${TargetName} PRIVATE
     ${PROJECT_SOURCE_DIR}/lib/shared/include
     ${PROJECT_SOURCE_DIR}/lib/util/include
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
+    ${PROJECT_SOURCE_DIR}/externals/Json/install/include
 )
 
 target_link_libraries(${TargetName}
@@ -39,4 +41,5 @@ target_link_libraries(${TargetName}
     util
     sfml-graphics
     Threads::Threads
+    nlohmann_json::nlohmann_json
 )

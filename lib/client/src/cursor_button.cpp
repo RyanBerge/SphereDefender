@@ -19,11 +19,25 @@ CursorButton::CursorButton() { }
 
 CursorButton::CursorButton(std::string filepath) : spritesheet{filepath} { }
 
-//void CursorButton::Update(sf::Time elapsed) { }
+void CursorButton::Update(sf::Time elapsed)
+{
+    spritesheet.Update(elapsed);
+}
 
 void CursorButton::Draw()
 {
     spritesheet.Draw();
+}
+
+void CursorButton::LoadAnimationData(std::string filepath)
+{
+    spritesheet.LoadAnimationData(filepath);
+    spritesheet.SetAnimation("Up");
+}
+
+void CursorButton::SetAnimation(std::string animation_name)
+{
+    spritesheet.SetAnimation(animation_name);
 }
 
 sf::Sprite& CursorButton::GetSprite()
@@ -104,6 +118,7 @@ void CursorButton::RegisterCursorExit(std::function<void(void)> f)
 
 void CursorButton::onLeftMouseDown(bool in_bounds)
 {
+    spritesheet.SetAnimation("Down");
     if (in_bounds)
     {
         for (auto& callback : leftMouseDownCallbacks)
@@ -128,6 +143,7 @@ void CursorButton::onHoverEnter()
 {
     mouse_hover = true;
 
+    spritesheet.SetAnimation("Hover");
     for (auto& callback : cursorEnterCallbacks)
     {
         callback();
@@ -138,6 +154,7 @@ void CursorButton::onHoverExit()
 {
     mouse_hover = false;
 
+    spritesheet.SetAnimation("Up");
     for (auto& callback : cursorExitCallbacks)
     {
         callback();

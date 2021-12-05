@@ -44,6 +44,7 @@ public:
 
     MainMenu();
 
+    void Update(sf::Time elapsed);
     void Draw();
 
     void Load();

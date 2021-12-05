@@ -12,6 +12,8 @@
 #include "resources.h"
 #include "game_manager.h"
 #include <iostream>
+#include <fstream>
+#include "nlohmann/json.hpp"
 
 using std::cout, std::cerr, std::endl;
 
@@ -32,12 +34,62 @@ Spritesheet::Spritesheet(std::string filename, bool tiled)
     SetTiling(tiled);
 }
 
+void Spritesheet::Update(sf::Time elapsed)
+{
+    animation_timer += elapsed.asSeconds();
+    if (current_animation.speed != 0 && animation_timer >= 1 / current_animation.speed)
+    {
+        animation_timer -= 1 / current_animation.speed;
+        if (current_frame == current_animation.end)
+        {
+            current_animation = animation_data.animations[current_animation.next];
+            setFrame(0);
+        }
+        else
+        {
+            setFrame(current_frame + 1);
+        }
+    }
+}
+
 void Spritesheet::Draw()
 {
     GameManager::GetInstance().Window.draw(sprite);
     if (texture->isRepeated())
     {
         GameManager::GetInstance().Window.draw(tiled_sprite);
+    }
+}
+
+void Spritesheet::LoadAnimationData(std::string filename)
+{
+    std::ifstream file("../data/sprites/" + filename);
+    nlohmann::json j;
+    file >> j;
+
+    animation_data.frames = std::vector<sf::IntRect>(j["frames"].size());
+    LoadTexture(j["filename"]);
+
+    for (auto& object : j["frames"])
+    {
+        sf::IntRect rect;
+        rect.left = object["location"][0];
+        rect.top = object["location"][1];
+        rect.width = object["size"][0];
+        rect.height = object["size"][1];
+
+        animation_data.frames[object["index"]] = rect;
+    }
+
+    for (auto& object : j["animations"])
+    {
+        Animation animation;
+        animation.start = object["start_frame"];
+        animation.end = object["end_frame"];
+        animation.speed = object["animation_speed"];
+        animation.next = object["next_animation"];
+
+        animation_data.animations[object["name"]] = animation;
     }
 }
 
@@ -56,6 +108,15 @@ bool Spritesheet::LoadTexture(std::string filename)
 sf::Sprite& Spritesheet::GetSprite()
 {
     return sprite;
+}
+
+void Spritesheet::SetAnimation(std::string animation_name)
+{
+    if (animation_data.animations.find(animation_name) != animation_data.animations.end())
+    {
+        current_animation = animation_data.animations[animation_name];
+        setFrame(current_animation.start);
+    }
 }
 
 void Spritesheet::SetPosition(float x, float y)
@@ -79,6 +140,12 @@ void Spritesheet::SetTiling(bool tiled)
 
     sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
     tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
+}
+
+void Spritesheet::setFrame(int frame)
+{
+    current_frame = frame;
+    sprite.setTextureRect(animation_data.frames[current_frame]);
 }
 
 } // client

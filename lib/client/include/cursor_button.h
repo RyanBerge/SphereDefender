@@ -27,8 +27,11 @@ public:
     CursorButton();
     CursorButton(std::string filepath);
 
-    //void Update(sf::Time elapsed);
+    void Update(sf::Time elapsed);
     void Draw();
+
+    void LoadAnimationData(std::string filepath);
+    void SetAnimation(std::string animation_name);
 
     void UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event);
     void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);

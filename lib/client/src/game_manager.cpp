@@ -58,7 +58,7 @@ void GameManager::Start()
         {
             case GameState::MainMenu:
             {
-                //MainMenu.Update(elapsed);
+                MainMenu.Update(elapsed);
             }
             break;
             case GameState::Game:

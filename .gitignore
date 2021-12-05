@@ -1,5 +1,6 @@
 .vscode
 externals/sfml/install
+externals/Json/install
 build
 bin
 publish

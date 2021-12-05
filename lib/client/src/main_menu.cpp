@@ -24,7 +24,8 @@ MainMenu::MainMenu()
 
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
-    CursorButton splash_screen_start("SplashStartButton.png");
+    CursorButton splash_screen_start;
+    splash_screen_start.LoadAnimationData("SplashStartButton.json");
     splash_screen_start.SetPosition(746, 950);
     splash_screen_start.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Main; });
     splash_screen_menu.buttons.push_back(splash_screen_start);
@@ -107,6 +108,15 @@ MainMenu::MainMenu()
     menus[MenuType::LoadingScreen] = loading;
 
     Load();
+}
+
+void MainMenu::Update(sf::Time elapsed)
+{
+    Menu& menu = menus[CurrentMenu];
+    for (auto& spritesheet : menu.spritesheets)
+    {
+        spritesheet.Update(elapsed);
+    }
 }
 
 void MainMenu::Draw()
