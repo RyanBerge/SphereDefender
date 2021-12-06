@@ -24,6 +24,11 @@ MainMenu::MainMenu()
 
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
+    Spritesheet frog;
+    frog.LoadAnimationData("main_menu/frog.json");
+    frog.SetPosition(500, 800);
+    frog.SetAnimation("Frog Jump1");
+    splash_screen_menu.spritesheets.push_back(frog);
     CursorButton splash_screen_start("main_menu/splash_start.json");
     splash_screen_start.SetPosition(746, 950);
     splash_screen_start.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Main; });

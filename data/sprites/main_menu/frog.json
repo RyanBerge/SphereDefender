@@ -1,0 +1,79 @@
+{
+  "filename": "Frog_Jump.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [0, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 1,
+      "location": [22, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 2,
+      "location": [44, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 3,
+      "location": [44, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 4,
+      "location": [66, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 5,
+      "location": [88, 0],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 6,
+      "location": [110, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 7,
+      "location": [110, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 8,
+      "location": [132, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 9,
+      "location": [154, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 10,
+      "location": [176, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 11,
+      "location": [198, 0 ],
+      "size": [ 22, 28 ]
+    },
+    {
+      "index": 12,
+      "location": [220, 0 ],
+      "size": [ 22, 28 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Frog Jump1",
+      "start_frame": 0,
+      "end_frame": 12,
+      "animation_speed": 10,
+      "next_animation": "Frog Jump1"
+    }
+  ]
+}
