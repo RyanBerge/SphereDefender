@@ -29,17 +29,14 @@ Gui::Gui()
     menu_button.SetPosition(1803, 14);
     menu_button.RegisterLeftMouseUp([this](void){ DisplayMenu(); });
 
-    healthbar.setSize(sf::Vector2f{40, 200});
+    healthbar.setSize(sf::Vector2f{32, 200});
     healthbar.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
-    healthbar.setPosition(sf::Vector2f{70, 1210});
+    healthbar.setPosition(sf::Vector2f{74, 1210});
     healthbar.setFillColor(sf::Color::Green);
 
-    healthbar_frame.setSize(sf::Vector2f{40, 200});
-    healthbar_frame.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
-    healthbar_frame.setPosition(sf::Vector2f{70, 1210});
-    healthbar_frame.setFillColor(sf::Color::Transparent);
-    healthbar_frame.setOutlineColor(sf::Color::Black);
-    healthbar_frame.setOutlineThickness(4);
+    healthbar_frame.LoadAnimationData("gui/healthbar.json");
+    healthbar_frame.GetSprite().setOrigin(sf::Vector2f{0, healthbar.getSize().y});
+    healthbar_frame.SetPosition(sf::Vector2f{70, 1210});
 
     font = resources::AllocFont("Vera.ttf");
     death_text.setFont(*font);
@@ -86,7 +83,7 @@ void Gui::Draw()
     menu_button.Draw();
 
     GameManager::GetInstance().Window.draw(healthbar);
-    GameManager::GetInstance().Window.draw(healthbar_frame);
+    healthbar_frame.Draw();
 
     if (Health == 0)
     {

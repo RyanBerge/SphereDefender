@@ -1,0 +1,19 @@
+{
+  "filename": "HealthBar.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 40, 200 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Static",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Static"
+    }
+  ]
+}

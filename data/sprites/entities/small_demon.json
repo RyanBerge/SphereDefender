@@ -1,0 +1,46 @@
+{
+  "filename": "SmallDemon2.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [0, 0 ],
+      "size": [ 50, 50 ]
+    },
+    {
+      "index": 1,
+      "location": [50, 0 ],
+      "size": [ 50, 50 ]
+    },
+    {
+      "index": 2,
+      "location": [100, 0 ],
+      "size": [ 50, 50 ]
+    },
+    {
+      "index": 3,
+      "location": [150, 0 ],
+      "size": [ 50, 50 ]
+    },
+    {
+      "index": 4,
+      "location": [200, 0 ],
+      "size": [ 50, 50 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Move",
+      "start_frame": 0,
+      "end_frame": 4,
+      "animation_speed": 10,
+      "next_animation": "Move"
+    },
+    {
+      "name": "Attack",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Attack"
+    }
+  ]
+}

@@ -22,13 +22,14 @@ namespace {
 
 Enemy::Enemy()
 {
-    spritesheet.LoadTexture("SmallDemon.png");
-    spritesheet.GetSprite().setOrigin(spritesheet.GetSprite().getLocalBounds().width / 2, spritesheet.GetSprite().getLocalBounds().height / 2);
+    spritesheet.LoadAnimationData("entities/small_demon.json");
+    spritesheet.CenterOrigin();
+    spritesheet.SetAnimation("Move");
 }
 
 void Enemy::Update(sf::Time elapsed)
 {
-    (void)elapsed;
+    spritesheet.Update(elapsed);
     if (damage_flash && damage_timer.getElapsedTime().asMilliseconds() >= FLASH_TIMER)
     {
         damage_flash = false;

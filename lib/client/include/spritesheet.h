@@ -35,6 +35,7 @@ public:
     void SetAnimation(std::string animation_name);
     void SetPosition(float x, float y);
     void SetPosition(sf::Vector2f position);
+    void CenterOrigin();
     void SetTiling(bool tiled);
 
 private:

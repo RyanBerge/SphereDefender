@@ -46,7 +46,7 @@ private:
     CursorButton menu_button;
 
     sf::RectangleShape healthbar;
-    sf::RectangleShape healthbar_frame;
+    Spritesheet healthbar_frame;
     sf::RectangleShape death_tint;
     std::shared_ptr<sf::Font> font;
     sf::Text death_text;

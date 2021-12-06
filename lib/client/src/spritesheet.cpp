@@ -99,6 +99,8 @@ void Spritesheet::LoadAnimationData(std::string filename)
 
         animation_data.animations[object["name"]] = animation;
     }
+
+    SetAnimation(animation_data.animations.begin()->first);
 }
 
 bool Spritesheet::LoadTexture(std::string filename)
@@ -143,6 +145,18 @@ void Spritesheet::SetPosition(float x, float y)
 void Spritesheet::SetPosition(sf::Vector2f position)
 {
     SetPosition(position.x, position.y);
+}
+
+void Spritesheet::CenterOrigin()
+{
+    if (animation_data.frames.empty())
+    {
+        sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
+    }
+    else
+    {
+        sprite.setOrigin(animation_data.frames[current_animation.start].width / 2, animation_data.frames[current_animation.start].height / 2);
+    }
 }
 
 void Spritesheet::SetTiling(bool tiled)
