@@ -27,6 +27,7 @@ public:
     void Load();
     void Unload();
 
+    void DisplayMenu();
     void UpdateHealth(uint8_t value);
 
     sf::View GuiView;

@@ -25,9 +25,9 @@ Gui::Gui()
     ui_frame.LoadTexture("UiFrame.png");
     ui_frame.SetPosition(0, 0);
 
-    menu_button = CursorButton("MenuButton.png");
+    menu_button.LoadAnimationData("gui/menu_button.json");
     menu_button.SetPosition(1803, 14);
-    menu_button.RegisterLeftMouseDown([this](void){ InMenus = true; });
+    menu_button.RegisterLeftMouseUp([this](void){ DisplayMenu(); });
 
     healthbar.setSize(sf::Vector2f{40, 200});
     healthbar.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
@@ -59,19 +59,19 @@ Gui::Gui()
     menu.LoadTexture("Menu.png");
     menu.SetPosition(613, 95);
 
-    resume_button = CursorButton("ResumeButton.png");
+    resume_button.LoadAnimationData("gui/resume.json");
     resume_button.SetPosition(707, 232);
-    resume_button.RegisterLeftMouseDown([this](void){ InMenus = false; });
+    resume_button.RegisterLeftMouseUp([this](void){ InMenus = false; });
 
-    save_button = CursorButton("PauseSaveButton.png");
+    save_button.LoadAnimationData("gui/save.json");
     save_button.SetPosition(707, 373);
 
-    settings_button = CursorButton("PauseSettingsButton.png");
+    settings_button.LoadAnimationData("gui/settings.json");
     settings_button.SetPosition(707, 515);
 
-    exit_button = CursorButton("PauseExitButton.png");
+    exit_button.LoadAnimationData("gui/exit.json");
     exit_button.SetPosition(707, 798);
-    exit_button.RegisterLeftMouseDown(std::bind(&Gui::exitGame, this));
+    exit_button.RegisterLeftMouseUp(std::bind(&Gui::exitGame, this));
 
     GuiView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 }
@@ -123,6 +123,14 @@ void Gui::UpdateHealth(uint8_t value)
     healthbar.setScale(sf::Vector2f{1, static_cast<float>(Health) / 100});
 }
 
+void Gui::DisplayMenu()
+{
+    InMenus = true;
+    resume_button.SetAnimation("Up");
+    save_button.SetAnimation("Up");
+    settings_button.SetAnimation("Up");
+    exit_button.SetAnimation("Up");
+}
 
 void Gui::exitGame()
 {

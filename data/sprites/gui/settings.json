@@ -1,0 +1,43 @@
+{
+  "filename": "PauseSettingsButton.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 504, 96 ]
+    },
+    {
+      "index": 1,
+      "location": [ 0, 96 ],
+      "size": [ 504, 96 ]
+    },
+    {
+      "index": 2,
+      "location": [ 0, 192 ],
+      "size": [ 504, 96 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Up",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Up"
+    },
+    {
+      "name": "Hover",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Hover"
+    },
+    {
+      "name": "Down",
+      "start_frame": 2,
+      "end_frame": 2,
+      "animation_speed": 0,
+      "next_animation": "Down"
+    }
+  ]
+}

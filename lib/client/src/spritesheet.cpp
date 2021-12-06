@@ -13,6 +13,7 @@
 #include "game_manager.h"
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include "nlohmann/json.hpp"
 
 using std::cout, std::cerr, std::endl;
@@ -63,7 +64,14 @@ void Spritesheet::Draw()
 
 void Spritesheet::LoadAnimationData(std::string filename)
 {
-    std::ifstream file("../data/sprites/" + filename);
+    std::filesystem::path path("../data/sprites/" + filename);
+    if (!std::filesystem::exists(path))
+    {
+        cerr << "Could not open animation file: " << path << endl;
+        return;
+    }
+
+    std::ifstream file(path);
     nlohmann::json j;
     file >> j;
 
@@ -117,6 +125,10 @@ void Spritesheet::SetAnimation(std::string animation_name)
         current_animation = animation_data.animations[animation_name];
         setFrame(current_animation.start);
     }
+    else
+    {
+        cerr << "Animation not found: " << animation_name << endl;
+    }
 }
 
 void Spritesheet::SetPosition(float x, float y)
@@ -142,10 +154,14 @@ void Spritesheet::SetTiling(bool tiled)
     tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
 }
 
-void Spritesheet::setFrame(int frame)
+void Spritesheet::setFrame(unsigned frame)
 {
     current_frame = frame;
     sprite.setTextureRect(animation_data.frames[current_frame]);
+    if (animation_data.frames.size() <= frame)
+    {
+        cerr << "Could not set frame: " << frame << endl;
+    }
 }
 
 } // client

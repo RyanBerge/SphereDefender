@@ -296,7 +296,14 @@ void Game::onKeyPressed(sf::Event event)
 
         if (event.key.code == Settings::GetInstance().Bindings.Pause)
         {
-            gui.InMenus = !gui.InMenus;
+            if (gui.InMenus)
+            {
+                gui.InMenus = false;
+            }
+            else
+            {
+                gui.DisplayMenu();
+            }
         }
     }
 }

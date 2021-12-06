@@ -24,8 +24,7 @@ MainMenu::MainMenu()
 
     Menu splash_screen_menu;
     splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
-    CursorButton splash_screen_start;
-    splash_screen_start.LoadAnimationData("SplashStartButton.json");
+    CursorButton splash_screen_start("main_menu/splash_start.json");
     splash_screen_start.SetPosition(746, 950);
     splash_screen_start.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Main; });
     splash_screen_menu.buttons.push_back(splash_screen_start);
@@ -33,18 +32,18 @@ MainMenu::MainMenu()
     CurrentMenu = MenuType::SplashScreen;
 
     Menu main_menu;
-    CursorButton create_game_button("CreateLobbyButton.png");
+    CursorButton create_game_button("main_menu/create_lobby.json");
     create_game_button.SetPosition(963, 300);
     create_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::CreateGame; setTabOrder(); });
     main_menu.buttons.push_back(create_game_button);
-    CursorButton join_game_button("JoinLobbyButton.png");
+    CursorButton join_game_button("main_menu/join_lobby.json");
     join_game_button.SetPosition(1142, 491);
     join_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::JoinGame; setTabOrder(); });
     main_menu.buttons.push_back(join_game_button);
-    CursorButton settings_button("MenuSettingsButton.png");
+    CursorButton settings_button("main_menu/settings.json");
     settings_button.SetPosition(1301, 677);
     main_menu.buttons.push_back(settings_button);
-    CursorButton exit_game("MenuExitButton.png");
+    CursorButton exit_game("main_menu/exit.json");
     exit_game.SetPosition(1607, 873);
     exit_game.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Exit; exitGame(); });
     main_menu.buttons.push_back(exit_game);
@@ -64,12 +63,12 @@ MainMenu::MainMenu()
     ip_label_text.setPosition(sf::Vector2f(320, 520));
     ip_label_text.setFillColor(sf::Color::White);
 
-    CursorButton lobby_back_button("BackButton.png");
+    CursorButton lobby_back_button("main_menu/back.json");
     lobby_back_button.SetPosition(355, 975);
     lobby_back_button.RegisterLeftMouseUp([this](void) { CurrentMenu = MenuType::Main; });
 
     Menu create_game;
-    CursorButton start_server_button("StartServerButton.png");
+    CursorButton start_server_button("main_menu/server_start.json");
     start_server_button.SetPosition(1288, 975);
     start_server_button.RegisterLeftMouseUp([this](void) { createLobby(true); });
     create_game.buttons.push_back(start_server_button);
@@ -81,7 +80,7 @@ MainMenu::MainMenu()
     menus[MenuType::CreateGame] = create_game;
 
     Menu join_game;
-    CursorButton connect_button("ConnectButton.png");
+    CursorButton connect_button("main_menu/connect.json");
     connect_button.SetPosition(1176, 975);
     connect_button.RegisterLeftMouseUp([this](void) { createLobby(false); });
     join_game.buttons.push_back(connect_button);

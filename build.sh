@@ -36,6 +36,8 @@ clean() {
     sudo rm -rf publish
     sudo rm -rf externals/sfml/install
     sudo rm -rf externals/sfml/SFML/cmake/build
+    sudo rm -rf externals/Json/install
+    sudo rm -rf externals/Json/json/cmake/build
 }
 
 build() {
@@ -110,8 +112,10 @@ build() {
         rm -rf publish
         mkdir -p publish/bin
         mkdir -p publish/assets
+        mkdir -p publish/data
         cp -r assets/*.png publish/assets
         cp -r assets/*.ttf publish/assets
+        cp -r data/* publish/data
 
         if [ ${ARCHITECTURE} == Win32 ]; then
             cp bin/*.exe publish/bin/

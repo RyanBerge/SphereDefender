@@ -33,9 +33,9 @@ Settings::Settings()
     frame.LoadTexture("Settings.png");
     frame.SetPosition(410, 200);
 
-    save_button = CursorButton("SettingsSaveButton.png");
-    save_button.SetPosition(1220, 770);
-    save_button.RegisterLeftMouseUp(std::bind(&Settings::ApplySettings, this));
+    //save_button = CursorButton("SettingsSaveButton.png");
+    //save_button.SetPosition(1220, 770);
+    //save_button.RegisterLeftMouseUp(std::bind(&Settings::ApplySettings, this));
 
     settings_view = sf::View(sf::FloatRect(0, 0, WindowResolution.x, WindowResolution.y));
 }

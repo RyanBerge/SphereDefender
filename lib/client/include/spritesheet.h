@@ -40,8 +40,8 @@ public:
 private:
     struct Animation
     {
-        int start;
-        int end;
+        unsigned start;
+        unsigned end;
         float speed;
         std::string next;
     };
@@ -58,12 +58,12 @@ private:
     AnimationData animation_data;
 
     Animation current_animation{};
-    int current_frame = 0;
+    unsigned current_frame = 0;
     float animation_timer = 0;
 
     sf::Sprite tiled_sprite;
 
-    void setFrame(int frame);
+    void setFrame(unsigned frame);
 };
 
 } // client

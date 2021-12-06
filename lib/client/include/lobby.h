@@ -46,6 +46,7 @@ private:
         std::array<sf::Text, 2> class_options;
     };
 
+    void onMouseMove(sf::Event event);
     void onMouseDown(sf::Event event);
     void onMouseUp(sf::Event event);
 

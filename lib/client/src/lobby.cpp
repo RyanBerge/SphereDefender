@@ -22,13 +22,13 @@ namespace client {
 
 Lobby::Lobby()
 {
-    leave_button = CursorButton("LeaveGameButton.png");
+    leave_button.LoadAnimationData("main_menu/leave_lobby.json");
     leave_button.SetPosition(542, 1000);
-    leave_button.RegisterLeftMouseDown(std::bind(&Lobby::LeaveLobby, this));
+    leave_button.RegisterLeftMouseUp(std::bind(&Lobby::LeaveLobby, this));
 
-    start_button = CursorButton("StartServerButton.png");
+    start_button.LoadAnimationData("main_menu/server_start.json");
     start_button.SetPosition(795, 850);
-    start_button.RegisterLeftMouseDown(std::bind(&Lobby::StartGame, this));
+    start_button.RegisterLeftMouseUp(std::bind(&Lobby::StartGame, this));
 
     font = resources::AllocFont("Vera.ttf");
 
@@ -37,18 +37,19 @@ Lobby::Lobby()
         std::cerr << "Lobby: There was an error loading the font." << std::endl;
     }
 
-    class_select_left = CursorButton("ClassLeftButton.png");
+    class_select_left.LoadAnimationData("main_menu/class_select_left.json");
     class_select_left.SetPosition(1200, 75);
-    class_select_left.RegisterLeftMouseDown([this](void){ scrollClassOption(-1); });
+    class_select_left.RegisterLeftMouseUp([this](void){ scrollClassOption(-1); });
 
-    class_select_right = CursorButton("ClassRightButton.png");
+    class_select_right.LoadAnimationData("main_menu/class_select_right.json");
     class_select_right.SetPosition(1532, 75);
-    class_select_right.RegisterLeftMouseDown([this](void){ scrollClassOption(1); });
+    class_select_right.RegisterLeftMouseUp([this](void){ scrollClassOption(1); });
 }
 
 void Lobby::initializeMenu()
 {
     //lobby_instance = this;
+    event_id_map[sf::Event::EventType::MouseMoved] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&Lobby::onMouseMove, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Lobby::onMouseDown, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseButtonReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Lobby::onMouseUp, this, std::placeholders::_1));
 
@@ -269,6 +270,14 @@ void Lobby::scrollClassOption(int displacement)
 
     network::PlayerProperties properties{static_cast<network::PlayerClass>(option)};
     ClientMessage::ChangePlayerProperty(ServerSocket, properties);
+}
+
+void Lobby::onMouseMove(sf::Event event)
+{
+    leave_button.UpdateMousePosition(event.mouseMove);
+    start_button.UpdateMousePosition(event.mouseMove);
+    class_select_left.UpdateMousePosition(event.mouseMove);
+    class_select_right.UpdateMousePosition(event.mouseMove);
 }
 
 void Lobby::onMouseDown(sf::Event event)

@@ -17,7 +17,10 @@ namespace client {
 
 CursorButton::CursorButton() { }
 
-CursorButton::CursorButton(std::string filepath) : spritesheet{filepath} { }
+CursorButton::CursorButton(std::string filepath)
+{
+    LoadAnimationData(filepath);
+}
 
 void CursorButton::Update(sf::Time elapsed)
 {
@@ -118,9 +121,9 @@ void CursorButton::RegisterCursorExit(std::function<void(void)> f)
 
 void CursorButton::onLeftMouseDown(bool in_bounds)
 {
-    spritesheet.SetAnimation("Down");
     if (in_bounds)
     {
+        spritesheet.SetAnimation("Down");
         for (auto& callback : leftMouseDownCallbacks)
         {
             callback();
@@ -132,10 +135,15 @@ void CursorButton::onLeftMouseUp(bool in_bounds)
 {
     if (in_bounds)
     {
+        spritesheet.SetAnimation("Hover");
         for (auto& callback : leftMouseUpCallbacks)
         {
             callback();
         }
+    }
+    else
+    {
+        spritesheet.SetAnimation("Up");
     }
 }
 
