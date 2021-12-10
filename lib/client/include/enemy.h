@@ -25,7 +25,7 @@ public:
 
     network::EnemyData GetData();
     void UpdateData(network::EnemyData new_data);
-    void StartAction(network::EnemyAction action);
+    void ChangeAction(network::EnemyAction action);
 
 private:
     Spritesheet spritesheet;

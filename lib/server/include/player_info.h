@@ -13,6 +13,7 @@
 #include <memory>
 #include "entity_data.h"
 #include "game_math.h"
+#include "region_definitions.h"
 
 namespace server {
 
@@ -31,10 +32,10 @@ public:
     struct WeaponKnockback
     {
         float distance; // total distance over duration in pixels
-        int duration; // duration in milliseconds
+        float duration; // duration in seconds
     };
 
-    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles);
+    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, shared::ConvoyDefinition convoy);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     util::LineSegment GetSwordLocation();

@@ -53,11 +53,27 @@ void Enemy::UpdateData(network::EnemyData new_data)
 
     data = new_data;
     spritesheet.SetPosition(data.position.x, data.position.y);
+    spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
 }
 
-void Enemy::StartAction(network::EnemyAction action)
+void Enemy::ChangeAction(network::EnemyAction action)
 {
-    (void)action;
+    if (action.flags.move)
+    {
+        spritesheet.SetAnimation("Move");
+    }
+    else if (action.flags.feed)
+    {
+        spritesheet.SetAnimation("Feed");
+    }
+    else if (action.flags.knockback)
+    {
+
+    }
+    else if (action.flags.start_attack)
+    {
+
+    }
 }
 
 network::EnemyData Enemy::GetData()

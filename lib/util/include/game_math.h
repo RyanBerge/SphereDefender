@@ -34,4 +34,5 @@ namespace util
     bool Intersects(sf::FloatRect rect1, sf::FloatRect rect2);
     bool IntersectionPoint(sf::FloatRect rect, LineVector line, sf::Vector2f& out_intersection_point);
     double Distance(sf::Vector2f p1, sf::Vector2f p2);
+    sf::Vector2f Normalize(sf::Vector2f vector);
 }

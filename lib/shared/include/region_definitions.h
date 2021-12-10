@@ -50,5 +50,6 @@ struct RegionDefinition
 };
 
 RegionDefinition GetRegionDefinition(std::string region);
+sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy);
 
 } // namespace shared

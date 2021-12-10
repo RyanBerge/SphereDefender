@@ -44,7 +44,7 @@ void Spritesheet::Update(sf::Time elapsed)
         if (current_frame == current_animation.end)
         {
             current_animation = animation_data.animations[current_animation.next];
-            setFrame(0);
+            setFrame(current_animation.start);
         }
         else
         {
@@ -75,18 +75,26 @@ void Spritesheet::LoadAnimationData(std::string filename)
     nlohmann::json j;
     file >> j;
 
-    animation_data.frames = std::vector<sf::IntRect>(j["frames"].size());
+    animation_data.frames = std::vector<Frame>(j["frames"].size());
     LoadTexture(j["filename"]);
 
     for (auto& object : j["frames"])
     {
+        Frame frame;
+
         sf::IntRect rect;
         rect.left = object["location"][0];
         rect.top = object["location"][1];
         rect.width = object["size"][0];
         rect.height = object["size"][1];
 
-        animation_data.frames[object["index"]] = rect;
+        sf::Vector2f origin;
+        origin.x = object["origin"][0];
+        origin.y = object["origin"][1];
+
+        frame.bounds = rect;
+        frame.origin = origin;
+        animation_data.frames[object["index"]] = frame;
     }
 
     for (auto& object : j["animations"])
@@ -153,10 +161,6 @@ void Spritesheet::CenterOrigin()
     {
         sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
     }
-    else
-    {
-        sprite.setOrigin(animation_data.frames[current_animation.start].width / 2, animation_data.frames[current_animation.start].height / 2);
-    }
 }
 
 void Spritesheet::SetTiling(bool tiled)
@@ -170,12 +174,15 @@ void Spritesheet::SetTiling(bool tiled)
 
 void Spritesheet::setFrame(unsigned frame)
 {
-    current_frame = frame;
-    sprite.setTextureRect(animation_data.frames[current_frame]);
     if (animation_data.frames.size() <= frame)
     {
         cerr << "Could not set frame: " << frame << endl;
+        return;
     }
+
+    current_frame = frame;
+    sprite.setTextureRect(animation_data.frames[current_frame].bounds);
+    sprite.setOrigin(animation_data.frames[current_frame].origin);
 }
 
 } // client

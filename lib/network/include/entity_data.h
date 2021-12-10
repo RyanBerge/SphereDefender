@@ -51,6 +51,7 @@ struct EnemyData
     EnemyType type;
     sf::Vector2f position;
     uint8_t health;
+    float charge;
 };
 
 } // namespace network

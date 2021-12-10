@@ -35,8 +35,9 @@ public:
     int GetPlayerCount();
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
+    void UpdateBattery(float battery_level);
     void StartAction(uint16_t player_id, network::PlayerAction action);
-    void StartEnemyAction(uint16_t enemy_id, network::EnemyAction action);
+    void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void RemovePlayer(uint16_t player_id);
 
     sf::View WorldView;
@@ -44,7 +45,7 @@ public:
 
 private:
     Gui gui;
-    
+
     Player local_player;
 
     std::map<uint16_t, Avatar> avatars;

@@ -4,27 +4,38 @@
     {
       "index": 0,
       "location": [0, 0 ],
-      "size": [ 50, 50 ]
+      "size": [ 50, 50 ],
+      "origin": [ 25, 25 ]
     },
     {
       "index": 1,
       "location": [50, 0 ],
-      "size": [ 50, 50 ]
+      "size": [ 50, 50 ],
+      "origin": [ 25, 25 ]
     },
     {
       "index": 2,
       "location": [100, 0 ],
-      "size": [ 50, 50 ]
+      "size": [ 50, 50 ],
+      "origin": [ 25, 25 ]
     },
     {
       "index": 3,
       "location": [150, 0 ],
-      "size": [ 50, 50 ]
+      "size": [ 50, 50 ],
+      "origin": [ 25, 25 ]
     },
     {
       "index": 4,
       "location": [200, 0 ],
-      "size": [ 50, 50 ]
+      "size": [ 50, 50 ],
+      "origin": [ 25, 25 ]
+    },
+    {
+      "index": 5,
+      "location": [250, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 25 ]
     }
   ],
   "animations": [
@@ -36,11 +47,11 @@
       "next_animation": "Move"
     },
     {
-      "name": "Attack",
-      "start_frame": 0,
-      "end_frame": 0,
+      "name": "Feed",
+      "start_frame": 5,
+      "end_frame": 5,
       "animation_speed": 0,
-      "next_animation": "Attack"
+      "next_animation": "Feed"
     }
   ]
 }

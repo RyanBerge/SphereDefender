@@ -39,6 +39,12 @@ public:
     void SetTiling(bool tiled);
 
 private:
+    struct Frame
+    {
+        sf::IntRect bounds;
+        sf::Vector2f origin;
+    };
+
     struct Animation
     {
         unsigned start;
@@ -50,7 +56,7 @@ private:
     struct AnimationData
     {
         std::string filepath;
-        std::vector<sf::IntRect> frames;
+        std::vector<Frame> frames;
         std::map<std::string, Animation> animations;
     };
 

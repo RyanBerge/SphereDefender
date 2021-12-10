@@ -243,4 +243,10 @@ double Distance(sf::Vector2f p1, sf::Vector2f p2)
     return std::hypot(delta.x, delta.y);
 }
 
+sf::Vector2f Normalize(sf::Vector2f vector)
+{
+    float magnitude = std::hypot(vector.x, vector.y);
+    return sf::Vector2f{vector.x / magnitude, vector.y / magnitude};
+}
+
 } // util

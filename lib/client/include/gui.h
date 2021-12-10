@@ -29,6 +29,7 @@ public:
 
     void DisplayMenu();
     void UpdateHealth(uint8_t value);
+    void UpdateBatteryBar(float battery_level);
 
     sf::View GuiView;
     bool InMenus = false;
@@ -47,6 +48,8 @@ private:
 
     sf::RectangleShape healthbar;
     Spritesheet healthbar_frame;
+    sf::RectangleShape battery_bar;
+    sf::RectangleShape battery_bar_frame;
     sf::RectangleShape death_tint;
     std::shared_ptr<sf::Font> font;
     sf::Text death_text;

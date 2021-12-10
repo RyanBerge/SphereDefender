@@ -70,18 +70,22 @@
 * Sent after a game is started once the server has received a `ClientMessage::LoadingComplete` message from all players
 * `[spawnpos:4][spawnpox:4]`
 
-#### `ServerMessage::PlayerStates`
-* Sent every frame
-* `[numstates:1][playerid:2][position:8][health:1][...]`
-
 #### `ServerMessage::PlayerStartAction`
 * Broadcasted whenever a player starts an action
 * `[playerid:2][actionflags:1][attackangle:2][...]`
 
-#### `ServerMessage::EnemyStartAction`
+#### `ServerMessage::EnemyChangeAction`
 * Sent whenever an enemy begins an action
 * `[enemyid:2][actionflags:1][attackvector:8]`
 
+#### `ServerMessage::PlayerStates`
+* Sent every frame
+* `[numstates:1][playerid:2][position:8][health:1][...]`
+
 #### `ServerMessage::EnemyUpdate`
 * Broadcasted every frame
-* `[numenemies:2][id:2][position:8][health:1][...]`
+* `[numenemies:2][id:2][position:8][health:1][charge:4][...]`
+
+#### `ServerMessage::BatteryUpdate`
+* Broadcasted every frame
+* `[batterylevel:4]`

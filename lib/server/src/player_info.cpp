@@ -23,8 +23,9 @@ namespace {
     const int PLAYER_HEIGHT = 70;
 }
 
-void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
+void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, shared::ConvoyDefinition convoy)
 {
+    obstacles.push_back(shared::GetConvoyBounds(convoy));
     sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
     bool collision = false;
     for (auto& obstacle : obstacles)
@@ -142,7 +143,7 @@ PlayerInfo::WeaponKnockback PlayerInfo::GetWeaponKnockback()
     {
         case network::PlayerClass::Melee:
         {
-            return WeaponKnockback{50, 100};
+            return WeaponKnockback{75, 0.1};
         }
         break;
         default:

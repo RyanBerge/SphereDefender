@@ -4,17 +4,20 @@
     {
       "index": 0,
       "location": [ 0, 0 ],
-      "size": [ 546, 95 ]
+      "size": [ 546, 95 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 1,
       "location": [ 0, 95 ],
-      "size": [ 546, 95 ]
+      "size": [ 546, 95 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 2,
       "location": [ 0, 190 ],
-      "size": [ 546, 95 ]
+      "size": [ 546, 95 ],
+      "origin": [ 0, 0 ]
     }
   ],
   "animations": [

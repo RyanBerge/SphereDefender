@@ -193,6 +193,11 @@ void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
     }
 }
 
+void Game::UpdateBattery(float battery_level)
+{
+    gui.UpdateBatteryBar(battery_level);
+}
+
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
 {
     if (local_player.Avatar.Data.id == player_id)
@@ -200,16 +205,16 @@ void Game::StartAction(uint16_t player_id, network::PlayerAction action)
     }
     else
     {
-        if (action.start_attack)
+        if (action.flags.start_attack)
         {
             avatars[player_id].StartAttack(action.attack_angle);
         }
     }
 }
 
-void Game::StartEnemyAction(uint16_t enemy_id, network::EnemyAction action)
+void Game::ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action)
 {
-    enemies[enemy_id].StartAction(action);
+    enemies[enemy_id].ChangeAction(action);
 }
 
 void Game::RemovePlayer(uint16_t player_id)

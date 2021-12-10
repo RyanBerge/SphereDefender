@@ -4,67 +4,80 @@
     {
       "index": 0,
       "location": [0, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 1,
       "location": [22, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 2,
       "location": [44, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 3,
       "location": [44, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 4,
       "location": [66, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 5,
       "location": [88, 0],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 6,
       "location": [110, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 7,
       "location": [110, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 8,
       "location": [132, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 9,
       "location": [154, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 10,
       "location": [176, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 11,
       "location": [198, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     },
     {
       "index": 12,
       "location": [220, 0 ],
-      "size": [ 22, 28 ]
+      "size": [ 22, 28 ],
+      "origin": [ 0, 0 ]
     }
   ],
   "animations": [

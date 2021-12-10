@@ -185,7 +185,7 @@ void Player::startAttack(sf::Vector2i point)
         }
 
         network::PlayerAction action;
-        action.start_attack = true;
+        action.flags.start_attack = true;
         action.attack_angle = attack_angle;
 
         ClientMessage::StartAction(ServerSocket, action);

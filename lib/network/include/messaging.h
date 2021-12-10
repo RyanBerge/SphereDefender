@@ -15,15 +15,29 @@
 
 namespace network {
 
+struct PlayerActionFlags
+{
+    bool start_attack: 1;
+};
+
+struct EnemyActionFlags
+{
+    bool move: 1;
+    bool feed: 1;
+    bool knockback: 1;
+    bool stunned: 1;
+    bool start_attack: 1;
+};
+
 struct PlayerAction
 {
-    bool start_attack;
+    PlayerActionFlags flags;
     uint16_t attack_angle;
 };
 
 struct EnemyAction
 {
-    bool start_attack;
+    EnemyActionFlags flags;
     sf::Vector2f attack_vector;
 };
 
@@ -84,10 +98,11 @@ public:
 
         RegionInfo,
 
-        PlayerStates,
         PlayerStartAction,
-        EnemyStartAction,
+        EnemyChangeAction,
+        PlayerStates,
         EnemyUpdate,
+        BatteryUpdate,
 
         Error = 0xFF
     };
@@ -102,10 +117,11 @@ public:
     static bool OwnerLeft(sf::TcpSocket& socket);
     static bool StartGame(sf::TcpSocket& socket);
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
-    static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
-    static bool EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, EnemyAction action);
+    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
+    static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
+    static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -113,10 +129,11 @@ public:
     static bool DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id, std::vector<PlayerData>& out_players);
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties);
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
-    static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
-    static bool DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, EnemyAction& out_action);
+    static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
+    static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
+    static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
 };
 
 } // network

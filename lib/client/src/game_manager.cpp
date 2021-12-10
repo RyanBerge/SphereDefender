@@ -343,15 +343,6 @@ void GameManager::checkMessages()
             }
         }
         break;
-        case ServerMessage::Code::PlayerStates:
-        {
-            std::vector<network::PlayerData> player_list;
-            if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
-            {
-                Game.UpdatePlayerStates(player_list);
-            }
-        }
-        break;
         case ServerMessage::Code::PlayerStartAction:
         {
             uint16_t player_id;
@@ -362,13 +353,22 @@ void GameManager::checkMessages()
             }
         }
         break;
-        case ServerMessage::Code::EnemyStartAction:
+        case ServerMessage::Code::EnemyChangeAction:
         {
             uint16_t enemy_id;
             network::EnemyAction action;
-            if (ServerMessage::DecodeEnemyStartAction(ServerSocket, enemy_id, action))
+            if (ServerMessage::DecodeEnemyChangeAction(ServerSocket, enemy_id, action))
             {
-                Game.StartEnemyAction(enemy_id, action);
+                Game.ChangeEnemyAction(enemy_id, action);
+            }
+        }
+        break;
+        case ServerMessage::Code::PlayerStates:
+        {
+            std::vector<network::PlayerData> player_list;
+            if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
+            {
+                Game.UpdatePlayerStates(player_list);
             }
         }
         break;
@@ -378,6 +378,15 @@ void GameManager::checkMessages()
             if (ServerMessage::DecodeEnemyUpdate(ServerSocket, enemy_list))
             {
                 Game.UpdateEnemies(enemy_list);
+            }
+        }
+        break;
+        case ServerMessage::Code::BatteryUpdate:
+        {
+            float battery_level;
+            if (ServerMessage::DecodeBatteryUpdate(ServerSocket, battery_level))
+            {
+                Game.UpdateBattery(battery_level);
             }
         }
         break;

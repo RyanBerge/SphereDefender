@@ -38,6 +38,19 @@ Gui::Gui()
     healthbar_frame.GetSprite().setOrigin(sf::Vector2f{0, healthbar.getSize().y});
     healthbar_frame.SetPosition(sf::Vector2f{70, 1210});
 
+    battery_bar_frame.setSize(sf::Vector2f{1600, 40});
+    battery_bar_frame.setOrigin(sf::Vector2f{0, 20});
+    battery_bar_frame.setPosition(sf::Vector2f{80, 80});
+    battery_bar_frame.setOutlineColor(sf::Color::Black);
+    battery_bar_frame.setOutlineThickness(3);
+    battery_bar_frame.setFillColor(sf::Color::Transparent);
+
+    battery_bar.setSize(sf::Vector2f{1600, 40});
+    battery_bar.setOrigin(sf::Vector2f{0, 20});
+    battery_bar.setPosition(sf::Vector2f{80, 80});
+    battery_bar.setFillColor(sf::Color{220, 255, 128});
+    battery_bar.setScale(sf::Vector2f{0, 1});
+
     font = resources::AllocFont("Vera.ttf");
     death_text.setFont(*font);
     death_text.setString("You are dead.");
@@ -85,6 +98,9 @@ void Gui::Draw()
     GameManager::GetInstance().Window.draw(healthbar);
     healthbar_frame.Draw();
 
+    GameManager::GetInstance().Window.draw(battery_bar);
+    GameManager::GetInstance().Window.draw(battery_bar_frame);
+
     if (Health == 0)
     {
         GameManager::GetInstance().Window.draw(death_tint);
@@ -118,6 +134,11 @@ void Gui::UpdateHealth(uint8_t value)
 {
     Health = value;
     healthbar.setScale(sf::Vector2f{1, static_cast<float>(Health) / 100});
+}
+
+void Gui::UpdateBatteryBar(float battery_level)
+{
+    battery_bar.setScale(sf::Vector2f{battery_level / 1000, 1});
 }
 
 void Gui::DisplayMenu()

@@ -84,7 +84,7 @@ void Server::update()
         {
             if (player.Status == PlayerInfo::PlayerStatus::Alive)
             {
-                player.Update(elapsed, region.Obstacles);
+                player.Update(elapsed, region.Obstacles, region.Convoy);
                 if (player.Attacking)
                 {
                     checkAttack(player);
@@ -446,7 +446,7 @@ void Server::startPlayerAction(PlayerInfo& player)
         return;
     }
 
-    if (action.start_attack)
+    if (action.flags.start_attack)
     {
         player.StartAttack(action.attack_angle);
     }
@@ -479,6 +479,7 @@ void Server::broadcastStates()
     {
         ServerMessage::PlayerStates(*player.Socket, player_list);
         ServerMessage::EnemyUpdate(*player.Socket, enemy_list);
+        ServerMessage::BatteryUpdate(*player.Socket, region.BatteryLevel);
     }
 }
 
@@ -496,11 +497,7 @@ void Server::checkAttack(PlayerInfo& player)
 
                 if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
                 {
-                    if (!enemy.Invulnerable)
-                    {
-                        enemy.Damage(player.GetWeaponDamage());
-                        enemy.SetKnockback(player.GetWeaponKnockback(), enemy.Data.position - player.Data.position);
-                    }
+                    enemy.WeaponHit(player.Data.id, player.GetWeaponDamage(), player.GetWeaponKnockback(), enemy.Data.position - player.Data.position, players);
                 }
             }
         }
@@ -563,7 +560,7 @@ void Server::checkAttack(PlayerInfo& player)
                         }
                         else
                         {
-                            enemy.Damage(player.GetWeaponDamage());
+                            enemy.WeaponHit(player.Data.id, player.GetWeaponDamage(), player.GetWeaponKnockback(), enemy.Data.position - player.Data.position, players);
                         }
                     }
                 }

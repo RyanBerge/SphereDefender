@@ -30,10 +30,12 @@ public:
     shared::ConvoyDefinition Convoy;
     std::list<Enemy> Enemies;
     std::vector<sf::FloatRect> Obstacles;
+    float BatteryLevel = 0;
 
 private:
     unsigned num_players;
     sf::Clock spawn_timer;
+    float battery_charge_rate; // Units-per-second
 
     void spawnEnemy();
 };

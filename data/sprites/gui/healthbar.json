@@ -4,7 +4,8 @@
     {
       "index": 0,
       "location": [ 0, 0 ],
-      "size": [ 40, 200 ]
+      "size": [ 40, 200 ],
+      "origin": [ 0, 0 ]
     }
   ],
   "animations": [

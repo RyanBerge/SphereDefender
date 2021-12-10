@@ -25,16 +25,6 @@ struct MovementVectorFlags
     bool down: 1;
 };
 
-struct PlayerActionFlags
-{
-    bool start_attack: 1;
-};
-
-struct EnemyActionFlags
-{
-    bool start_attack: 1;
-};
-
 // DEBUG
 [[maybe_unused]] void printBuffer(uint8_t* buffer, int length)
 {
@@ -160,7 +150,7 @@ bool ClientMessage::InitLobby(sf::TcpSocket& socket, std::string name)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::InitLobby message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -184,7 +174,7 @@ bool ClientMessage::JoinLobby(sf::TcpSocket& socket, std::string name)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::JoinLobby message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -205,7 +195,7 @@ bool ClientMessage::ChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::ChangePlayerProperty message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -218,7 +208,7 @@ bool ClientMessage::StartGame(sf::TcpSocket& socket)
 
     if (!writeBuffer(socket, &code, sizeof(code)))
     {
-        cerr << "Network: Failed to send ClientMessage::StartGame message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -231,7 +221,7 @@ bool ClientMessage::LoadingComplete(sf::TcpSocket& socket)
 
     if (!writeBuffer(socket, &code, sizeof(code)))
     {
-        cerr << "Network: Failed to send ClientMessage::LoadingComplete message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -244,7 +234,7 @@ bool ClientMessage::LeaveGame(sf::TcpSocket& socket)
 
     if (!writeBuffer(socket, &code, sizeof(code)))
     {
-        cerr << "Network: Failed to send ClientMessage::LeaveGame message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -283,7 +273,7 @@ bool ClientMessage::PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i moveme
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ClientMessage::PlayerState message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -294,11 +284,8 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
 {
     Code code = ClientMessage::Code::StartAction;
 
-    PlayerActionFlags flags{};
-    flags.start_attack = action.start_attack;
-
-    size_t buffer_size = sizeof(code) + sizeof(flags);
-    if (flags.start_attack)
+    size_t buffer_size = sizeof(code) + sizeof(action.flags);
+    if (action.flags.start_attack)
     {
         buffer_size += sizeof(action.attack_angle);
     }
@@ -308,10 +295,10 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &flags, sizeof(flags));
-    offset += sizeof(flags);
+    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
+    offset += sizeof(action.flags);
 
-    if (flags.start_attack)
+    if (action.flags.start_attack)
     {
         std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
         offset += sizeof(action.attack_angle);
@@ -319,7 +306,7 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ClientMessage::StartAction message" << endl;
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -333,7 +320,7 @@ bool ClientMessage::DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name
     std::string name;
     if (!readString(socket, name))
     {
-        cerr << "Network: DecodeInitLobby failed to read a player name." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player name." << endl;
         return false;
     }
 
@@ -346,7 +333,7 @@ bool ClientMessage::DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name
     std::string name;
     if (!readString(socket, name))
     {
-        cerr << "Network: DecodeJoinLobby failed to read a player name." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player name." << endl;
         return false;
     }
 
@@ -359,7 +346,7 @@ bool ClientMessage::DecodeChangePlayerProperty(sf::TcpSocket& socket, PlayerProp
     PlayerProperties properties;
     if (!read(socket, &properties, sizeof(properties)))
     {
-        cerr << "Network: DecodeChangePlayerProperty failed to read player properties." << endl;
+        cerr << "Network: " << __func__ << " failed to read player properties." << endl;
         return false;
     }
 
@@ -373,7 +360,7 @@ bool ClientMessage::DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i&
 
     if (!read(socket, &flags, sizeof(flags)))
     {
-        cerr << "Network: DecodePlayerStateChange failed to read spawn x position." << endl;
+        cerr << "Network: " << __func__ << " failed to read spawn x position." << endl;
         return false;
     }
 
@@ -405,22 +392,19 @@ bool ClientMessage::DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i&
 
 bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action)
 {
-    PlayerActionFlags flags;
     PlayerAction temp_action;
 
-    if (!read(socket, &flags, sizeof(flags)))
+    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
     {
-        cerr << "Network: DecodeStartAction failed to read player action flags." << endl;
+        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
     }
 
-    temp_action.start_attack = flags.start_attack;
-
-    if (flags.start_attack)
+    if (temp_action.flags.start_attack)
     {
         if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
         {
-            cerr << "Network: DecodeStartAction failed to read an attack angle." << endl;
+            cerr << "Network: " << __func__ << " failed to read an attack angle." << endl;
             return false;
         }
     }
@@ -457,7 +441,7 @@ bool ServerMessage::PlayerId(sf::TcpSocket& socket, uint16_t player_id)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayerId message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -485,7 +469,7 @@ bool ServerMessage::PlayerJoined(sf::TcpSocket& socket, PlayerData player)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayerJoined message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -506,7 +490,7 @@ bool ServerMessage::PlayerLeft(sf::TcpSocket& socket, uint16_t player_id)
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayerLeft message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -555,7 +539,7 @@ bool ServerMessage::PlayersInLobby(sf::TcpSocket& socket, uint16_t player_id, st
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayersInLobby message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -582,7 +566,7 @@ bool ServerMessage::ChangePlayerProperty(sf::TcpSocket& socket, uint16_t player_
 
     if (!writeBuffer(socket, buffer, buffer_len))
     {
-        cerr << "Network: Failed to send ClientMessage::ChangePlayerProperty message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -595,7 +579,7 @@ bool ServerMessage::OwnerLeft(sf::TcpSocket& socket)
 
     if (!writeBuffer(socket, &code, sizeof(code)))
     {
-        cerr << "Network: Failed to send ServerMessage::OwnerLeft message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -608,7 +592,7 @@ bool ServerMessage::StartGame(sf::TcpSocket& socket)
 
     if (!writeBuffer(socket, &code, sizeof(code)))
     {
-        cerr << "Network: Failed to send ServerMessage::StartGame message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -628,7 +612,7 @@ bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_p
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ServerMessage::AllPlayersLoaded message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
     }
 
@@ -663,7 +647,7 @@ bool ServerMessage::PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> 
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayerStates message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -676,11 +660,8 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
 {
     Code code = ServerMessage::Code::PlayerStartAction;
 
-    PlayerActionFlags flags{};
-    flags.start_attack = action.start_attack;
-
-    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(flags);
-    if (flags.start_attack)
+    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(action.flags);
+    if (action.flags.start_attack)
     {
         buffer_size += sizeof(action.attack_angle);
     }
@@ -692,10 +673,10 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
     offset += sizeof(code);
     std::memcpy(buffer + offset, &player_id, sizeof(player_id));
     offset += sizeof(player_id);
-    std::memcpy(buffer + offset, &flags, sizeof(flags));
-    offset += sizeof(flags);
+    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
+    offset += sizeof(action.flags);
 
-    if (flags.start_attack)
+    if (action.flags.start_attack)
     {
         std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
         offset += sizeof(action.attack_angle);
@@ -703,7 +684,7 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ServerMessage::PlayerStartAction message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -712,15 +693,12 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
     return true;
 }
 
-bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, EnemyAction action)
+bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action)
 {
-    Code code = ServerMessage::Code::EnemyStartAction;
+    Code code = ServerMessage::Code::EnemyChangeAction;
 
-    EnemyActionFlags flags{};
-    flags.start_attack = action.start_attack;
-
-    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(flags);
-    if (flags.start_attack)
+    size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action.flags);
+    if (action.flags.start_attack)
     {
         buffer_size += sizeof(action.attack_vector.x) + sizeof(action.attack_vector.y);
     }
@@ -730,12 +708,12 @@ bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
-    offset += sizeof(player_id);
-    std::memcpy(buffer + offset, &flags, sizeof(flags));
-    offset += sizeof(flags);
+    std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
+    offset += sizeof(enemy_id);
+    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
+    offset += sizeof(action.flags);
 
-    if (flags.start_attack)
+    if (action.flags.start_attack)
     {
         std::memcpy(buffer + offset, &action.attack_vector.x, sizeof(action.attack_vector.x));
         offset += sizeof(action.attack_vector.x);
@@ -745,7 +723,7 @@ bool ServerMessage::EnemyStartAction(sf::TcpSocket& socket, uint16_t player_id, 
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ServerMessage::EnemyStartAction message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -760,7 +738,8 @@ bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> en
 
     uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
 
-    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y) + sizeof(EnemyData::health);
+    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y);
+    enemy_data_size += sizeof(EnemyData::health) + sizeof(EnemyData::charge);
     size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
 
     uint8_t* buffer = new uint8_t[buffer_size];
@@ -781,11 +760,13 @@ bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> en
         offset += sizeof(enemy.position.y);
         std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
         offset += sizeof(enemy.health);
+        std::memcpy(buffer + offset, &enemy.charge, sizeof(enemy.charge));
+        offset += sizeof(enemy.charge);
     }
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
-        cerr << "Network: Failed to send ClientMessage::RegionInfo message" << endl;
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
         delete[] buffer;
         return false;
     }
@@ -794,12 +775,34 @@ bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> en
     return true;
 }
 
+bool ServerMessage::BatteryUpdate(sf::TcpSocket& socket, float battery_level)
+{
+    Code code = ServerMessage::Code::BatteryUpdate;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(battery_level);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &battery_level, sizeof(battery_level));
+    offset += sizeof(battery_level);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodePlayerId failed to read a player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
         return false;
     }
 
@@ -814,13 +817,13 @@ bool ServerMessage::DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_pl
 
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodePlayerJoined failed to read a player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
         return false;
     }
 
     if (!readString(socket, name))
     {
-        cerr << "Network: DecodePlayerJoined failed to read a player name." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player name." << endl;
         return false;
     }
 
@@ -834,7 +837,7 @@ bool ServerMessage::DecodePlayerLeft(sf::TcpSocket& socket, uint16_t& out_id)
     uint16_t id;
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodePlayerLeft failed to read a player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
         return false;
     }
 
@@ -850,13 +853,13 @@ bool ServerMessage::DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id
 
     if (!read(socket, &player_id, sizeof(player_id)))
     {
-        cerr << "Network: DecodePlayersInLobby failed to read a player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
         return false;
     }
 
     if (!read(socket, &num_players, sizeof(num_players)))
     {
-        cerr << "Network: DecodePlayersInLobby failed to read a player count." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player count." << endl;
         return false;
     }
 
@@ -866,19 +869,19 @@ bool ServerMessage::DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id
 
         if (!read(socket, &data.id, sizeof(data.id)))
         {
-            cerr << "Network: DecodePlayersInLobby failed to read a player id." << endl;
+            cerr << "Network: " << __func__ << " failed to read a player id." << endl;
             return false;
         }
 
         if (!readString(socket, data.name))
         {
-            cerr << "Network: DecodePlayersInLobby failed to read a player name." << endl;
+            cerr << "Network: " << __func__ << " failed to read a player name." << endl;
             return false;
         }
 
         if (!read(socket, &data.properties, sizeof(data.properties)))
         {
-            cerr << "Network: DecodePlayersInLobby failed to read a player id." << endl;
+            cerr << "Network: " << __func__ << " failed to read a player id." << endl;
             return false;
         }
 
@@ -898,13 +901,13 @@ bool ServerMessage::DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& 
 
     if (!read(socket, &player_id, sizeof(player_id)))
     {
-        cerr << "Network: DecodeChangePlayerProperty failed to read a player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
         return false;
     }
 
     if (!read(socket, &properties, sizeof(properties)))
     {
-        cerr << "Network: DecodeChangePlayerProperty failed to read player properties." << endl;
+        cerr << "Network: " << __func__ << " failed to read player properties." << endl;
         return false;
     }
 
@@ -920,13 +923,13 @@ bool ServerMessage::DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& 
 
     if (!read(socket, &x, sizeof(x)))
     {
-        cerr << "Network: DecodeAllPlayersLoaded failed to read a spawn x position." << endl;
+        cerr << "Network: " << __func__ << " failed to read a spawn x position." << endl;
         return false;
     }
 
     if (!read(socket, &y, sizeof(y)))
     {
-        cerr << "Network: DecodeAllPlayersLoaded failed to read a spawn y position." << endl;
+        cerr << "Network: " << __func__ << " failed to read a spawn y position." << endl;
         return false;
     }
 
@@ -943,7 +946,7 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
 
     if (!read(socket, &num_players, sizeof(num_players)))
     {
-        cerr << "Network: DecodePlayerStates failed to read num players." << endl;
+        cerr << "Network: " << __func__ << " failed to read num players." << endl;
         return false;
     }
 
@@ -952,25 +955,25 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
         PlayerData data;
         if (!read(socket, &data.id, sizeof(data.id)))
         {
-            cerr << "Network: DecodePlayerStates failed to read a player id." << endl;
+            cerr << "Network: " << __func__ << " failed to read a player id." << endl;
             return false;
         }
 
         if (!read(socket, &data.position.x, sizeof(data.position.x)))
         {
-            cerr << "Network: DecodePlayerStates failed to read an x position." << endl;
+            cerr << "Network: " << __func__ << " failed to read an x position." << endl;
             return false;
         }
 
         if (!read(socket, &data.position.y, sizeof(data.position.y)))
         {
-            cerr << "Network: DecodePlayerStates failed to read a y position." << endl;
+            cerr << "Network: " << __func__ << " failed to read a y position." << endl;
             return false;
         }
 
         if (!read(socket, &data.health, sizeof(data.health)))
         {
-            cerr << "Network: DecodePlayerStates failed to read a health value." << endl;
+            cerr << "Network: " << __func__ << " failed to read a health value." << endl;
             return false;
         }
 
@@ -985,28 +988,25 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
 bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action)
 {
     uint16_t id;
-    PlayerActionFlags flags;
     PlayerAction temp_action;
 
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodePlayerStartAction failed to read player id." << endl;
+        cerr << "Network: " << __func__ << " failed to read player id." << endl;
         return false;
     }
 
-    if (!read(socket, &flags, sizeof(flags)))
+    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
     {
-        cerr << "Network: DecodePlayerStartAction failed to read player action flags." << endl;
+        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
     }
 
-    temp_action.start_attack = flags.start_attack;
-
-    if (flags.start_attack)
+    if (temp_action.flags.start_attack)
     {
         if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
         {
-            cerr << "Network: DecodePlayerStartAction failed to read an attack angle." << endl;
+            cerr << "Network: " << __func__ << " failed to read an attack angle." << endl;
             return false;
         }
     }
@@ -1017,42 +1017,39 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
     return true;
 }
 
-bool ServerMessage::DecodeEnemyStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, EnemyAction& out_action)
+bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action)
 {
     uint16_t id;
-    EnemyActionFlags flags;
     EnemyAction temp_action;
 
     if (!read(socket, &id, sizeof(id)))
     {
-        cerr << "Network: DecodeEnemyStartAction failed to read an enemy id." << endl;
+        cerr << "Network: " << __func__ << " failed to read an enemy id." << endl;
         return false;
     }
 
-    if (!read(socket, &flags, sizeof(flags)))
+    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
     {
-        cerr << "Network: DecodeEnemyStartAction failed to read player action flags." << endl;
+        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
     }
 
-    temp_action.start_attack = flags.start_attack;
-
-    if (flags.start_attack)
+    if (temp_action.flags.start_attack)
     {
         if (!read(socket, &temp_action.attack_vector.x, sizeof(temp_action.attack_vector.x)))
         {
-            cerr << "Network: DecodeEnemyStartAction failed to read an attack vector x." << endl;
+            cerr << "Network: " << __func__ << " failed to read an attack vector x." << endl;
             return false;
         }
 
         if (!read(socket, &temp_action.attack_vector.y, sizeof(temp_action.attack_vector.y)))
         {
-            cerr << "Network: DecodeEnemyStartAction failed to read an attack vector y." << endl;
+            cerr << "Network: " << __func__ << " failed to read an attack vector y." << endl;
             return false;
         }
     }
 
-    out_player_id = id;
+    out_enemy_id = id;
     out_action = temp_action;
 
     return true;
@@ -1065,7 +1062,7 @@ bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyDa
 
     if (!read(socket, &num_enemies, sizeof(num_enemies)))
     {
-        cerr << "Network: DecodeEnemyUpdate failed to read num enemies." << endl;
+        cerr << "Network: " << __func__ << " failed to read num enemies." << endl;
         return false;
     }
 
@@ -1075,25 +1072,31 @@ bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyDa
 
         if (!read(socket, &data.id, sizeof(data.id)))
         {
-            cerr << "Network: DecodeEnemyUpdate failed to read an enemy id." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy id." << endl;
             return false;
         }
 
         if (!read(socket, &data.position.x, sizeof(data.position.x)))
         {
-            cerr << "Network: DecodeEnemyUpdate failed to read an enemy position.x." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy position.x." << endl;
             return false;
         }
 
         if (!read(socket, &data.position.y, sizeof(data.position.y)))
         {
-            cerr << "Network: DecodeEnemyUpdate failed to read an enemy position.y." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy position.y." << endl;
             return false;
         }
 
         if (!read(socket, &data.health, sizeof(data.health)))
         {
-            cerr << "Network: DecodeEnemyUpdate failed to read an enemy health." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy health." << endl;
+            return false;
+        }
+
+        if (!read(socket, &data.charge, sizeof(data.charge)))
+        {
+            cerr << "Network: " << __func__ << " failed to read an enemy charge." << endl;
             return false;
         }
 
@@ -1101,6 +1104,20 @@ bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyDa
     }
 
     out_enemies = enemies;
+    return true;
+}
+
+bool ServerMessage::DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level)
+{
+    float battery_level;
+
+    if (!read(socket, &battery_level, sizeof(battery_level)))
+    {
+        cerr << "Network: " << __func__ << " failed to read battery level value." << endl;
+        return false;
+    }
+
+    out_battery_level = battery_level;
     return true;
 }
 

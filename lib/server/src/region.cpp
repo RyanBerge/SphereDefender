@@ -15,7 +15,7 @@
 using std::cout, std::endl;
 
 namespace {
-    const int MAX_ENEMIES = 3;
+    const int MAX_ENEMIES = 5;
     const float SPAWN_TIMER = 1; // seconds
 }
 
@@ -38,6 +38,8 @@ Region::Region(unsigned num_players) : num_players{num_players}
     {
         spawnEnemy();
     }
+
+    battery_charge_rate = 5;
 }
 
 void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
@@ -45,7 +47,7 @@ void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
     (void)elapsed;
     for (auto& enemy : Enemies)
     {
-        enemy.Update(elapsed, players, Convoy, Obstacles);
+        enemy.Update(elapsed, Convoy, players, Obstacles);
     }
 
     if (Enemies.size() < num_players * MAX_ENEMIES)
@@ -55,6 +57,17 @@ void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
             spawnEnemy();
         }
     }
+
+    int siphon_rate = 0;
+    for (auto& enemy : Enemies)
+    {
+        if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
+        {
+            siphon_rate += enemy.GetSiphonRate();
+        }
+    }
+
+    BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
 }
 
 void Region::Cull()
@@ -67,8 +80,8 @@ void Region::spawnEnemy()
 {
     static std::random_device random_device;
     static std::mt19937 random_generator{random_device()};
-    static std::uniform_int_distribution<> distribution_x(1000, 1100);
-    static std::uniform_int_distribution<> distribution_y(-300, 300);
+    static std::uniform_int_distribution<> distribution_x(900, 1100);
+    static std::uniform_int_distribution<> distribution_y(-400, 600);
 
     Enemy enemy;
 

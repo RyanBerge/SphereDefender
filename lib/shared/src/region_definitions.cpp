@@ -42,4 +42,19 @@ RegionDefinition GetRegionDefinition(std::string region)
     return initializer.Regions[region];
 }
 
+sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy)
+{
+    sf::FloatRect bounds;
+    if (convoy.orientation == shared::Orientation::North || convoy.orientation == shared::Orientation::South)
+    {
+        bounds = sf::FloatRect(convoy.position.x - convoy.WIDTH / 2, convoy.position.y - convoy.HEIGHT / 2, convoy.WIDTH, convoy.HEIGHT);
+    }
+    else if (convoy.orientation == shared::Orientation::East || convoy.orientation == shared::Orientation::West)
+    {
+        bounds = sf::FloatRect(convoy.position.x - convoy.HEIGHT / 2, convoy.position.y - convoy.WIDTH / 2, convoy.HEIGHT, convoy.WIDTH);
+    }
+
+    return bounds;
+}
+
 } // shared
