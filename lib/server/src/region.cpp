@@ -68,11 +68,20 @@ void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
     }
 
     BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
+    if (BatteryLevel < 0)
+    {
+        BatteryLevel = 0;
+    }
+
+    if (BatteryLevel > 1000)
+    {
+        BatteryLevel = 1000;
+    }
 }
 
 void Region::Cull()
 {
-    std::list<Enemy>::iterator end = std::remove_if(Enemies.begin(), Enemies.end(), [](Enemy enemy){ return enemy.Data.health == 0; });
+    std::list<Enemy>::iterator end = std::remove_if(Enemies.begin(), Enemies.end(), [](Enemy enemy){ return enemy.Despawn; });
     Enemies.erase(end, Enemies.end());
 }
 

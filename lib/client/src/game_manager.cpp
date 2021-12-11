@@ -167,64 +167,102 @@ void GameManager::checkMessages()
         return;
     }
 
-    ServerMessage::Code code;
-    bool success = ServerMessage::PollForCode(ServerSocket, code);
-    if (!success)
-    {
-        cerr << "You were disconnected unexpectedly." << endl;
-        handleDisconnected();
-        return;
-    }
+    ServerMessage::Code code = ServerMessage::Code::None;
+    int num_messages = 0;
 
-    switch (code)
+    do
     {
-        case ServerMessage::Code::None:
+        bool success = ServerMessage::PollForCode(ServerSocket, code);
+        if (!success)
         {
+            cerr << "You were disconnected unexpectedly." << endl;
+            handleDisconnected();
             return;
         }
-        break;
-        case ServerMessage::Code::Error:
+
+        ++num_messages;
+
+        switch (code)
         {
-            cerr << "Error codes not yet implemented." << endl;
-        }
-        break;
-        case ServerMessage::Code::PlayerId:
-        {
-            uint16_t player_id;
-            if (ServerMessage::DecodePlayerId(ServerSocket, player_id))
+            case ServerMessage::Code::None: { }
+            break;
+            case ServerMessage::Code::Error:
             {
-                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                cerr << "Error codes not yet implemented." << endl;
+            }
+            break;
+            case ServerMessage::Code::PlayerId:
+            {
+                uint16_t player_id;
+                if (ServerMessage::DecodePlayerId(ServerSocket, player_id))
                 {
-                    MainMenu.Lobby.AssignId(player_id);
-                }
-                else
-                {
-                    cerr << "PlayerId message received when client wasn't in a lobby." << endl;
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                    {
+                        MainMenu.Lobby.AssignId(player_id);
+                    }
+                    else
+                    {
+                        cerr << "PlayerId message received when client wasn't in a lobby." << endl;
+                    }
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::PlayerJoined:
-        {
-            network::PlayerData data{};
-            if (ServerMessage::DecodePlayerJoined(ServerSocket, data))
+            break;
+            case ServerMessage::Code::PlayerJoined:
             {
-                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                network::PlayerData data{};
+                if (ServerMessage::DecodePlayerJoined(ServerSocket, data))
                 {
-                    MainMenu.Lobby.AddPlayer(data);
-                }
-                else
-                {
-                    cerr << "PlayerJoined message received when client wasn't in a lobby." << endl;
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                    {
+                        MainMenu.Lobby.AddPlayer(data);
+                    }
+                    else
+                    {
+                        cerr << "PlayerJoined message received when client wasn't in a lobby." << endl;
+                    }
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::PlayerLeft:
-        {
-            uint16_t player_id;
-            if (ServerMessage::DecodePlayerLeft(ServerSocket, player_id))
+            break;
+            case ServerMessage::Code::PlayerLeft:
             {
+                uint16_t player_id;
+                if (ServerMessage::DecodePlayerLeft(ServerSocket, player_id))
+                {
+                    switch (State)
+                    {
+                        case GameState::MainMenu:
+                        {
+                            switch (MainMenu.CurrentMenu)
+                            {
+                                case MainMenu::MenuType::Lobby:
+                                {
+                                    MainMenu.Lobby.RemovePlayer(player_id);
+                                }
+                                break;
+                                case MainMenu::MenuType::LoadingScreen:
+                                {
+                                    Game.RemovePlayer(player_id);
+                                }
+                                break;
+                                default:
+                                {
+                                    cerr << "PlayerLeft message received when the client wasn't in a server." << endl;
+                                }
+                            }
+                        }
+                        break;
+                        case GameState::Game:
+                        {
+                            Game.RemovePlayer(player_id);
+                        }
+                        break;
+                    }
+                }
+            }
+            break;
+            case ServerMessage::Code::OwnerLeft:
+            {
+                cout << "The host left the game and the session was terminated." << endl;
                 switch (State)
                 {
                     case GameState::MainMenu:
@@ -233,167 +271,144 @@ void GameManager::checkMessages()
                         {
                             case MainMenu::MenuType::Lobby:
                             {
-                                MainMenu.Lobby.RemovePlayer(player_id);
+                                MainMenu.Lobby.LeaveLobby();
                             }
                             break;
                             case MainMenu::MenuType::LoadingScreen:
                             {
-                                Game.RemovePlayer(player_id);
+                                Reset();
                             }
                             break;
                             default:
                             {
-                                cerr << "PlayerLeft message received when the client wasn't in a server." << endl;
+                                cerr << "Somehow a player left when the client wasn't in a server." << endl;
                             }
                         }
                     }
                     break;
                     case GameState::Game:
                     {
-                        Game.RemovePlayer(player_id);
+                        Reset();
                     }
                     break;
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::OwnerLeft:
-        {
-            cout << "The host left the game and the session was terminated." << endl;
-            switch (State)
+            break;
+            case ServerMessage::Code::PlayersInLobby:
             {
-                case GameState::MainMenu:
+                uint16_t player_id;
+                std::vector<network::PlayerData> player_list;
+                if (ServerMessage::DecodePlayersInLobby(ServerSocket, player_id, player_list))
                 {
-                    switch (MainMenu.CurrentMenu)
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
-                        case MainMenu::MenuType::Lobby:
+                        MainMenu.Lobby.AssignId(player_id);
+                        for (auto& data : player_list)
                         {
-                            MainMenu.Lobby.LeaveLobby();
-                        }
-                        break;
-                        case MainMenu::MenuType::LoadingScreen:
-                        {
-                            Reset();
-                        }
-                        break;
-                        default:
-                        {
-                            cerr << "Somehow a player left when the client wasn't in a server." << endl;
+                            MainMenu.Lobby.AddPlayer(data);
                         }
                     }
                 }
-                break;
-                case GameState::Game:
-                {
-                    Reset();
-                }
-                break;
             }
-        }
-        break;
-        case ServerMessage::Code::PlayersInLobby:
-        {
-            uint16_t player_id;
-            std::vector<network::PlayerData> player_list;
-            if (ServerMessage::DecodePlayersInLobby(ServerSocket, player_id, player_list))
+            break;
+            case ServerMessage::Code::ChangePlayerProperty:
             {
-                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+                uint16_t player_id;
+                network::PlayerProperties properties;
+                if (ServerMessage::DecodeChangePlayerProperty(ServerSocket, player_id, properties))
                 {
-                    MainMenu.Lobby.AssignId(player_id);
-                    for (auto& data : player_list)
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
-                        MainMenu.Lobby.AddPlayer(data);
+                        MainMenu.Lobby.SetPlayerProperties(player_id, properties);
                     }
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::ChangePlayerProperty:
-        {
-            uint16_t player_id;
-            network::PlayerProperties properties;
-            if (ServerMessage::DecodeChangePlayerProperty(ServerSocket, player_id, properties))
+            break;
+            case ServerMessage::Code::StartGame:
             {
                 if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                 {
-                    MainMenu.Lobby.SetPlayerProperties(player_id, properties);
+                    MainMenu.Lobby.StartGame();
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::StartGame:
-        {
-            if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
+            break;
+            case ServerMessage::Code::AllPlayersLoaded:
             {
-                MainMenu.Lobby.StartGame();
-            }
-        }
-        break;
-        case ServerMessage::Code::AllPlayersLoaded:
-        {
-            sf::Vector2f spawn_position;
-            if (ServerMessage::DecodeAllPlayersLoaded(ServerSocket, spawn_position))
-            {
-                if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+                sf::Vector2f spawn_position;
+                if (ServerMessage::DecodeAllPlayersLoaded(ServerSocket, spawn_position))
                 {
-                    MainMenu.Unload();
-                    State = GameState::Game;
-                    Game.Start(spawn_position);
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+                    {
+                        MainMenu.Unload();
+                        State = GameState::Game;
+                        Game.Start(spawn_position);
+                    }
                 }
             }
-        }
-        break;
-        case ServerMessage::Code::PlayerStartAction:
-        {
-            uint16_t player_id;
-            network::PlayerAction action;
-            if (ServerMessage::DecodePlayerStartAction(ServerSocket, player_id, action))
+            break;
+            case ServerMessage::Code::PlayerStartAction:
             {
-                Game.StartAction(player_id, action);
+                uint16_t player_id;
+                network::PlayerAction action;
+                if (ServerMessage::DecodePlayerStartAction(ServerSocket, player_id, action))
+                {
+                    Game.StartAction(player_id, action);
+                }
+            }
+            break;
+            case ServerMessage::Code::EnemyChangeAction:
+            {
+                uint16_t enemy_id;
+                network::EnemyAction action;
+                if (ServerMessage::DecodeEnemyChangeAction(ServerSocket, enemy_id, action))
+                {
+                    Game.ChangeEnemyAction(enemy_id, action);
+                }
+            }
+            break;
+            case ServerMessage::Code::PlayerStates:
+            {
+                std::vector<network::PlayerData> player_list;
+                if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
+                {
+                    Game.UpdatePlayerStates(player_list);
+                }
+            }
+            break;
+            case ServerMessage::Code::EnemyUpdate:
+            {
+                std::vector<network::EnemyData> enemy_list;
+                if (ServerMessage::DecodeEnemyUpdate(ServerSocket, enemy_list))
+                {
+                    Game.UpdateEnemies(enemy_list);
+                }
+            }
+            break;
+            case ServerMessage::Code::BatteryUpdate:
+            {
+                float battery_level;
+                if (ServerMessage::DecodeBatteryUpdate(ServerSocket, battery_level))
+                {
+                    Game.UpdateBattery(battery_level);
+                }
+            }
+            break;
+            default:
+            {
+                cerr << "Unrecognized code: " << static_cast<int>(code) << endl;
             }
         }
-        break;
-        case ServerMessage::Code::EnemyChangeAction:
+
+        if (num_messages > 20)
         {
-            uint16_t enemy_id;
-            network::EnemyAction action;
-            if (ServerMessage::DecodeEnemyChangeAction(ServerSocket, enemy_id, action))
-            {
-                Game.ChangeEnemyAction(enemy_id, action);
-            }
+            break;
         }
-        break;
-        case ServerMessage::Code::PlayerStates:
-        {
-            std::vector<network::PlayerData> player_list;
-            if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
-            {
-                Game.UpdatePlayerStates(player_list);
-            }
-        }
-        break;
-        case ServerMessage::Code::EnemyUpdate:
-        {
-            std::vector<network::EnemyData> enemy_list;
-            if (ServerMessage::DecodeEnemyUpdate(ServerSocket, enemy_list))
-            {
-                Game.UpdateEnemies(enemy_list);
-            }
-        }
-        break;
-        case ServerMessage::Code::BatteryUpdate:
-        {
-            float battery_level;
-            if (ServerMessage::DecodeBatteryUpdate(ServerSocket, battery_level))
-            {
-                Game.UpdateBattery(battery_level);
-            }
-        }
-        break;
-        default:
-        {
-            cerr << "Unrecognized code: " << static_cast<int>(code) << endl;
-        }
+    }
+    while (code != ServerMessage::Code::None);
+
+    if (num_messages > 10)
+    {
+        cerr << "WARNING: Too many messages received too quickly" << endl;
     }
 }
 

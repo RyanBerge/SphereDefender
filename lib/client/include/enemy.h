@@ -27,9 +27,14 @@ public:
     void UpdateData(network::EnemyData new_data);
     void ChangeAction(network::EnemyAction action);
 
+    bool Despawn = false;
+
 private:
     Spritesheet spritesheet;
     network::EnemyData data;
+
+    bool alive = true;
+    sf::Clock despawn_timer;
 
     bool attacking;
     sf::Vector2f attack_vector;

@@ -26,7 +26,8 @@ public:
     {
         Moving,
         Feeding,
-        Hunting
+        Hunting,
+        Dead
     };
 
     enum class Action
@@ -48,6 +49,7 @@ public:
     int GetSiphonRate();
 
     network::EnemyData Data;
+    bool Despawn = false;
 
 private:
     float movement_speed = 210;
@@ -66,6 +68,7 @@ private:
     sf::Vector2f attack_vector{};
 
     std::map<uint16_t, sf::Clock> invulnerability_timers;
+    sf::Clock despawn_timer;
 
     sf::Vector2f knockback_vector{};
     float knockback_distance;

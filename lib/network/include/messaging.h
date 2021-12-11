@@ -27,6 +27,7 @@ struct EnemyActionFlags
     bool knockback: 1;
     bool stunned: 1;
     bool start_attack: 1;
+    bool dead: 1;
 };
 
 struct PlayerAction

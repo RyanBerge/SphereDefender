@@ -1,41 +1,77 @@
 {
-  "filename": "SmallDemon2.png",
+  "filename": "SmallDemon.png",
   "frames": [
     {
       "index": 0,
       "location": [0, 0 ],
-      "size": [ 50, 50 ],
-      "origin": [ 25, 25 ]
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     },
     {
       "index": 1,
-      "location": [50, 0 ],
-      "size": [ 50, 50 ],
-      "origin": [ 25, 25 ]
+      "location": [59, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     },
     {
       "index": 2,
-      "location": [100, 0 ],
-      "size": [ 50, 50 ],
-      "origin": [ 25, 25 ]
+      "location": [118, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     },
     {
       "index": 3,
-      "location": [150, 0 ],
-      "size": [ 50, 50 ],
-      "origin": [ 25, 25 ]
+      "location": [177, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     },
     {
       "index": 4,
-      "location": [200, 0 ],
-      "size": [ 50, 50 ],
-      "origin": [ 25, 25 ]
+      "location": [236, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     },
     {
       "index": 5,
-      "location": [250, 0 ],
+      "location": [295, 0 ],
       "size": [ 59, 52 ],
-      "origin": [ 34, 25 ]
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 6,
+      "location": [354, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 7,
+      "location": [413, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 8,
+      "location": [472, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 9,
+      "location": [531, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 10,
+      "location": [590, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
+     },
+    {
+      "index": 11,
+      "location": [649, 0 ],
+      "size": [ 59, 52 ],
+      "origin": [ 34, 26 ]
     }
   ],
   "animations": [
@@ -47,11 +83,32 @@
       "next_animation": "Move"
     },
     {
+      "name": "Stunned",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Stunned"
+    },
+    {
       "name": "Feed",
       "start_frame": 5,
-      "end_frame": 5,
-      "animation_speed": 0,
+      "end_frame": 6,
+      "animation_speed": 1,
       "next_animation": "Feed"
+    },
+    {
+      "name": "Death",
+      "start_frame": 7,
+      "end_frame": 10,
+      "animation_speed": 5,
+      "next_animation": "Dead"
+    },
+    {
+      "name": "Dead",
+      "start_frame": 11,
+      "end_frame": 11,
+      "animation_speed": 0,
+      "next_animation": "Dead"
     }
   ]
 }

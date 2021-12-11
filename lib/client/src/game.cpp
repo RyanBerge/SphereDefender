@@ -38,6 +38,10 @@ void Game::Update(sf::Time elapsed)
             enemy.second.Update(elapsed);
         }
 
+        std::erase_if(enemies, [](const auto& element) {
+            return element.second.Despawn;
+        });
+
         if (current_zoom != target_zoom)
         {
             current_zoom += zoom_speed * elapsed.asSeconds();
@@ -51,10 +55,6 @@ void Game::Update(sf::Time elapsed)
             WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
         }
 
-//        if (GameManager::GetInstance().Window.hasFocus() && !menu_open)
-//        {
-//            updateScroll(elapsed);
-//        }
         WorldView.setCenter(local_player.GetPosition());
     }
 }
@@ -186,10 +186,6 @@ void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
     for (auto& enemy : enemy_list)
     {
         enemies[enemy.id].UpdateData(enemy);
-        if (enemies[enemy.id].GetData().health == 0)
-        {
-            enemies.erase(enemy.id);
-        }
     }
 }
 

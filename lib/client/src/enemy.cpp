@@ -35,6 +35,11 @@ void Enemy::Update(sf::Time elapsed)
         damage_flash = false;
         spritesheet.GetSprite().setColor(sf::Color::White);
     }
+
+    if (!alive && despawn_timer.getElapsedTime().asSeconds() > 5)
+    {
+        Despawn = true;
+    }
 }
 
 void Enemy::Draw()
@@ -54,10 +59,22 @@ void Enemy::UpdateData(network::EnemyData new_data)
     data = new_data;
     spritesheet.SetPosition(data.position.x, data.position.y);
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
+
+    if (alive && data.health == 0)
+    {
+        spritesheet.SetAnimation("Death");
+        alive = false;
+        despawn_timer.restart();
+    }
 }
 
 void Enemy::ChangeAction(network::EnemyAction action)
 {
+    if (!alive)
+    {
+        return;
+    }
+
     if (action.flags.move)
     {
         spritesheet.SetAnimation("Move");
@@ -68,11 +85,20 @@ void Enemy::ChangeAction(network::EnemyAction action)
     }
     else if (action.flags.knockback)
     {
-
+        spritesheet.SetAnimation("Stunned");
+    }
+    else if (action.flags.stunned)
+    {
+        spritesheet.SetAnimation("Stunned");
     }
     else if (action.flags.start_attack)
     {
 
+    }
+    else if (action.flags.dead)
+    {
+        alive = false;
+        spritesheet.SetAnimation("Death");
     }
 }
 

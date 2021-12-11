@@ -24,6 +24,7 @@ namespace {
     constexpr float INVULNERABILITY_WINDOW = 0.3; // seconds
     constexpr float STUN_DURATION = 0.3; // seconds
     constexpr int BASE_SIPHON_RATE = 3;
+    constexpr int DESPAWN_TIME = 5; // seconds
 }
 
 Enemy::Enemy()
@@ -84,6 +85,10 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnoc
     {
         return;
     }
+    else if (Data.health == 0)
+    {
+        return;
+    }
 
     invulnerability_timers[player_id].restart();
 
@@ -103,6 +108,11 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnoc
         knockback_duration = knockback.duration;
 
         setAction(Action::Knockback, players);
+    }
+
+    if (Data.health == 0)
+    {
+        setBehavior(Behavior::Dead, players);
     }
 }
 
@@ -132,6 +142,12 @@ void Enemy::setBehavior(Behavior behavior, std::vector<PlayerInfo>& players)
         case Behavior::Feeding:
         {
             enemy_action.flags.feed = true;
+        }
+        break;
+        case Behavior::Dead:
+        {
+            enemy_action.flags.dead = true;
+            despawn_timer.restart();
         }
         break;
     }
@@ -227,6 +243,15 @@ void Enemy::chooseAction(sf::Time elapsed, shared::ConvoyDefinition convoy, std:
             }
         }
         break;
+        case Behavior::Dead:
+        {
+            if (!Despawn /* && despawn_timer.getElapsedTime().asSeconds() > DESPAWN_TIME*/)
+            {
+                Despawn = true;
+            }
+            return;
+        }
+        break;
     }
 
     move(elapsed, destination, obstacles);
@@ -276,6 +301,8 @@ void Enemy::checkAggro(std::vector<PlayerInfo>& players)
                 }
             }
         }
+        break;
+        case Behavior::Dead: { }
         break;
     }
 }
