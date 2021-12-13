@@ -1,0 +1,110 @@
+{
+  "filename": "Leyline.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 1,
+      "location": [ 506, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 2,
+      "location": [ 1012, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 3,
+      "location": [ 1518, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 4,
+      "location": [ 2024, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 5,
+      "location": [ 2530, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 6,
+      "location": [ 3036, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 7,
+      "location": [ 3542, 0 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 8,
+      "location": [ 0, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 9,
+      "location": [ 506, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 10,
+      "location": [ 1012, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 11,
+      "location": [ 1518, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 12,
+      "location": [ 2024, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 13,
+      "location": [ 2530, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 14,
+      "location": [ 3036, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    },
+    {
+      "index": 15,
+      "location": [ 3542, 749 ],
+      "size": [ 506, 749 ],
+      "origin": [ 253, 375 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Glow",
+      "start_frame": 0,
+      "end_frame": 15,
+      "animation_speed": 10,
+      "next_animation": "Glow"
+    }
+  ]
+}

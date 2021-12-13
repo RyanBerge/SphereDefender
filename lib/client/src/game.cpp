@@ -38,6 +38,8 @@ void Game::Update(sf::Time elapsed)
             enemy.second.Update(elapsed);
         }
 
+        region_map.Update(elapsed);
+
         std::erase_if(enemies, [](const auto& element) {
             return element.second.Despawn;
         });

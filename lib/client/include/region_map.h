@@ -33,6 +33,7 @@ public:
 
 private:
     Spritesheet background;
+    Spritesheet leyline;
     sf::RectangleShape convoy;
 };
 

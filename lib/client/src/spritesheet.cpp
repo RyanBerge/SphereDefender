@@ -61,7 +61,7 @@ void Spritesheet::Draw()
     GameManager::GetInstance().Window.draw(sprite);
     if (texture != nullptr && texture->isRepeated())
     {
-        GameManager::GetInstance().Window.draw(tiled_sprite);
+        //GameManager::GetInstance().Window.draw(tiled_sprite);
     }
 }
 

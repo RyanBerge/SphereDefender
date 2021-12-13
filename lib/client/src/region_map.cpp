@@ -20,12 +20,13 @@ RegionMap::RegionMap()
 
 void RegionMap::Update(sf::Time elapsed)
 {
-    (void)elapsed;
+    leyline.Update(elapsed);
 }
 
 void RegionMap::Draw()
 {
     background.Draw();
+    leyline.Draw();
     GameManager::GetInstance().Window.draw(convoy);
 
     for (auto& obstacle : obstacles)
@@ -61,6 +62,10 @@ void RegionMap::InitializeRegion(shared::RegionDefinition definition)
     convoy.setFillColor(sf::Color(115, 150, 180));
     convoy.setOutlineColor(sf::Color::Black);
     convoy.setOutlineThickness(2);
+
+    leyline.LoadAnimationData("doodads/leyline.json");
+    leyline.SetAnimation("Glow");
+    leyline.SetPosition(convoy.getPosition().x + 120, convoy.getPosition().y);
 
     for (auto& obstacle : definition.obstacles)
     {

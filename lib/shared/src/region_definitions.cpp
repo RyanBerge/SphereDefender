@@ -20,7 +20,7 @@ public:
     {
         RegionDefinition region;
 
-        region.convoy.position = sf::Vector2f{-300, 0};
+        region.convoy.position = sf::Vector2f{-500, 0};
         region.convoy.orientation = Orientation::North;
 
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, 25, 50, 150)});
