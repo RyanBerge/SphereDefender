@@ -41,7 +41,6 @@ private:
     sf::RectangleShape sword;
     sf::RectangleShape gun;
     Spritesheet gunshot;
-    sf::CircleShape gun_impact;
 
     float starting_attack_angle;
     sf::Clock attack_timer;

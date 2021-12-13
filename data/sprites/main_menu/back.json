@@ -4,19 +4,19 @@
     {
       "index": 0,
       "location": [ 0, 0 ],
-      "size": [ 311, 97 ],
+      "size": [ 149, 47 ],
       "origin": [ 0, 0 ]
     },
     {
       "index": 1,
-      "location": [ 0, 97 ],
-      "size": [ 311, 97 ],
+      "location": [ 0, 47 ],
+      "size": [ 149, 47 ],
       "origin": [ 0, 0 ]
     },
     {
       "index": 2,
-      "location": [ 0, 194 ],
-      "size": [ 311, 97 ],
+      "location": [ 0, 94 ],
+      "size": [ 149, 47 ],
       "origin": [ 0, 0 ]
     }
   ],

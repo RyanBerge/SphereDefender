@@ -11,13 +11,12 @@
 #include <iostream>
 #include <map>
 
-using std::cout, std::endl;
+using std::cerr, std::endl;
 
 namespace client::resources {
 
 namespace {
     std::map<std::string, std::weak_ptr<sf::Texture>> texture_map;
-    std::map<std::string, std::weak_ptr<sf::Font>> font_map;
 }
 
 std::shared_ptr<sf::Texture> AllocTexture(std::string filename)
@@ -36,7 +35,7 @@ std::shared_ptr<sf::Texture> AllocTexture(std::string filename)
         }
         else
         {
-            cout << "Failed to load texture: " << filepath << std::endl;
+            cerr << "Failed to load texture: " << filepath << std::endl;
             return nullptr;
         }
     }
@@ -46,29 +45,38 @@ std::shared_ptr<sf::Texture> AllocTexture(std::string filename)
     }
 }
 
-std::shared_ptr<sf::Font> AllocFont(std::string filename)
+FontManager::FontManager()
 {
-    std::string filepath = "../assets/" + filename;
-    if (font_map.find(filepath) == font_map.end() ||
-        (font_map.find(filepath) != font_map.end() && font_map[filepath].expired()))
-    {
-        std::shared_ptr<sf::Font> font(new sf::Font);
+    sf::Font* vera = new sf::Font();
 
-        if (font->loadFromFile(filepath))
-        {
-            font_map[filepath] = font;
-            return font;
-        }
-        else
-        {
-            cout << "Failed to load font: " << filepath << std::endl;
-            return nullptr;
-        }
-    }
-    else
+    if (!vera->loadFromFile("../assets/Vera.ttf"))
     {
-        return font_map[filepath].lock();
+        cerr << "Failed to load font: Vera" << endl;
     }
+
+    font_map["Vera"] = vera;
+}
+
+FontManager::~FontManager()
+{
+    for (auto& element : font_map)
+    {
+        auto& [name, font] = element;
+        if (font != nullptr)
+        {
+            delete font;
+            font = nullptr;
+        }
+    }
+
+    font_map.clear();
+}
+
+sf::Font* FontManager::GetFont(std::string name)
+{
+    static FontManager font_manager;
+
+    return font_manager.font_map[name];
 }
 
 } // client::util

@@ -18,6 +18,7 @@ namespace client
 
 namespace {
     int FLASH_TIMER = 100; // milliseconds
+    int DESPAWN_TIMER = 3; // seconds
 }
 
 Enemy::Enemy()
@@ -36,7 +37,7 @@ void Enemy::Update(sf::Time elapsed)
         spritesheet.GetSprite().setColor(sf::Color::White);
     }
 
-    if (!alive && despawn_timer.getElapsedTime().asSeconds() > 5)
+    if (!alive && despawn_timer.getElapsedTime().asSeconds() > DESPAWN_TIMER)
     {
         Despawn = true;
     }
@@ -59,13 +60,6 @@ void Enemy::UpdateData(network::EnemyData new_data)
     data = new_data;
     spritesheet.SetPosition(data.position.x, data.position.y);
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
-
-    if (alive && data.health == 0)
-    {
-        spritesheet.SetAnimation("Death");
-        alive = false;
-        despawn_timer.restart();
-    }
 }
 
 void Enemy::ChangeAction(network::EnemyAction action)
@@ -99,6 +93,7 @@ void Enemy::ChangeAction(network::EnemyAction action)
     {
         alive = false;
         spritesheet.SetAnimation("Death");
+        despawn_timer.restart();
     }
 }
 

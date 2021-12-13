@@ -81,22 +81,22 @@ void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
 
 void Region::Cull()
 {
-    std::list<Enemy>::iterator end = std::remove_if(Enemies.begin(), Enemies.end(), [](Enemy enemy){ return enemy.Despawn; });
-    Enemies.erase(end, Enemies.end());
+    Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
 }
 
 void Region::spawnEnemy()
 {
     static std::random_device random_device;
     static std::mt19937 random_generator{random_device()};
-    static std::uniform_int_distribution<> distribution_x(900, 1100);
-    static std::uniform_int_distribution<> distribution_y(-400, 600);
+    static std::uniform_int_distribution<> distribution_x(450, 550);
+    static std::uniform_int_distribution<> distribution_y(-200, 300);
 
     Enemy enemy;
 
     enemy.Data.position.x = distribution_x(random_generator);
     enemy.Data.position.y = distribution_y(random_generator);
     //enemy.Data.position = sf::Vector2f{900, 0};
+
     Enemies.push_back(enemy);
     spawn_timer.restart();
 }

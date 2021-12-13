@@ -68,15 +68,16 @@ void Game::Draw()
         GameManager::GetInstance().Window.setView(WorldView);
 
         region_map.Draw();
-        local_player.Draw();
-        for (auto& avatar : avatars)
-        {
-            avatar.second.Draw();
-        }
 
         for (auto& enemy : enemies)
         {
             enemy.second.Draw();
+        }
+
+        local_player.Draw();
+        for (auto& avatar : avatars)
+        {
+            avatar.second.Draw();
         }
 
         GameManager::GetInstance().Window.setView(old_view);

@@ -13,14 +13,11 @@
 #include "game_math.h"
 
 using std::cout, std::endl;
+using namespace shared;
 
 namespace client {
 
 namespace {
-    const int SWORD_OFFSET = -35;
-    const int SWORD_LENGTH = 40;
-    const int GUN_OFFSET = -35;
-    const int GUN_LENGTH = 15;
     const int GUN_TIMER = 100; // milliseconds
 }
 
@@ -28,30 +25,25 @@ Avatar::Avatar() { }
 
 Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
-    sphere.setRadius(35);
-    sphere.setPosition(300, 300);
+    sphere.setRadius(PlayerDefinition::PLAYER_RADIUS);
     sphere.setFillColor(color);
     sphere.setOutlineColor(sf::Color::Black);
-    sphere.setOutlineThickness(2);
+    sphere.setOutlineThickness(1);
     sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
 
-    sword.setSize(sf::Vector2f(SWORD_LENGTH, 8));
-    sword.setOrigin(sf::Vector2f(SWORD_OFFSET, 4));
+    sword.setSize(sf::Vector2f(PlayerDefinition::SWORD_LENGTH, 4));
+    sword.setOrigin(sf::Vector2f(-PlayerDefinition::SWORD_OFFSET, 2));
     sword.setFillColor(sf::Color::Red);
     sword.setPosition(sphere.getPosition());
 
-    gun.setSize(sf::Vector2f(GUN_LENGTH, 8));
-    gun.setOrigin(sf::Vector2f(GUN_OFFSET, 4));
+    gun.setSize(sf::Vector2f(PlayerDefinition::GUN_LENGTH, 4));
+    gun.setOrigin(sf::Vector2f(PlayerDefinition::GUN_OFFSET, 2));
     gun.setFillColor(sf::Color::Black);
     gun.setPosition(sphere.getPosition());
 
-    gunshot.LoadTexture("Gunfire.png");
-    gunshot.GetSprite().setOrigin(sf::Vector2f(GUN_OFFSET - GUN_LENGTH, gunshot.GetSprite().getGlobalBounds().height / 2));
+    gunshot.LoadAnimationData("player/gunfire.json");
+    gunshot.GetSprite().setOrigin(sf::Vector2f(PlayerDefinition::GUN_OFFSET - PlayerDefinition::GUN_LENGTH, gunshot.GetSprite().getGlobalBounds().height / 2));
     gunshot.SetPosition(sphere.getPosition().x, sphere.getPosition().y);
-
-    gun_impact.setRadius(3);
-    gun_impact.setFillColor(sf::Color::Red);
-    gun_impact.setOrigin(gun_impact.getGlobalBounds().width / 2, gun_impact.getGlobalBounds().height / 2);
 }
 
 void Avatar::Update(sf::Time elapsed)
@@ -117,7 +109,6 @@ void Avatar::Draw()
         }
 
         GameManager::GetInstance().Window.draw(sphere);
-        //GameManager::GetInstance().Window.draw(gun_impact);
     }
 }
 

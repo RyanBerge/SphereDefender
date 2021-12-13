@@ -23,7 +23,7 @@ class Textbox
 {
 public:
     Textbox();
-    Textbox(std::string font_filename, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color);
+    Textbox(std::string font_name, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color);
 
     //void Update(sf::Time elapsed);
     void Draw();
@@ -35,6 +35,7 @@ public:
     bool UpdateTextInput(sf::Event::TextEvent text_event);
 
     sf::Text& GetText();
+    sf::FloatRect GetBounds();
     void SetText(std::string text);
     void SetPosition(sf::Vector2f position);
     void SetTabNext(Textbox* next);
@@ -43,7 +44,7 @@ private:
     void onTextEntered(sf::Event event);
     void onMouseDown(sf::Event event);
 
-    std::shared_ptr<sf::Font> font;
+    sf::Font* font = nullptr;
     sf::Text text;
     sf::RectangleShape box;
     sf::Text cursor;

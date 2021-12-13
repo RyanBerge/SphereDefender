@@ -27,14 +27,14 @@ Textbox::Textbox()
 
 }
 
-Textbox::Textbox(std::string font_filename, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color)
+Textbox::Textbox(std::string font_name, sf::Vector2u box_size, sf::Color font_color, sf::Color background_color)
 {
     box.setOutlineColor(font_color);
     box.setFillColor(background_color);
     box.setOutlineThickness(box_size.y * 0.05);
     box.setSize(sf::Vector2f(box_size.x, box_size.y));
 
-    font = resources::AllocFont(font_filename);
+    font = resources::FontManager::GetFont(font_name);
 
     if (font != nullptr)
     {
@@ -139,6 +139,11 @@ bool Textbox::UpdateTextInput(sf::Event::TextEvent text_event)
 sf::Text& Textbox::GetText()
 {
     return text;
+}
+
+sf::FloatRect Textbox::GetBounds()
+{
+    return box.getGlobalBounds();
 }
 
 void Textbox::SetText(std::string text)

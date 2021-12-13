@@ -20,13 +20,13 @@ public:
     {
         RegionDefinition region;
 
-        region.convoy.position = sf::Vector2f{-600, 0};
+        region.convoy.position = sf::Vector2f{-300, 0};
         region.convoy.orientation = Orientation::North;
 
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(400, 50, 100, 300)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, -200, 100, 300)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 250, 100, 300)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-250, -600, 200, 500)});
+        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, 25, 50, 150)});
+        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(100, -100, 50, 150)});
+        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 75, 50, 150)});
+        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-125, -300, 100, 250)});
 
         Regions["default"] = region;
     }

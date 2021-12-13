@@ -22,65 +22,73 @@ namespace client {
 
 Gui::Gui()
 {
-    ui_frame.LoadTexture("UiFrame.png");
+    sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
+
+    ui_frame.LoadAnimationData("gui/frame.json");
     ui_frame.SetPosition(0, 0);
 
     menu_button.LoadAnimationData("gui/menu_button.json");
-    menu_button.SetPosition(1803, 14);
+    menu_button.SetPosition(901, 7);
     menu_button.RegisterLeftMouseUp([this](void){ DisplayMenu(); });
 
-    healthbar.setSize(sf::Vector2f{32, 200});
+    healthbar.setSize(sf::Vector2f{16, 100});
     healthbar.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
-    healthbar.setPosition(sf::Vector2f{74, 1210});
+    healthbar.setPosition(sf::Vector2f{window_resolution.x * 0.05f, window_resolution.y * 0.95f});
     healthbar.setFillColor(sf::Color::Green);
 
     healthbar_frame.LoadAnimationData("gui/healthbar.json");
     healthbar_frame.GetSprite().setOrigin(sf::Vector2f{0, healthbar.getSize().y});
-    healthbar_frame.SetPosition(sf::Vector2f{70, 1210});
+    healthbar_frame.SetPosition(sf::Vector2f{window_resolution.x * 0.05f - 2, window_resolution.y * 0.95f});
 
-    battery_bar_frame.setSize(sf::Vector2f{1600, 40});
-    battery_bar_frame.setOrigin(sf::Vector2f{0, 20});
-    battery_bar_frame.setPosition(sf::Vector2f{80, 80});
+    battery_bar_frame.setSize(sf::Vector2f{800, 20});
+    battery_bar_frame.setOrigin(sf::Vector2f{0, 10});
+    battery_bar_frame.setPosition(sf::Vector2f{40, 40});
     battery_bar_frame.setOutlineColor(sf::Color::Black);
-    battery_bar_frame.setOutlineThickness(3);
+    battery_bar_frame.setOutlineThickness(2);
     battery_bar_frame.setFillColor(sf::Color::Transparent);
 
-    battery_bar.setSize(sf::Vector2f{1600, 40});
-    battery_bar.setOrigin(sf::Vector2f{0, 20});
-    battery_bar.setPosition(sf::Vector2f{80, 80});
+    battery_bar.setSize(sf::Vector2f{800, 20});
+    battery_bar.setOrigin(sf::Vector2f{0, 10});
+    battery_bar.setPosition(sf::Vector2f{40, 40});
     battery_bar.setFillColor(sf::Color{220, 255, 128});
     battery_bar.setScale(sf::Vector2f{0, 1});
 
-    font = resources::AllocFont("Vera.ttf");
+    sf::Font* font = resources::FontManager::GetFont("Vera");
     death_text.setFont(*font);
     death_text.setString("You are dead.");
-    death_text.setCharacterSize(120);
+    death_text.setCharacterSize(60);
     sf::FloatRect bounds = death_text.getGlobalBounds();
-    sf::Vector2f resolution = Settings::GetInstance().WindowResolution;
-    death_text.setPosition(sf::Vector2f{resolution.x / 2 - bounds.width / 2, resolution.y / 2 - bounds.height / 2});
+    death_text.setPosition(sf::Vector2f{window_resolution.x / 2 - bounds.width / 2, window_resolution.y / 2 - bounds.height / 2});
     death_text.setFillColor(sf::Color::Black);
     death_text.setOutlineColor(sf::Color::White);
-    death_text.setOutlineThickness(2);
+    death_text.setOutlineThickness(1);
 
-    death_tint.setSize(Settings::GetInstance().WindowResolution);
+    death_tint.setSize(window_resolution);
     death_tint.setPosition(0, 0);
     death_tint.setFillColor(sf::Color{100, 100, 100, 150});
 
-    menu.LoadTexture("Menu.png");
-    menu.SetPosition(613, 95);
+    menu.LoadAnimationData("gui/menu.json");
+    bounds = menu.GetSprite().getGlobalBounds();
+    menu.SetPosition(sf::Vector2f{window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.125f});
+
+    sf::FloatRect reference_bounds = menu.GetSprite().getGlobalBounds();
 
     resume_button.LoadAnimationData("gui/resume.json");
-    resume_button.SetPosition(707, 232);
+    bounds = resume_button.GetSprite().getGlobalBounds();
+    resume_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.2 - bounds.height / 2);
     resume_button.RegisterLeftMouseUp([this](void){ InMenus = false; });
 
     save_button.LoadAnimationData("gui/save.json");
-    save_button.SetPosition(707, 373);
+    bounds = save_button.GetSprite().getGlobalBounds();
+    save_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.35 - bounds.height / 2);
 
     settings_button.LoadAnimationData("gui/settings.json");
-    settings_button.SetPosition(707, 515);
+    bounds = settings_button.GetSprite().getGlobalBounds();
+    settings_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.5 - bounds.height / 2);
 
     exit_button.LoadAnimationData("gui/exit.json");
-    exit_button.SetPosition(707, 798);
+    bounds = exit_button.GetSprite().getGlobalBounds();
+    exit_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.8 - bounds.height / 2);
     exit_button.RegisterLeftMouseUp(std::bind(&Gui::exitGame, this));
 
     GuiView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));

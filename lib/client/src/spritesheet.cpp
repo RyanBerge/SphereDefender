@@ -24,14 +24,17 @@ Spritesheet::Spritesheet()
 {
 }
 
-Spritesheet::Spritesheet(std::string filename)
-{
-    LoadTexture(filename);
-}
+Spritesheet::Spritesheet(std::string filename) : Spritesheet(filename, false) { }
 
 Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
-    LoadTexture(filename);
+    Frame frame = {sf::IntRect(0, 0, 0, 0), sf::Vector2f{0, 0}};
+    Animation animation{0, 0, 0, "Default"};
+
+    animation_data.frames.push_back(frame);
+    animation_data.animations["Default"] = animation;
+
+    LoadAnimationData(filename);
     SetTiling(tiled);
 }
 
@@ -56,7 +59,7 @@ void Spritesheet::Update(sf::Time elapsed)
 void Spritesheet::Draw()
 {
     GameManager::GetInstance().Window.draw(sprite);
-    if (texture->isRepeated())
+    if (texture != nullptr && texture->isRepeated())
     {
         GameManager::GetInstance().Window.draw(tiled_sprite);
     }
@@ -76,7 +79,7 @@ void Spritesheet::LoadAnimationData(std::string filename)
     file >> j;
 
     animation_data.frames = std::vector<Frame>(j["frames"].size());
-    LoadTexture(j["filename"]);
+    loadTexture(j["filename"]);
 
     for (auto& object : j["frames"])
     {
@@ -111,18 +114,6 @@ void Spritesheet::LoadAnimationData(std::string filename)
     SetAnimation(animation_data.animations.begin()->first);
 }
 
-bool Spritesheet::LoadTexture(std::string filename)
-{
-    texture = resources::AllocTexture(filename);
-    if (texture == nullptr)
-    {
-        return false;
-    }
-
-    sprite.setTexture(*texture);
-    return true;
-}
-
 sf::Sprite& Spritesheet::GetSprite()
 {
     return sprite;
@@ -134,6 +125,7 @@ void Spritesheet::SetAnimation(std::string animation_name)
     {
         current_animation = animation_data.animations[animation_name];
         setFrame(current_animation.start);
+        animation_timer = 0;
     }
     else
     {
@@ -165,11 +157,29 @@ void Spritesheet::CenterOrigin()
 
 void Spritesheet::SetTiling(bool tiled)
 {
-    texture->setRepeated(tiled);
-    tiled_sprite.setTexture(*texture);
+    if (texture != nullptr)
+    {
+        texture->setRepeated(tiled);
 
-    sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
-    tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
+        if (tiled)
+        {
+            tiled_sprite.setTexture(*texture);
+            sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
+            tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
+        }
+    }
+}
+
+bool Spritesheet::loadTexture(std::string filename)
+{
+    texture = resources::AllocTexture(filename);
+    if (texture == nullptr)
+    {
+        return false;
+    }
+
+    sprite.setTexture(*texture);
+    return true;
 }
 
 void Spritesheet::setFrame(unsigned frame)

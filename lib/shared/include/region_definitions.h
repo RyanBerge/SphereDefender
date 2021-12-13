@@ -27,8 +27,8 @@ struct ConvoyDefinition
     sf::Vector2f position;
     Orientation orientation;
 
-    constexpr static int WIDTH = 300;
-    constexpr static int HEIGHT = 800;
+    constexpr static int WIDTH = 150;
+    constexpr static int HEIGHT = 400;
 };
 
 enum class ObstacleType

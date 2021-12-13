@@ -10,6 +10,7 @@
 
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
+#include "entity_definitions.h"
 #include <string>
 
 namespace network
@@ -42,13 +43,8 @@ struct PlayerData
 
 struct EnemyData
 {
-    enum class EnemyType : uint8_t
-    {
-        SmallDemon
-    };
-
     uint16_t id;
-    EnemyType type;
+    shared::EntityType type;
     sf::Vector2f position;
     uint8_t health;
     float charge;

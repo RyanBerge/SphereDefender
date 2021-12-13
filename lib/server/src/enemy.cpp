@@ -18,7 +18,7 @@ using std::cout, std::endl;
 namespace server {
 
 namespace {
-    constexpr int BASE_AGGRO_RADIUS = 350; // pixels
+    constexpr int BASE_AGGRO_RADIUS = 175; // pixels
     constexpr float AGGRO_COEFFICIENT = 0.17;
     constexpr float CHARGE_RATE = 10;
     constexpr float INVULNERABILITY_WINDOW = 0.3; // seconds
@@ -32,15 +32,19 @@ Enemy::Enemy()
     static uint16_t identifier = 0;
     Data.id = identifier++;
     Data.health = 100;
-    Data.type = network::EnemyData::EnemyType::SmallDemon;
+    Data.type = shared::EntityType::SmallDemon;
     current_behavior = Behavior::Moving;
     current_action  = Action::None;
+
+    definition = shared::GetEntityDefinition(Data.type);
+
     resetActionStates();
 }
 
 sf::FloatRect Enemy::GetBounds()
 {
-    return sf::FloatRect(Data.position.x - 25, Data.position.y - 25, base_size.x * (1 + Data.charge / 100.0), base_size.y * (1 + Data.charge / 100.0));
+    sf::Vector2f size = definition.size * (1 + Data.charge / 100.0f);
+    return sf::FloatRect(Data.position.x - size.x / 2, Data.position.y - size.y / 2, size.x, size.y);
 }
 
 int Enemy::GetSiphonRate()
@@ -216,7 +220,7 @@ void Enemy::chooseAction(sf::Time elapsed, shared::ConvoyDefinition convoy, std:
         case Behavior::Moving:
         {
             destination = getTargetConvoyPoint(convoy);
-            if (util::Distance(Data.position, destination) < feeding_range)
+            if (util::Distance(Data.position, destination) < definition.feeding_range)
             {
                 setBehavior(Behavior::Feeding, players);
                 return;
@@ -236,7 +240,7 @@ void Enemy::chooseAction(sf::Time elapsed, shared::ConvoyDefinition convoy, std:
         case Behavior::Hunting:
         {
             destination = getTargetPlayerPoint(players);
-            if (util::Distance(Data.position, destination) < attack_range)
+            if (util::Distance(Data.position, destination) < definition.attack_range)
             {
                 setAction(Action::Attacking, players);
                 return;
@@ -389,7 +393,7 @@ void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::Flo
     if (target_point != Data.position)
     {
         sf::Vector2f movement_vector = target_point - Data.position;
-        sf::Vector2f velocity = util::Normalize(movement_vector) * (movement_speed * (1 + Data.charge / 100));
+        sf::Vector2f velocity = util::Normalize(movement_vector) * (definition.base_movement_speed * (1 + Data.charge / 100));
 
         Data.position += velocity * elapsed.asSeconds();
     }
@@ -410,9 +414,9 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
         }
         case AttackState::Windup:
         {
-            velocity = attack_vector * (attack_distance / attack_duration);
+            velocity = attack_vector * (definition.attack_distance / definition.attack_duration);
             Data.position += velocity * elapsed.asSeconds();
-            if (attack_timer.getElapsedTime().asSeconds() >= attack_duration / 2)
+            if (attack_timer.getElapsedTime().asSeconds() >= definition.attack_duration / 2)
             {
                 attack_state = AttackState::Hit;
             }
@@ -426,9 +430,9 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
         }
         case AttackState::Followthrough:
         {
-            velocity = -attack_vector * (attack_distance / attack_duration);
+            velocity = -attack_vector * (definition.attack_distance / definition.attack_duration);
             Data.position += velocity * elapsed.asSeconds();
-            if (attack_timer.getElapsedTime().asSeconds() >= attack_duration)
+            if (attack_timer.getElapsedTime().asSeconds() >= definition.attack_duration)
             {
                 attack_state = AttackState::Cooldown;
                 Data.position = starting_attack_position;
@@ -437,7 +441,7 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
         break;
         case AttackState::Cooldown:
         {
-            if (attack_timer.getElapsedTime().asSeconds() >= (attack_duration + attack_cooldown))
+            if (attack_timer.getElapsedTime().asSeconds() >= (definition.attack_duration + definition.attack_cooldown))
             {
                 setAction(Action::None, players);
                 attack_state = AttackState::Start;
@@ -456,7 +460,7 @@ void Enemy::checkAttackHit(std::vector<PlayerInfo>& players)
             sf::FloatRect bounds(player.Data.position.x - 35, player.Data.position.y - 35, 70, 70);
             if (bounds.intersects(GetBounds()))
             {
-                player.Damage(attack_damage);
+                player.Damage(definition.attack_damage);
             }
         }
     }

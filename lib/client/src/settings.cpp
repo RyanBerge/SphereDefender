@@ -24,18 +24,14 @@ Settings::Settings()
 
     ServerSettings.ServerPort = 49879;
     DefaultServerIp = "127.0.0.1";
-    WindowResolution = sf::Vector2f{1920, 1280};
-    ScrollSpeed = 600;
 
+    //WindowResolution = sf::Vector2f{1600, 900} * 0.5f;
+    WindowResolution = sf::Vector2f{1920, 1080} * 0.5f;
+    //WindowResolution = sf::Vector2f{2560, 1440} * 0.5f;
+
+    ScrollSpeed = 600;
     MaxZoomFactor = 10; // 10 increments of +0.1%
     MinZoomFactor = -5; // 5 increments of -0.1%
-
-    frame.LoadTexture("Settings.png");
-    frame.SetPosition(410, 200);
-
-    //save_button = CursorButton("SettingsSaveButton.png");
-    //save_button.SetPosition(1220, 770);
-    //save_button.RegisterLeftMouseUp(std::bind(&Settings::ApplySettings, this));
 
     settings_view = sf::View(sf::FloatRect(0, 0, WindowResolution.x, WindowResolution.y));
 }

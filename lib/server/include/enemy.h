@@ -48,18 +48,11 @@ public:
     sf::FloatRect GetBounds();
     int GetSiphonRate();
 
-    network::EnemyData Data;
+    network::EnemyData Data{};
     bool Despawn = false;
 
 private:
-    float movement_speed = 210;
-    float attack_range = 35 + 35;
-    float feeding_range = 35;
-    float attack_distance = 60; // pixels
-    float attack_duration = 0.25; // seconds
-    float attack_cooldown = 0.5; // seconds
-    int attack_damage = 30;
-    sf::Vector2f base_size{50, 50};
+    shared::EntityDefinition definition;
 
     Behavior current_behavior;
     Action current_action;

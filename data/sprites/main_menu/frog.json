@@ -82,11 +82,11 @@
   ],
   "animations": [
     {
-      "name": "Frog Jump1",
+      "name": "Jump",
       "start_frame": 0,
       "end_frame": 12,
       "animation_speed": 10,
-      "next_animation": "Frog Jump1"
+      "next_animation": "Jump"
     }
   ]
 }

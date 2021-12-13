@@ -1,6 +1,7 @@
 set(TargetName shared)
 
 set(Sources
+    src/entity_definitions.cpp
     src/region_definitions.cpp
 )
 

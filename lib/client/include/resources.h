@@ -16,5 +16,16 @@
 namespace client::resources
 {
     std::shared_ptr<sf::Texture> AllocTexture(std::string filename);
-    std::shared_ptr<sf::Font> AllocFont(std::string filename);
+
+    class FontManager
+    {
+    public:
+        static sf::Font* GetFont(std::string filename);
+
+    private:
+        FontManager();
+        ~FontManager();
+
+        std::map<std::string, sf::Font*> font_map;
+    };
 }

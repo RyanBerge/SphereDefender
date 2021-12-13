@@ -26,7 +26,6 @@ public:
     bool Create(std::string player_name);
     bool Join(std::string player_name, std::string ip);
 
-    //void Update(sf::Time elapsed, sf::RenderWindow& window);
     void Draw();
 
     void StartGame();
@@ -55,7 +54,7 @@ private:
     void initializeMenu();
 
     bool owner = false;
-    std::shared_ptr<sf::Font> font;
+    sf::Font* font = nullptr;
     LobbyPlayer local_player;
     std::vector<LobbyPlayer> player_display_list;
     CursorButton class_select_left;

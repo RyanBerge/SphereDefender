@@ -53,11 +53,11 @@ public:
 private:
     sf::FloatRect GetBoundingBox(sf::Vector2f position);
 
-    double movement_speed = 200; // pixels per second
+    double movement_speed = shared::PlayerDefinition::PLAYER_SPEED; // pixels per second
     int swing_speed = 360; // degrees per second
     int swing_arc = 90; // degrees
-    int sword_offset = 35;
-    int sword_length = 40;
+    int sword_offset = shared::PlayerDefinition::SWORD_OFFSET;
+    int sword_length = shared::PlayerDefinition::SWORD_LENGTH;
 
     sf::Vector2f velocity;
     double starting_attack_angle;

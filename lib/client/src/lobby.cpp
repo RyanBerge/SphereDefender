@@ -12,6 +12,7 @@
 #include "game_manager.h"
 #include "resources.h"
 #include "messaging.h"
+#include "settings.h"
 #include <iostream>
 
 using std::cout, std::cerr, std::endl;
@@ -20,58 +21,72 @@ using network::ClientMessage, network::ServerMessage;
 
 namespace client {
 
+namespace {
+    constexpr int LOCAL_PLAYER_FONT_SIZE = 40;
+    constexpr int CLASS_FONT_SIZE = 25;
+}
+
 Lobby::Lobby()
 {
-    leave_button.LoadAnimationData("main_menu/leave_lobby.json");
-    leave_button.SetPosition(542, 1000);
-    leave_button.RegisterLeftMouseUp(std::bind(&Lobby::LeaveLobby, this));
+    sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
+    sf::FloatRect bounds;
 
-    start_button.LoadAnimationData("main_menu/server_start.json");
-    start_button.SetPosition(795, 850);
+    start_button.LoadAnimationData("main_menu/start.json");
+    bounds = start_button.GetSprite().getGlobalBounds();
+    start_button.SetPosition(window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.75 - bounds.height / 2);
     start_button.RegisterLeftMouseUp(std::bind(&Lobby::StartGame, this));
 
-    font = resources::AllocFont("Vera.ttf");
+    leave_button.LoadAnimationData("main_menu/leave_lobby.json");
+    bounds = leave_button.GetSprite().getGlobalBounds();
+    leave_button.SetPosition(window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.9 - bounds.height / 2);
+    leave_button.RegisterLeftMouseUp(std::bind(&Lobby::LeaveLobby, this));
+
+    font = resources::FontManager::GetFont("Vera");
 
     if (font == nullptr)
     {
         std::cerr << "Lobby: There was an error loading the font." << std::endl;
     }
 
-    class_select_left.LoadAnimationData("main_menu/class_select_left.json");
-    class_select_left.SetPosition(1200, 75);
-    class_select_left.RegisterLeftMouseUp([this](void){ scrollClassOption(-1); });
-
     class_select_right.LoadAnimationData("main_menu/class_select_right.json");
-    class_select_right.SetPosition(1532, 75);
+    bounds = class_select_right.GetSprite().getGlobalBounds();
+    class_select_right.SetPosition(window_resolution.x * 0.85 - bounds.width / 2, window_resolution.y * 0.15 - bounds.height / 2);
     class_select_right.RegisterLeftMouseUp([this](void){ scrollClassOption(1); });
+
+    class_select_left.LoadAnimationData("main_menu/class_select_left.json");
+    bounds = class_select_left.GetSprite().getGlobalBounds();
+    class_select_left.SetPosition(class_select_right.GetSprite().getGlobalBounds().left - CLASS_FONT_SIZE * 7, window_resolution.y * 0.15 - bounds.height / 2);
+    class_select_left.RegisterLeftMouseUp([this](void){ scrollClassOption(-1); });
 }
 
 void Lobby::initializeMenu()
 {
-    //lobby_instance = this;
     event_id_map[sf::Event::EventType::MouseMoved] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&Lobby::onMouseMove, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Lobby::onMouseDown, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseButtonReleased] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonReleased, std::bind(&Lobby::onMouseUp, this, std::placeholders::_1));
 
     sf::Text class_option;
     class_option.setFont(*font);
-    class_option.setCharacterSize(45);
+    class_option.setCharacterSize(CLASS_FONT_SIZE);
     class_option.setFillColor(sf::Color::White);
 
     local_player.class_options[0] = class_option;
     local_player.class_options[1] = class_option;
 
     sf::FloatRect bounds;
+    sf::FloatRect left_button_bounds = class_select_left.GetSprite().getGlobalBounds();
+    sf::FloatRect right_button_bounds = class_select_right.GetSprite().getGlobalBounds();
+    float center = left_button_bounds.left + left_button_bounds.width + ((right_button_bounds.left - (left_button_bounds.left + left_button_bounds.width)) / 2);
 
     local_player.class_options[0].setString("Melee");
     bounds = local_player.class_options[0].getGlobalBounds();
-    local_player.class_options[0].setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-    local_player.class_options[0].setPosition(1400, class_select_right.GetSprite().getGlobalBounds().height / 2 + class_select_right.GetSprite().getGlobalBounds().top);
+    local_player.class_options[0].setOrigin(0, bounds.top - local_player.class_options[0].getPosition().y);
+    local_player.class_options[0].setPosition(center - bounds.width / 2, left_button_bounds.top + left_button_bounds.height / 2 - CLASS_FONT_SIZE / 2);
 
     local_player.class_options[1].setString("Ranged");
     bounds = local_player.class_options[1].getGlobalBounds();
-    local_player.class_options[1].setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-    local_player.class_options[1].setPosition(1400, class_select_right.GetSprite().getGlobalBounds().height / 2 + class_select_right.GetSprite().getGlobalBounds().top);
+    local_player.class_options[1].setOrigin(0, bounds.top - local_player.class_options[1].getPosition().y);
+    local_player.class_options[1].setPosition(center - bounds.width / 2, left_button_bounds.top + left_button_bounds.height / 2 - CLASS_FONT_SIZE / 2);
 }
 
 void Lobby::Unload()
@@ -176,7 +191,10 @@ void Lobby::AssignId(uint16_t id)
     local_player.data.id = id;
     local_player.display_text.setFont(*font);
     local_player.display_text.setString(local_player.data.name);
-    local_player.display_text.setCharacterSize(90);
+    local_player.display_text.setCharacterSize(LOCAL_PLAYER_FONT_SIZE);
+
+    sf::FloatRect bounds = local_player.display_text.getGlobalBounds();
+    local_player.display_text.setOrigin(0, bounds.top - local_player.display_text.getPosition().y);
 
     updatePlayerPositions();
 }
@@ -187,11 +205,11 @@ void Lobby::AddPlayer(network::PlayerData player_data)
     lobby_player.data = player_data;
     lobby_player.display_text.setFont(*font);
     lobby_player.display_text.setString(player_data.name);
-    lobby_player.display_text.setCharacterSize(75);
+    lobby_player.display_text.setCharacterSize(LOCAL_PLAYER_FONT_SIZE * 0.8f);
 
     sf::Text class_option;
     class_option.setFont(*font);
-    class_option.setCharacterSize(45);
+    class_option.setCharacterSize(CLASS_FONT_SIZE);
     class_option.setFillColor(sf::Color::White);
 
     lobby_player.class_options[0] = class_option;
@@ -199,11 +217,11 @@ void Lobby::AddPlayer(network::PlayerData player_data)
 
     lobby_player.class_options[0].setString("Melee");
     sf::FloatRect bounds = lobby_player.class_options[0].getGlobalBounds();
-    lobby_player.class_options[0].setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+    lobby_player.class_options[0].setOrigin(0, bounds.top - lobby_player.class_options[0].getPosition().y);
 
     lobby_player.class_options[1].setString("Ranged");
     bounds = lobby_player.class_options[1].getGlobalBounds();
-    lobby_player.class_options[1].setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+    lobby_player.class_options[1].setOrigin(0, bounds.top - lobby_player.class_options[1].getPosition().y);
 
     player_display_list.push_back(lobby_player);
 
@@ -246,19 +264,26 @@ void Lobby::LeaveLobby()
 
 void Lobby::updatePlayerPositions()
 {
+    sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
     int offset = 0;
 
-    local_player.display_text.setPosition(sf::Vector2f(75, 75 + offset));
-    offset += 100;
+    sf::Vector2f local_class_position = local_player.class_options[0].getPosition();
+    sf::FloatRect bounds = local_player.display_text.getGlobalBounds();
+    sf::FloatRect reference_bounds = local_player.class_options[0].getGlobalBounds();
+
+    float base_y = local_class_position.y - bounds.height / 2 + reference_bounds.height / 2;
+
+    local_player.display_text.setPosition(sf::Vector2f{window_resolution.x * 0.1f, base_y});
+    offset += local_player.display_text.getCharacterSize() * 1.2;
 
     for (auto& player : player_display_list)
     {
-        player.display_text.setPosition(sf::Vector2f(75, 75 + offset));
+        player.display_text.setPosition(sf::Vector2f(window_resolution.x * 0.1f, base_y + offset));
         for (auto& option : player.class_options)
         {
-            option.setPosition(1400, 95 + offset);
+            option.setPosition(local_player.class_options[0].getPosition().x, base_y + offset);
         }
-        offset += 75;
+        offset += player.display_text.getCharacterSize() * 1.2;
     }
 }
 

@@ -34,8 +34,6 @@ public:
 private:
     Spritesheet background;
     sf::RectangleShape convoy;
-
-    
 };
 
 } // client

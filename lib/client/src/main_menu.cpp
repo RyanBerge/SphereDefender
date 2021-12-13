@@ -20,93 +20,134 @@ namespace client {
 
 MainMenu::MainMenu()
 {
-    font = resources::AllocFont("Vera.ttf");
+    sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
+    sf::Font* font = resources::FontManager::GetFont("Vera");
+    sf::FloatRect bounds;
+    sf::FloatRect reference_bounds;
 
+    // ========================================= Splash Screen =========================================
     Menu splash_screen_menu;
-    splash_screen_menu.spritesheets.push_back(Spritesheet("SplashScreen.png"));
+
+    sf::Text splash_game_text;
+    splash_game_text.setFont(*font);
+    splash_game_text.setCharacterSize(80);
+    splash_game_text.setString("Sphere Defender");
+    bounds = splash_game_text.getGlobalBounds();
+    splash_game_text.setPosition(window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.2 - bounds.height / 2);
+    splash_game_text.setFillColor(sf::Color::White);
+    splash_screen_menu.text.push_back(splash_game_text);
+
+    Spritesheet splash_wizard("main_menu/splash_wizard.json");
+    bounds = splash_wizard.GetSprite().getGlobalBounds();
+    reference_bounds = splash_game_text.getGlobalBounds();
+    splash_wizard.SetPosition(sf::Vector2f{reference_bounds.left + (reference_bounds.width * 0.7f) - bounds.width / 2, reference_bounds.top + reference_bounds.height});
+    splash_screen_menu.spritesheets.push_back(splash_wizard);
+
     Spritesheet frog;
     frog.LoadAnimationData("main_menu/frog.json");
-    frog.SetPosition(500, 800);
-    frog.SetAnimation("Frog Jump1");
+    frog.SetAnimation("Jump");
+    bounds = frog.GetSprite().getGlobalBounds();
+    reference_bounds = splash_game_text.getGlobalBounds();
+    frog.SetPosition(sf::Vector2f{reference_bounds.left + (reference_bounds.width * 0.2f) - bounds.width / 2, reference_bounds.top + reference_bounds.height + bounds.height * 4});
     splash_screen_menu.spritesheets.push_back(frog);
-    CursorButton splash_screen_start("main_menu/splash_start.json");
-    splash_screen_start.SetPosition(746, 950);
+
+    CursorButton splash_screen_start("main_menu/start.json");
+    bounds = splash_screen_start.GetSprite().getGlobalBounds();
+    splash_screen_start.SetPosition(window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.8 - bounds.height / 2);
     splash_screen_start.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Main; });
     splash_screen_menu.buttons.push_back(splash_screen_start);
     menus[MenuType::SplashScreen] = splash_screen_menu;
     CurrentMenu = MenuType::SplashScreen;
 
+    // ========================================= Main Menu =========================================
     Menu main_menu;
-    CursorButton create_game_button("main_menu/create_lobby.json");
-    create_game_button.SetPosition(963, 300);
-    create_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::CreateGame; setTabOrder(); });
-    main_menu.buttons.push_back(create_game_button);
-    CursorButton join_game_button("main_menu/join_lobby.json");
-    join_game_button.SetPosition(1142, 491);
-    join_game_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::JoinGame; setTabOrder(); });
-    main_menu.buttons.push_back(join_game_button);
+
+    CursorButton create_button("main_menu/create_lobby.json");
+    bounds = create_button.GetSprite().getGlobalBounds();
+    create_button.SetPosition(window_resolution.x * 0.95f - bounds.width, window_resolution.y * 0.16 - bounds.height / 2);
+    create_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::CreateGame; setTabOrder(); });
+    main_menu.buttons.push_back(create_button);
+
+    CursorButton join_button("main_menu/join_lobby.json");
+    bounds = join_button.GetSprite().getGlobalBounds();
+    join_button.SetPosition(window_resolution.x * 0.95f - bounds.width, window_resolution.y * 0.32 - bounds.height / 2);
+    join_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::JoinGame; setTabOrder(); });
+    main_menu.buttons.push_back(join_button);
+
     CursorButton settings_button("main_menu/settings.json");
-    settings_button.SetPosition(1301, 677);
+    bounds = settings_button.GetSprite().getGlobalBounds();
+    settings_button.SetPosition(window_resolution.x * 0.95f - bounds.width, window_resolution.y * 0.48 - bounds.height / 2);
     main_menu.buttons.push_back(settings_button);
-    CursorButton exit_game("main_menu/exit.json");
-    exit_game.SetPosition(1607, 873);
-    exit_game.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Exit; exitGame(); });
-    main_menu.buttons.push_back(exit_game);
+
+    CursorButton exit_button("main_menu/exit.json");
+    bounds = exit_button.GetSprite().getGlobalBounds();
+    exit_button.SetPosition(window_resolution.x * 0.95f - bounds.width, window_resolution.y * 0.64 - bounds.height / 2);
+    exit_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Exit; exitGame(); });
+    main_menu.buttons.push_back(exit_button);
+
     menus[MenuType::Main] = main_menu;
 
-    sf::Text name_label_text;
-    name_label_text.setFont(*font);
-    name_label_text.setString("Display Name");
-    name_label_text.setCharacterSize(45);
-    name_label_text.setPosition(sf::Vector2f(320, 220));
-    name_label_text.setFillColor(sf::Color::White);
+    // ========================================= Create/Join Lobby =========================================
+    Textbox name_box("Vera", sf::Vector2u(window_resolution.x * 0.6f, window_resolution.y * 0.1), sf::Color::White, sf::Color::Black);
+    name_box.SetPosition(sf::Vector2f(window_resolution.x * 0.2f, window_resolution.y * 0.2f));
 
-    sf::Text ip_label_text;
-    ip_label_text.setFont(*font);
-    ip_label_text.setString("Server Ip Address");
-    ip_label_text.setCharacterSize(45);
-    ip_label_text.setPosition(sf::Vector2f(320, 520));
-    ip_label_text.setFillColor(sf::Color::White);
-
-    CursorButton lobby_back_button("main_menu/back.json");
-    lobby_back_button.SetPosition(355, 975);
-    lobby_back_button.RegisterLeftMouseUp([this](void) { CurrentMenu = MenuType::Main; });
-
-    Menu create_game;
-    CursorButton start_server_button("main_menu/server_start.json");
-    start_server_button.SetPosition(1288, 975);
-    start_server_button.RegisterLeftMouseUp([this](void) { createLobby(true); });
-    create_game.buttons.push_back(start_server_button);
-    Textbox name_box_create("Vera.ttf", sf::Vector2u(1280, 120), sf::Color::White, sf::Color::Black);
-    name_box_create.SetPosition(sf::Vector2f(320, 300));
-    create_game.textboxes.push_back(name_box_create);
-    create_game.text.push_back(name_label_text);
-    create_game.buttons.push_back(lobby_back_button);
-    menus[MenuType::CreateGame] = create_game;
-
-    Menu join_game;
-    CursorButton connect_button("main_menu/connect.json");
-    connect_button.SetPosition(1176, 975);
-    connect_button.RegisterLeftMouseUp([this](void) { createLobby(false); });
-    join_game.buttons.push_back(connect_button);
-    Textbox name_box_join("Vera.ttf", sf::Vector2u(1280, 120), sf::Color::White, sf::Color::Black);
-    name_box_join.SetPosition(sf::Vector2f(320, 300));
-    join_game.textboxes.push_back(name_box_join);
-    Textbox ip_box("Vera.ttf", sf::Vector2u(1280, 120), sf::Color::White, sf::Color::Black);
-    ip_box.SetPosition(sf::Vector2f(320, 600));
+    Textbox ip_box("Vera", sf::Vector2u(window_resolution.x * 0.6f, window_resolution.y * 0.1), sf::Color::White, sf::Color::Black);
+    ip_box.SetPosition(sf::Vector2f(window_resolution.x * 0.2f, window_resolution.y * 0.5f));
     ip_box.SetText(Settings::GetInstance().DefaultServerIp);
-    join_game.textboxes.push_back(ip_box);
-    join_game.text.push_back(name_label_text);
-    join_game.text.push_back(ip_label_text);
-    join_game.buttons.push_back(lobby_back_button);
-    menus[MenuType::JoinGame] = join_game;
+
+    sf::Text name_label;
+    name_label.setFont(*font);
+    name_label.setString("Display Name");
+    name_label.setCharacterSize(20);
+    name_label.setPosition(sf::Vector2f{name_box.GetBounds().left, name_box.GetBounds().top - name_label.getGlobalBounds().height * 1.5f});
+    name_label.setFillColor(sf::Color::White);
+
+    sf::Text ip_label;
+    ip_label.setFont(*font);
+    ip_label.setString("Server Ip Address");
+    ip_label.setCharacterSize(20);
+    ip_label.setPosition(sf::Vector2f{ip_box.GetBounds().left, ip_box.GetBounds().top - ip_label.getGlobalBounds().height * 1.5f});
+    ip_label.setFillColor(sf::Color::White);
+
+    CursorButton back_button("main_menu/back.json");
+    bounds = back_button.GetSprite().getGlobalBounds();
+    back_button.SetPosition(window_resolution.x * 0.2f - bounds.width / 2, window_resolution.y * 0.85f - bounds.height / 2);
+    back_button.RegisterLeftMouseUp([this](void) { CurrentMenu = MenuType::Main; });
+
+    CursorButton start_server_button("main_menu/start.json");
+    bounds = start_server_button.GetSprite().getGlobalBounds();
+    start_server_button.SetPosition(window_resolution.x * 0.8f - bounds.width / 2, window_resolution.y * 0.85f - bounds.height / 2);
+    start_server_button.RegisterLeftMouseUp([this](void) { createLobby(true); });
+
+    CursorButton connect_button("main_menu/connect.json");
+    bounds = connect_button.GetSprite().getGlobalBounds();
+    connect_button.SetPosition(window_resolution.x * 0.8f - bounds.width / 2, window_resolution.y * 0.85f - bounds.height / 2);
+    connect_button.RegisterLeftMouseUp([this](void) { createLobby(false); });
+
+    Menu create_lobby;
+    create_lobby.textboxes.push_back(name_box);
+    create_lobby.text.push_back(name_label);
+    create_lobby.buttons.push_back(start_server_button);
+    create_lobby.buttons.push_back(back_button);
+    menus[MenuType::CreateGame] = create_lobby;
+
+    Menu join_lobby;
+    join_lobby.textboxes.push_back(name_box);
+    join_lobby.text.push_back(name_label);
+    join_lobby.textboxes.push_back(ip_box);
+    join_lobby.text.push_back(ip_label);
+    join_lobby.buttons.push_back(connect_button);
+    join_lobby.buttons.push_back(back_button);
+    menus[MenuType::JoinGame] = join_lobby;
+
+    // ========================================= Create/Join Lobby =========================================
 
     Menu loading;
     sf::Text loading_text;
     loading_text.setFont(*font);
     loading_text.setString("Loading...");
-    loading_text.setCharacterSize(80);
-    loading_text.setPosition(sf::Vector2f(760, 440));
+    loading_text.setCharacterSize(40);
+    loading_text.setPosition(window_resolution.x * 0.5f - bounds.width * 0.5f, window_resolution.y * 0.5f - bounds.height * 0.5f);
     loading_text.setFillColor(sf::Color::White);
     loading.text.push_back(loading_text);
     menus[MenuType::LoadingScreen] = loading;

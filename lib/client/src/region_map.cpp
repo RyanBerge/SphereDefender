@@ -36,7 +36,7 @@ void RegionMap::Draw()
 
 void RegionMap::Load(std::string region)
 {
-    background.LoadTexture("Background.png");
+    background.LoadAnimationData("doodads/background.json");
     background.SetTiling(true);
     background.SetPosition(-6000, -6000);
 
@@ -60,7 +60,7 @@ void RegionMap::InitializeRegion(shared::RegionDefinition definition)
     convoy.setPosition(definition.convoy.position);
     convoy.setFillColor(sf::Color(115, 150, 180));
     convoy.setOutlineColor(sf::Color::Black);
-    convoy.setOutlineThickness(5);
+    convoy.setOutlineThickness(2);
 
     for (auto& obstacle : definition.obstacles)
     {
@@ -68,7 +68,7 @@ void RegionMap::InitializeRegion(shared::RegionDefinition definition)
         rect.setPosition(obstacle.bounds.getPosition());
         rect.setFillColor(sf::Color(100, 100, 100));
         rect.setOutlineColor(sf::Color::Black);
-        rect.setOutlineThickness(4);
+        rect.setOutlineThickness(2);
 
         obstacles.push_back(rect);
     }

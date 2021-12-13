@@ -1,0 +1,20 @@
+{
+  "filename": "Background.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 600, 300 ],
+      "origin": [ 0, 0 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Default",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Default"
+    }
+  ]
+}

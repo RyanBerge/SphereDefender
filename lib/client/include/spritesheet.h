@@ -29,7 +29,6 @@ public:
     void Draw();
 
     sf::Sprite& GetSprite();
-    bool LoadTexture(std::string filename);
     void LoadAnimationData(std::string filename);
 
     void SetAnimation(std::string animation_name);
@@ -70,6 +69,7 @@ private:
 
     sf::Sprite tiled_sprite;
 
+    bool loadTexture(std::string filename);
     void setFrame(unsigned frame);
 };
 
