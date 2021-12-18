@@ -8,7 +8,7 @@
  *
  *************************************************************************************************/
 #include "settings.h"
-#include "game_manager.h"
+#include "resources.h"
 
 namespace client {
 
@@ -48,14 +48,14 @@ void Settings::Draw()
 {
     if (open)
     {
-        sf::View old_view = GameManager::GetInstance().Window.getView();
+        sf::View old_view = resources::GetWindow().getView();
         settings_view.setViewport(old_view.getViewport());
-        GameManager::GetInstance().Window.setView(settings_view);
+        resources::GetWindow().setView(settings_view);
 
         frame.Draw();
         save_button.Draw();
 
-        GameManager::GetInstance().Window.setView(old_view);
+        resources::GetWindow().setView(old_view);
     }
 }
 

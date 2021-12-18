@@ -9,7 +9,7 @@
  *************************************************************************************************/
 #include <iostream>
 #include "cursor_button.h"
-#include "game_manager.h"
+#include "resources.h"
 
 using std::cout, std::endl;
 
@@ -56,7 +56,7 @@ void CursorButton::SetPosition(float x, float y)
 void CursorButton::UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event)
 {
     sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
-    sf::Vector2f mouse_position = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
+    sf::Vector2f mouse_position = resources::GetWindow().mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
     bool in_bounds = mouse_position.x >= bounds.left &&
                     mouse_position.x <= bounds.left + bounds.width &&
@@ -79,7 +79,7 @@ void CursorButton::UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, Sta
     if (mouse_event.button == sf::Mouse::Button::Left)
     {
         sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
-        sf::Vector2f mouse_position = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
+        sf::Vector2f mouse_position = resources::GetWindow().mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
         bool in_bounds = mouse_position.x >= bounds.left &&
                         mouse_position.x <= bounds.left + bounds.width &&

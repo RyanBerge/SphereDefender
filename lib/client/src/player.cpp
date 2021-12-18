@@ -8,17 +8,15 @@
  *
  *************************************************************************************************/
 #include "player.h"
-#include "game_manager.h"
 #include "settings.h"
 #include "game_math.h"
 #include "resources.h"
+#include "messaging.h"
 #include <iostream>
 #include <cmath>
-#include <complex>
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
-#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
 namespace {
@@ -35,7 +33,7 @@ void Player::Update(sf::Time elapsed)
     {
         if (attacking && attack_timer.getElapsedTime().asMilliseconds() >= GUN_ATTACK_COOLDOWN)
         {
-            startAttack(sf::Mouse::getPosition(GameManager::GetInstance().Window));
+            startAttack(sf::Mouse::getPosition(resources::GetWindow()));
             attack_timer.restart();
         }
     }
@@ -70,7 +68,7 @@ sf::Vector2f Player::GetPosition()
 void Player::DisableActions()
 {
     actions_disabled = true;
-    ClientMessage::PlayerStateChange(ServerSocket, sf::Vector2i{0, 0});
+    ClientMessage::PlayerStateChange(resources::GetServerSocket(), sf::Vector2i{0, 0});
 }
 
 void Player::EnableActions()
@@ -191,7 +189,7 @@ void Player::updateMovement()
             ++movement_vector.y;
         }
 
-        ClientMessage::PlayerStateChange(ServerSocket, movement_vector);
+        ClientMessage::PlayerStateChange(resources::GetServerSocket(), movement_vector);
     }
 }
 
@@ -199,7 +197,7 @@ void Player::startAttack(sf::Vector2i point)
 {
     if (Avatar.Data.health > 0)
     {
-        sf::Vector2f distance_to_destination = GameManager::GetInstance().Window.mapPixelToCoords(point, GameManager::GetInstance().Game.WorldView) - Avatar.GetPosition();
+        sf::Vector2f distance_to_destination = resources::GetWindow().mapPixelToCoords(point, resources::GetWorldView()) - Avatar.GetPosition();
         float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
 
         uint16_t attack_angle = 0;
@@ -216,7 +214,7 @@ void Player::startAttack(sf::Vector2i point)
         action.flags.start_attack = true;
         action.attack_angle = attack_angle;
 
-        ClientMessage::StartAction(ServerSocket, action);
+        ClientMessage::StartAction(resources::GetServerSocket(), action);
         Avatar.StartAttack(attack_angle);
 
         attacking = true;

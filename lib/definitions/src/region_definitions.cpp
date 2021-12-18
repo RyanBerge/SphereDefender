@@ -8,7 +8,7 @@
  *************************************************************************************************/
 #include "region_definitions.h"
 
-namespace shared
+namespace definitions
 {
 
 namespace {
@@ -88,11 +88,11 @@ RegionDefinition GetRegionDefinition(RegionName region)
 sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy)
 {
     sf::FloatRect bounds;
-    if (convoy.orientation == shared::Orientation::North || convoy.orientation == shared::Orientation::South)
+    if (convoy.orientation == definitions::Orientation::North || convoy.orientation == definitions::Orientation::South)
     {
         bounds = sf::FloatRect(convoy.position.x - convoy.WIDTH / 2, convoy.position.y - convoy.HEIGHT / 2, convoy.WIDTH, convoy.HEIGHT);
     }
-    else if (convoy.orientation == shared::Orientation::East || convoy.orientation == shared::Orientation::West)
+    else if (convoy.orientation == definitions::Orientation::East || convoy.orientation == definitions::Orientation::West)
     {
         bounds = sf::FloatRect(convoy.position.x - convoy.HEIGHT / 2, convoy.position.y - convoy.WIDTH / 2, convoy.HEIGHT, convoy.WIDTH);
     }
@@ -100,4 +100,4 @@ sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy)
     return bounds;
 }
 
-} // shared
+} // definitions

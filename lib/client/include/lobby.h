@@ -14,7 +14,7 @@
 #include <string>
 #include <array>
 #include "cursor_button.h"
-#include "messaging.h"
+#include "entity_data.h"
 
 namespace client {
 

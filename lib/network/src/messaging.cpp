@@ -315,7 +315,7 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
     return true;
 }
 
-bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, shared::RegionName region)
+bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
 {
     Code code = ClientMessage::Code::ChangeRegion;
 
@@ -436,9 +436,9 @@ bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_a
     return true;
 }
 
-bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName&  out_region)
+bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName&  out_region)
 {
-    shared::RegionName region;
+    definitions::RegionName region;
 
     if (!read(socket, &region, sizeof(region)))
     {
@@ -833,7 +833,7 @@ bool ServerMessage::BatteryUpdate(sf::TcpSocket& socket, float battery_level)
     return true;
 }
 
-bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, shared::RegionName region)
+bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
 {
     Code code = ServerMessage::Code::ChangeRegion;
 
@@ -1179,9 +1179,9 @@ bool ServerMessage::DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_batter
     return true;
 }
 
-bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName&  out_region)
+bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName&  out_region)
 {
-    shared::RegionName region;
+    definitions::RegionName region;
 
     if (!read(socket, &region, sizeof(region)))
     {

@@ -18,9 +18,9 @@ using std::cout, std::endl;
 
 namespace server {
 
-void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, shared::ConvoyDefinition convoy)
+void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy)
 {
-    obstacles.push_back(shared::GetConvoyBounds(convoy));
+    obstacles.push_back(definitions::GetConvoyBounds(convoy));
     sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
     bool collision = false;
     for (auto& obstacle : obstacles)
@@ -117,12 +117,12 @@ uint8_t PlayerInfo::GetWeaponDamage()
     {
         case network::PlayerClass::Melee:
         {
-            return shared::PlayerDefinition::SWORD_DAMAGE;
+            return definitions::PlayerDefinition::SWORD_DAMAGE;
         }
         break;
         case network::PlayerClass::Ranged:
         {
-            return shared::PlayerDefinition::GUN_DAMAGE;
+            return definitions::PlayerDefinition::GUN_DAMAGE;
         }
         break;
         default:
@@ -165,10 +165,10 @@ void PlayerInfo::Damage(int damage_value)
 sf::FloatRect PlayerInfo::GetBoundingBox(sf::Vector2f position)
 {
     sf::FloatRect rect;
-    rect.width = shared::PlayerDefinition::PLAYER_RADIUS * 2;
-    rect.height = shared::PlayerDefinition::PLAYER_RADIUS * 2;
-    rect.left = position.x - shared::PlayerDefinition::PLAYER_RADIUS;
-    rect.top = position.y - shared::PlayerDefinition::PLAYER_RADIUS;
+    rect.width = definitions::PlayerDefinition::PLAYER_RADIUS * 2;
+    rect.height = definitions::PlayerDefinition::PLAYER_RADIUS * 2;
+    rect.left = position.x - definitions::PlayerDefinition::PLAYER_RADIUS;
+    rect.top = position.y - definitions::PlayerDefinition::PLAYER_RADIUS;
 
     return rect;
 }

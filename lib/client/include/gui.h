@@ -11,7 +11,6 @@
 
 #include "cursor_button.h"
 #include "overmap.h"
-#include <SFML/System/Time.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>

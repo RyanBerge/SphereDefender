@@ -8,7 +8,6 @@
  *
  *************************************************************************************************/
 #pragma once
-#include <SFML/System/Time.hpp>
 #include "convoy.h"
 #include "spritesheet.h"
 #include "entity_data.h"
@@ -45,17 +44,17 @@ public:
     void Update(sf::Time elapsed, Player local_player);
     void Draw();
 
-    void Load(shared::RegionName region);
+    void Load(definitions::RegionName region);
     void Unload();
 
-    void InitializeRegion(shared::RegionDefinition definition);
+    void InitializeRegion(definitions::RegionDefinition definition);
     Interaction Interact(sf::Vector2f player_position);
     void LeaveRegion();
     void EnterRegion();
 
     sf::Vector2f GetConvoyPosition();
 
-    shared::RegionName RegionName;
+    definitions::RegionName RegionName;
 
 private:
     Spritesheet background;

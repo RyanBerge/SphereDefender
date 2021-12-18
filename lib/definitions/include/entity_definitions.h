@@ -12,7 +12,7 @@
 #include <cstdint>
 #include "SFML/System/Vector2.hpp"
 
-namespace shared
+namespace definitions
 {
 
 enum class EntityType : uint8_t
@@ -48,4 +48,4 @@ namespace PlayerDefinition
     constexpr int GUN_DAMAGE = 20;
 }
 
-} // shared
+} // definitions

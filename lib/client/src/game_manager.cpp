@@ -15,6 +15,7 @@
 #include "event_handler.h"
 #include "messaging.h"
 #include "settings.h"
+#include "resources.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -37,19 +38,19 @@ void GameManager::Start()
 
     Settings::GetInstance();
     sf::Vector2u window_size{1280, 720};
-    Window.create(sf::VideoMode(window_size.x, window_size.y), "Sphere Defender");
+    resources::GetWindow().create(sf::VideoMode(window_size.x, window_size.y), "Sphere Defender");
 
     sf::Event resize_event;
     resize_event.size.width = window_size.x;
     resize_event.size.height = window_size.y;
     onResizeWindow(resize_event);
 
-    Window.setKeyRepeatEnabled(false);
+    resources::GetWindow().setKeyRepeatEnabled(false);
     sf::Clock clock;
 
     running = true;
 
-    while (running && Window.isOpen())
+    while (running && resources::GetWindow().isOpen())
     {
         sf::Clock loop_timer;
         sf::Time elapsed = clock.restart();
@@ -71,7 +72,7 @@ void GameManager::Start()
             break;
         }
 
-        Window.clear(sf::Color::Black);
+        resources::GetWindow().clear(sf::Color::Black);
 
         // TODO: Will we need to update one of these even outside of its state?
         switch (State)
@@ -88,11 +89,11 @@ void GameManager::Start()
             break;
         }
 
-        Window.display();
+        resources::GetWindow().display();
 
         sf::Event event;
         int num = 0;
-        while (Window.pollEvent(event))
+        while (resources::GetWindow().pollEvent(event))
         {
             ++num;
             event_handler.AddEvent(event);
@@ -118,21 +119,21 @@ void GameManager::Start()
 
 void GameManager::ExitGame()
 {
-    Window.close();
+    resources::GetWindow().close();
     running = false;
 }
 
 bool GameManager::ConnectToServer(std::string ip)
 {
-    ServerSocket.setBlocking(true);
+    resources::GetServerSocket().setBlocking(true);
 
-    if (ServerSocket.connect(sf::IpAddress(ip), Settings::GetInstance().ServerSettings.ServerPort, sf::seconds(5)) != sf::Socket::Status::Done)
+    if (resources::GetServerSocket().connect(sf::IpAddress(ip), Settings::GetInstance().ServerSettings.ServerPort, sf::seconds(5)) != sf::Socket::Status::Done)
     {
         cerr << "Server at " << ip << " could not be reached." << endl;
         return false;
     }
 
-    ServerSocket.setBlocking(false);
+    resources::GetServerSocket().setBlocking(false);
     server_connected = true;
 
     return true;
@@ -149,7 +150,7 @@ void GameManager::Reset()
                 case MainMenu::MenuType::Lobby:
                 case MainMenu::MenuType::LoadingScreen:
                 {
-                    ClientMessage::LeaveGame(ServerSocket);
+                    ClientMessage::LeaveGame(resources::GetServerSocket());
                     DisconnectFromServer();
                     MainMenu.CurrentMenu = MainMenu::MenuType::Main;
                 }
@@ -162,7 +163,7 @@ void GameManager::Reset()
         break;
         case GameState::Game:
         {
-            ClientMessage::LeaveGame(ServerSocket);
+            ClientMessage::LeaveGame(resources::GetServerSocket());
             DisconnectFromServer();
             Game.Unload();
             State = GameState::MainMenu;
@@ -175,7 +176,7 @@ void GameManager::Reset()
 
 void GameManager::DisconnectFromServer()
 {
-    ServerSocket.disconnect();
+    resources::GetServerSocket().disconnect();
     server_connected = false;
 }
 
@@ -191,7 +192,7 @@ void GameManager::checkMessages()
 
     do
     {
-        bool success = ServerMessage::PollForCode(ServerSocket, code);
+        bool success = ServerMessage::PollForCode(resources::GetServerSocket(), code);
         if (!success)
         {
             cerr << "You were disconnected unexpectedly." << endl;
@@ -213,7 +214,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::PlayerId:
             {
                 uint16_t player_id;
-                if (ServerMessage::DecodePlayerId(ServerSocket, player_id))
+                if (ServerMessage::DecodePlayerId(resources::GetServerSocket(), player_id))
                 {
                     if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
@@ -229,7 +230,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::PlayerJoined:
             {
                 network::PlayerData data{};
-                if (ServerMessage::DecodePlayerJoined(ServerSocket, data))
+                if (ServerMessage::DecodePlayerJoined(resources::GetServerSocket(), data))
                 {
                     if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
@@ -245,7 +246,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::PlayerLeft:
             {
                 uint16_t player_id;
-                if (ServerMessage::DecodePlayerLeft(ServerSocket, player_id))
+                if (ServerMessage::DecodePlayerLeft(resources::GetServerSocket(), player_id))
                 {
                     switch (State)
                     {
@@ -317,7 +318,7 @@ void GameManager::checkMessages()
             {
                 uint16_t player_id;
                 std::vector<network::PlayerData> player_list;
-                if (ServerMessage::DecodePlayersInLobby(ServerSocket, player_id, player_list))
+                if (ServerMessage::DecodePlayersInLobby(resources::GetServerSocket(), player_id, player_list))
                 {
                     if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
@@ -334,7 +335,7 @@ void GameManager::checkMessages()
             {
                 uint16_t player_id;
                 network::PlayerProperties properties;
-                if (ServerMessage::DecodeChangePlayerProperty(ServerSocket, player_id, properties))
+                if (ServerMessage::DecodeChangePlayerProperty(resources::GetServerSocket(), player_id, properties))
                 {
                     if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::Lobby)
                     {
@@ -354,7 +355,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::AllPlayersLoaded:
             {
                 sf::Vector2f spawn_position;
-                if (ServerMessage::DecodeAllPlayersLoaded(ServerSocket, spawn_position))
+                if (ServerMessage::DecodeAllPlayersLoaded(resources::GetServerSocket(), spawn_position))
                 {
                     if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
                     {
@@ -373,7 +374,7 @@ void GameManager::checkMessages()
             {
                 uint16_t player_id;
                 network::PlayerAction action;
-                if (ServerMessage::DecodePlayerStartAction(ServerSocket, player_id, action))
+                if (ServerMessage::DecodePlayerStartAction(resources::GetServerSocket(), player_id, action))
                 {
                     Game.StartAction(player_id, action);
                 }
@@ -383,7 +384,7 @@ void GameManager::checkMessages()
             {
                 uint16_t enemy_id;
                 network::EnemyAction action;
-                if (ServerMessage::DecodeEnemyChangeAction(ServerSocket, enemy_id, action))
+                if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action))
                 {
                     Game.ChangeEnemyAction(enemy_id, action);
                 }
@@ -392,7 +393,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::PlayerStates:
             {
                 std::vector<network::PlayerData> player_list;
-                if (ServerMessage::DecodePlayerStates(ServerSocket, player_list))
+                if (ServerMessage::DecodePlayerStates(resources::GetServerSocket(), player_list))
                 {
                     Game.UpdatePlayerStates(player_list);
                 }
@@ -401,7 +402,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::EnemyUpdate:
             {
                 std::vector<network::EnemyData> enemy_list;
-                if (ServerMessage::DecodeEnemyUpdate(ServerSocket, enemy_list))
+                if (ServerMessage::DecodeEnemyUpdate(resources::GetServerSocket(), enemy_list))
                 {
                     Game.UpdateEnemies(enemy_list);
                 }
@@ -410,7 +411,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::BatteryUpdate:
             {
                 float battery_level;
-                if (ServerMessage::DecodeBatteryUpdate(ServerSocket, battery_level))
+                if (ServerMessage::DecodeBatteryUpdate(resources::GetServerSocket(), battery_level))
                 {
                     Game.UpdateBattery(battery_level);
                 }
@@ -418,8 +419,8 @@ void GameManager::checkMessages()
             break;
             case ServerMessage::Code::ChangeRegion:
             {
-                shared::RegionName region_name;
-                if (ServerMessage::DecodeChangeRegion(ServerSocket, region_name))
+                definitions::RegionName region_name;
+                if (ServerMessage::DecodeChangeRegion(resources::GetServerSocket(), region_name))
                 {
                     Game.ChangeRegion(region_name);
                 }
@@ -508,7 +509,7 @@ void GameManager::onResizeWindow(sf::Event event)
     }
 
     view.setViewport(viewport);
-    Window.setView(view);
+    resources::GetWindow().setView(view);
 }
 
 } // client

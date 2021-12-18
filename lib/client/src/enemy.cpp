@@ -8,7 +8,6 @@
  *
  *************************************************************************************************/
 #include "enemy.h"
-#include "game_manager.h"
 #include <iostream>
 
 using std::cout, std::endl;

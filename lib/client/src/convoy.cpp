@@ -1,5 +1,14 @@
+/**************************************************************************************************
+ *  File:       convoy.cpp
+ *  Class:      Convoy
+ *
+ *  Purpose:    A convoy
+ *
+ *  Author:     Ryan Berge
+ *
+ *************************************************************************************************/
 #include "convoy.h"
-#include "game_manager.h"
+#include "resources.h"
 #include "game_math.h"
 #include <iostream>
 
@@ -13,10 +22,10 @@ namespace {
 
 Convoy::Convoy() { }
 
-Convoy::Convoy(shared::ConvoyDefinition definition)
+Convoy::Convoy(definitions::ConvoyDefinition definition)
 {
     base_position = definition.position;
-    rectangle.setSize(shared::GetConvoyBounds(definition).getSize());
+    rectangle.setSize(definitions::GetConvoyBounds(definition).getSize());
 
     rectangle.setOrigin(rectangle.getSize().x / 2, rectangle.getSize().y / 2);
     rectangle.setPosition(definition.position);
@@ -54,7 +63,7 @@ void Convoy::Update(sf::Time elapsed)
 
 void Convoy::Draw()
 {
-    GameManager::GetInstance().Window.draw(rectangle);
+    resources::GetWindow().draw(rectangle);
     console.Draw();
 }
 

@@ -14,7 +14,7 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
 
-namespace shared
+namespace definitions
 {
 
 enum class Orientation
@@ -67,4 +67,4 @@ struct RegionDefinition
 RegionDefinition GetRegionDefinition(RegionName region);
 sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy);
 
-} // namespace shared
+} // namespace definitions

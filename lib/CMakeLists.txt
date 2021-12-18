@@ -1,5 +1,5 @@
 add_subdirectory(client)
-add_subdirectory(server)
+add_subdirectory(definitions)
 add_subdirectory(network)
+add_subdirectory(server)
 add_subdirectory(util)
-add_subdirectory(shared)

@@ -12,8 +12,6 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include "SFML/Graphics/RectangleShape.hpp"
-#include <cstdint>
-#include <string>
 #include "spritesheet.h"
 #include "entity_data.h"
 

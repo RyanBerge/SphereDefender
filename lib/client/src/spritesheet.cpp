@@ -10,7 +10,6 @@
  *************************************************************************************************/
 #include "spritesheet.h"
 #include "resources.h"
-#include "game_manager.h"
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -58,10 +57,10 @@ void Spritesheet::Update(sf::Time elapsed)
 
 void Spritesheet::Draw()
 {
-    GameManager::GetInstance().Window.draw(sprite);
+    resources::GetWindow().draw(sprite);
     if (texture != nullptr && texture->isRepeated())
     {
-        //GameManager::GetInstance().Window.draw(tiled_sprite);
+        //resources::GetWindow().draw(tiled_sprite);
     }
 }
 

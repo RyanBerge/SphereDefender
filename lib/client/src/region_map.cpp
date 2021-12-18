@@ -8,10 +8,9 @@
  *
  *************************************************************************************************/
 #include "region_map.h"
-#include "game_manager.h"
+#include "resources.h"
 #include "settings.h"
 #include "game_math.h"
-#include <SFML/System/Time.hpp>
 #include <iostream>
 
 using std::cout, std::endl;
@@ -51,7 +50,7 @@ void RegionMap::Draw()
 
     for (auto& obstacle : obstacles)
     {
-        GameManager::GetInstance().Window.draw(obstacle);
+        resources::GetWindow().draw(obstacle);
     }
 
     for (auto& npc : npcs)
@@ -60,15 +59,15 @@ void RegionMap::Draw()
     }
 }
 
-void RegionMap::Load(shared::RegionName region)
+void RegionMap::Load(definitions::RegionName region)
 {
     RegionName = region;
-    InitializeRegion(shared::GetRegionDefinition(region));
+    InitializeRegion(definitions::GetRegionDefinition(region));
 }
 
 void RegionMap::Unload() { }
 
-void RegionMap::InitializeRegion(shared::RegionDefinition definition)
+void RegionMap::InitializeRegion(definitions::RegionDefinition definition)
 {
     background.LoadAnimationData(definition.background_file);
     background.SetTiling(true);

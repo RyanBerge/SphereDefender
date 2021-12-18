@@ -9,7 +9,7 @@ add_library(${TargetName} ${Sources})
 
 target_include_directories(${TargetName} PRIVATE
     ${PROJECT_SOURCE_DIR}/lib/network/include
-    ${PROJECT_SOURCE_DIR}/lib/shared/include
+    ${PROJECT_SOURCE_DIR}/lib/definitions/include
 )
 
 target_link_libraries(${TargetName} sfml-network)

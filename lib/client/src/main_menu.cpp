@@ -7,12 +7,12 @@
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
-#include <iostream>
 #include "main_menu.h"
 #include "event_handler.h"
 #include "game_manager.h"
 #include "resources.h"
 #include "settings.h"
+#include <iostream>
 
 using std::cout, std::endl;
 
@@ -185,7 +185,7 @@ void MainMenu::Draw()
 
     for (sf::Text& text : menu.text)
     {
-        GameManager::GetInstance().Window.draw(text);
+        resources::GetWindow().draw(text);
     }
 
     if (CurrentMenu == MenuType::Lobby)

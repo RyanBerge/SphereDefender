@@ -40,7 +40,7 @@ public:
 
     Enemy();
 
-    void Update(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
+    void Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
     void WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnockback knockback, sf::Vector2f hit_vector, std::vector<PlayerInfo>& players);
 
     Behavior GetBehavior();
@@ -52,7 +52,7 @@ public:
     bool Despawn = false;
 
 private:
-    shared::EntityDefinition definition;
+    definitions::EntityDefinition definition;
 
     Behavior current_behavior;
     Action current_action;
@@ -90,14 +90,14 @@ private:
     void setBehavior(Behavior behavior, std::vector<PlayerInfo>& players);
     void setAction(Action action, std::vector<PlayerInfo>& players);
     void resetActionStates();
-    void chooseAction(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
+    void chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
     void checkAggro(std::vector<PlayerInfo>& players);
-    sf::Vector2f getTargetConvoyPoint(shared::ConvoyDefinition convoy);
+    sf::Vector2f getTargetConvoyPoint(definitions::ConvoyDefinition convoy);
     sf::Vector2f getTargetPlayerPoint(std::vector<PlayerInfo>& players);
     void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles);
     void handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void checkAttackHit(std::vector<PlayerInfo>& players);
-    void handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
     void handleStunned(std::vector<PlayerInfo>& players);
 };
 

@@ -9,12 +9,11 @@
  *************************************************************************************************/
 #include "overmap.h"
 #include "settings.h"
-#include "game_manager.h"
+#include "resources.h"
 #include "region_definitions.h"
 #include "messaging.h"
 
 using network::ClientMessage;
-#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client
 {
@@ -31,15 +30,15 @@ Overmap::Overmap()
 
     CursorButton town_node("gui/town_overmap_node.json");
     town_node.SetPosition(frame_bounds.left + 100, frame_bounds.top + frame_bounds.height - 100);
-    //town_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(ServerSocket, shared::RegionName::Town); });
+    //town_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(resources::GetServerSocket(), definitions::RegionName::Town); });
 
     CursorButton leyline_node("gui/leyline_overmap_node.json");
     leyline_node.SetPosition(frame_bounds.left + 100, frame_bounds.top + frame_bounds.height - 300);
-    leyline_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(ServerSocket, shared::RegionName::Leyline); });
+    leyline_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(resources::GetServerSocket(), definitions::RegionName::Leyline); });
 
     CursorButton neutral_node("gui/neutral_overmap_node.json");
     neutral_node.SetPosition(frame_bounds.left + 200, frame_bounds.top + frame_bounds.height - 140);
-    neutral_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(ServerSocket, shared::RegionName::Neutral); });
+    neutral_node.RegisterLeftMouseUp([](){ ClientMessage::ChangeRegion(resources::GetServerSocket(), definitions::RegionName::Neutral); });
 
     region_nodes.push_back(town_node);
     region_nodes.push_back(leyline_node);
@@ -61,7 +60,7 @@ void Overmap::Draw()
 {
     if (Active)
     {
-        GameManager::GetInstance().Window.draw(frame);
+        resources::GetWindow().draw(frame);
         for (auto& node : region_nodes)
         {
             node.Draw();

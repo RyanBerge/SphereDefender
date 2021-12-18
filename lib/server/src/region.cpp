@@ -24,9 +24,9 @@ namespace server {
 
 Region::Region() { }
 
-Region::Region(shared::RegionName region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionName region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
-    shared::RegionDefinition definition = shared::GetRegionDefinition(region_name);
+    definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
 
     Convoy.orientation = definition.convoy.orientation;
     Convoy.position = definition.convoy.position;

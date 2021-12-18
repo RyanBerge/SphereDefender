@@ -36,7 +36,7 @@ public:
         float duration; // duration in seconds
     };
 
-    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, shared::ConvoyDefinition convoy);
+    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     util::LineSegment GetSwordLocation();
@@ -54,11 +54,11 @@ public:
 private:
     sf::FloatRect GetBoundingBox(sf::Vector2f position);
 
-    double movement_speed = shared::PlayerDefinition::PLAYER_SPEED; // pixels per second
+    double movement_speed = definitions::PlayerDefinition::PLAYER_SPEED; // pixels per second
     int swing_speed = 360; // degrees per second
     int swing_arc = 90; // degrees
-    int sword_offset = shared::PlayerDefinition::SWORD_OFFSET;
-    int sword_length = shared::PlayerDefinition::SWORD_LENGTH;
+    int sword_offset = definitions::PlayerDefinition::SWORD_OFFSET;
+    int sword_length = definitions::PlayerDefinition::SWORD_LENGTH;
 
     sf::Vector2f velocity;
     double starting_attack_angle;

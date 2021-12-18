@@ -8,7 +8,7 @@
  *************************************************************************************************/
 #include "entity_definitions.h"
 
-namespace shared {
+namespace definitions {
 namespace {
 
 class EntityDefinitionManager
@@ -41,4 +41,4 @@ EntityDefinition GetEntityDefinition(EntityType type)
     return manager.definition_map[type];
 }
 
-} // shared
+} // definitions

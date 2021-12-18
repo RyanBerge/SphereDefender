@@ -19,6 +19,24 @@ namespace {
     std::map<std::string, std::weak_ptr<sf::Texture>> texture_map;
 }
 
+sf::RenderWindow& GetWindow()
+{
+    static sf::RenderWindow window;
+    return window;
+}
+
+sf::TcpSocket& GetServerSocket()
+{
+    static sf::TcpSocket socket;
+    return socket;
+}
+
+sf::View& GetWorldView()
+{
+    static sf::View world_view;
+    return world_view;
+}
+
 std::shared_ptr<sf::Texture> AllocTexture(std::string filename)
 {
     std::string filepath = "../assets/" + filename;

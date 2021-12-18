@@ -10,11 +10,17 @@
 
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Network/TcpSocket.hpp>
 #include <memory>
 #include <cmath>
 
 namespace client::resources
 {
+    sf::RenderWindow& GetWindow();
+    sf::TcpSocket& GetServerSocket();
+    sf::View& GetWorldView();
+
     std::shared_ptr<sf::Texture> AllocTexture(std::string filename);
 
     class FontManager

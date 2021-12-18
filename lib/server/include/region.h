@@ -22,12 +22,12 @@ class Region
 {
 public:
     Region();
-    Region(shared::RegionName region_name, unsigned player_count, float battery_level);
+    Region(definitions::RegionName region_name, unsigned player_count, float battery_level);
 
     void Update(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void Cull();
 
-    shared::ConvoyDefinition Convoy{};
+    definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;
     std::vector<sf::FloatRect> Obstacles;
     float BatteryLevel = 0;

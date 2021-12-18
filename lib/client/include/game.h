@@ -39,10 +39,9 @@ public:
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void RemovePlayer(uint16_t player_id);
-    void ChangeRegion(shared::RegionName region);
+    void ChangeRegion(definitions::RegionName region);
     void EnterRegion(sf::Vector2f spawn_position);
 
-    sf::View WorldView;
     RegionMap region_map;
 
 private:
@@ -57,7 +56,7 @@ private:
 
     bool leaving_region = false;
     bool entering_region = false;
-    shared::RegionName next_region;
+    definitions::RegionName next_region;
 
     int zoom_factor;
     float current_zoom;

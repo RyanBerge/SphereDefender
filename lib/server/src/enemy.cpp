@@ -32,11 +32,11 @@ Enemy::Enemy()
     static uint16_t identifier = 0;
     Data.id = identifier++;
     Data.health = 100;
-    Data.type = shared::EntityType::SmallDemon;
+    Data.type = definitions::EntityType::SmallDemon;
     current_behavior = Behavior::Moving;
     current_action  = Action::None;
 
-    definition = shared::GetEntityDefinition(Data.type);
+    definition = definitions::GetEntityDefinition(Data.type);
 
     resetActionStates();
 }
@@ -52,7 +52,7 @@ int Enemy::GetSiphonRate()
     return BASE_SIPHON_RATE;
 }
 
-void Enemy::Update(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
+void Enemy::Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
 {
     switch (current_action)
     {
@@ -210,7 +210,7 @@ void Enemy::resetActionStates()
     stunned = false;
 }
 
-void Enemy::chooseAction(sf::Time elapsed, shared::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
+void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
 {
     checkAggro(players);
     sf::Vector2f destination;
@@ -311,10 +311,10 @@ void Enemy::checkAggro(std::vector<PlayerInfo>& players)
     }
 }
 
-sf::Vector2f Enemy::getTargetConvoyPoint(shared::ConvoyDefinition convoy)
+sf::Vector2f Enemy::getTargetConvoyPoint(definitions::ConvoyDefinition convoy)
 {
     sf::Vector2f destination;
-    sf::FloatRect convoy_bounds = shared::GetConvoyBounds(convoy);
+    sf::FloatRect convoy_bounds = definitions::GetConvoyBounds(convoy);
 
     if (Data.position.x >= convoy_bounds.left && Data.position.x <= convoy_bounds.left + convoy_bounds.width)
     {
@@ -466,7 +466,7 @@ void Enemy::checkAttackHit(std::vector<PlayerInfo>& players)
     }
 }
 
-void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, shared::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
+void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
     switch (knockback_state)
     {
@@ -492,7 +492,7 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, 
                 }
             }
 
-            sf::FloatRect convoy_bounds = shared::GetConvoyBounds(convoy);
+            sf::FloatRect convoy_bounds = definitions::GetConvoyBounds(convoy);
             if (util::Intersects(new_bounds, convoy_bounds))
             {
                 collision = true;

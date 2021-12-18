@@ -8,9 +8,10 @@
  *
  *************************************************************************************************/
 #include "game.h"
-#include "game_manager.h"
+#include "resources.h"
 #include "event_handler.h"
 #include "settings.h"
+#include "messaging.h"
 #include <thread>
 #include <iostream>
 #include <cmath>
@@ -18,15 +19,15 @@
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
-#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
 namespace {
     constexpr int FADE_TIME = 3;
 }
 
-Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y))
+Game::Game()
 {
+    resources::GetWorldView().setSize(Settings::GetInstance().WindowResolution);
     black_overlay.setSize(Settings::GetInstance().WindowResolution);
     black_overlay.setFillColor(sf::Color{0, 0, 0, 0});
 }
@@ -67,7 +68,7 @@ void Game::Update(sf::Time elapsed)
                 current_zoom = target_zoom;
             }
 
-            WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
+            resources::GetWorldView().setSize(Settings::GetInstance().WindowResolution * current_zoom);
         }
 
         if (leaving_region)
@@ -80,7 +81,7 @@ void Game::Update(sf::Time elapsed)
         }
         else
         {
-            WorldView.setCenter(local_player.GetPosition());
+            resources::GetWorldView().setCenter(local_player.GetPosition());
         }
     }
 }
@@ -89,9 +90,9 @@ void Game::Draw()
 {
     if (loaded)
     {
-        sf::View old_view = GameManager::GetInstance().Window.getView();
-        WorldView.setViewport(old_view.getViewport());
-        GameManager::GetInstance().Window.setView(WorldView);
+        sf::View old_view = resources::GetWindow().getView();
+        resources::GetWorldView().setViewport(old_view.getViewport());
+        resources::GetWindow().setView(resources::GetWorldView());
 
         region_map.Draw();
 
@@ -109,7 +110,7 @@ void Game::Draw()
             }
         }
 
-        GameManager::GetInstance().Window.setView(old_view);
+        resources::GetWindow().setView(old_view);
 
         gui.Draw();
 
@@ -120,7 +121,7 @@ void Game::Draw()
 
         if (inCutscene())
         {
-            GameManager::GetInstance().Window.draw(black_overlay);
+            resources::GetWindow().draw(black_overlay);
         }
     }
 }
@@ -156,7 +157,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     local_player = Player();
 
     region_map = RegionMap();
-    region_map.Load(shared::RegionName::Town);
+    region_map.Load(definitions::RegionName::Town);
     gui.Load();
     local_player.Load(local);
 
@@ -165,14 +166,14 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
         avatars[player.id] = Avatar(sf::Color(180, 115, 150), player);
     }
 
-    WorldView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
+    resources::GetWorldView() = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 
     sf::sleep(sf::seconds(1));
 
     loaded = true;
     std::cout << "Async load finished." << std::endl;
 
-    ClientMessage::LoadingComplete(ServerSocket);
+    ClientMessage::LoadingComplete(resources::GetServerSocket());
 }
 
 void Game::Unload()
@@ -191,7 +192,7 @@ void Game::Unload()
 void Game::Start(sf::Vector2f spawn_position)
 {
     local_player.SetPosition(spawn_position);
-    WorldView.setCenter(spawn_position);
+    resources::GetWorldView().setCenter(spawn_position);
 }
 
 int Game::GetPlayerCount()
@@ -256,7 +257,7 @@ void Game::RemovePlayer(uint16_t player_id)
     avatars.erase(player_id);
 }
 
-void Game::ChangeRegion(shared::RegionName region_name)
+void Game::ChangeRegion(definitions::RegionName region_name)
 {
     gui.SetEnabled(false);
     target_zoom = 1.2;
@@ -278,7 +279,7 @@ void Game::EnterRegion(sf::Vector2f spawn_position)
 
 void Game::updateScroll(sf::Time elapsed)
 {
-    sf::Vector2f mouse_coords = GameManager::GetInstance().Window.mapPixelToCoords(sf::Mouse::getPosition() - GameManager::GetInstance().Window.getPosition(), gui.GuiView);
+    sf::Vector2f mouse_coords = resources::GetWindow().mapPixelToCoords(sf::Mouse::getPosition() - resources::GetWindow().getPosition(), gui.GuiView);
 
     sf::Vector2i scroll_factor{0, 0};
     sf::Vector2f resolution = Settings::GetInstance().WindowResolution;
@@ -303,7 +304,7 @@ void Game::updateScroll(sf::Time elapsed)
         scroll_factor.y = 1;
     }
 
-    WorldView.move(sf::Vector2f(scroll_factor * Settings::GetInstance().ScrollSpeed) * current_zoom * elapsed.asSeconds());
+    resources::GetWorldView().move(sf::Vector2f(scroll_factor * Settings::GetInstance().ScrollSpeed) * current_zoom * elapsed.asSeconds());
 }
 
 void Game::handleLeavingRegion()
@@ -320,8 +321,8 @@ void Game::handleLeavingRegion()
         }
         case LeavingRegionState::Moving:
         {
-            WorldView.setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
-            if (region_map.GetConvoyPosition().y < shared::GetRegionDefinition(region_map.RegionName).convoy.position.y - Settings::GetInstance().WindowResolution.y * 2)
+            resources::GetWorldView().setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
+            if (region_map.GetConvoyPosition().y < definitions::GetRegionDefinition(region_map.RegionName).convoy.position.y - Settings::GetInstance().WindowResolution.y * 2)
             {
                 fade_timer.restart();
                 leaving_region_state = LeavingRegionState::Fading;
@@ -342,7 +343,7 @@ void Game::handleLeavingRegion()
         {
             region_map = RegionMap();
             region_map.Load(next_region);
-            ClientMessage::LoadingComplete(ServerSocket);
+            ClientMessage::LoadingComplete(resources::GetServerSocket());
             leaving_region_state = LeavingRegionState::Waiting;
             [[fallthrough]];
         }
@@ -356,7 +357,7 @@ void Game::handleEnteringRegion()
     static uint8_t overlay_opacity = 255;
     static sf::Clock fade_timer;
 
-    WorldView.setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
+    resources::GetWorldView().setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
 
     switch (entering_region_state)
     {
@@ -380,7 +381,7 @@ void Game::handleEnteringRegion()
         break;
         case EnteringRegionState::Moving:
         {
-            if (region_map.GetConvoyPosition().y == shared::GetRegionDefinition(region_map.RegionName).convoy.position.y)
+            if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionName).convoy.position.y)
             {
                 gui.SetEnabled(true);
                 local_player.EnableActions();

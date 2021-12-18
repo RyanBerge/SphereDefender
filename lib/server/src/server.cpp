@@ -219,7 +219,7 @@ void Server::startGame()
         players[i].Data.position = spawn_position;
     }
 
-    region = Region(shared::RegionName::Town, players.size(), 0);
+    region = Region(definitions::RegionName::Town, players.size(), 0);
 
     game_state = GameState::Game;
 }
@@ -502,7 +502,7 @@ void Server::startPlayerAction(PlayerInfo& player)
 
 void Server::changeRegion(PlayerInfo& player)
 {
-    shared::RegionName region_name;
+    definitions::RegionName region_name;
     if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_name))
     {
         player.Socket->disconnect();

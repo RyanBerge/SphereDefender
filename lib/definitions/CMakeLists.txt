@@ -1,4 +1,4 @@
-set(TargetName shared)
+set(TargetName definitions)
 
 set(Sources
     src/entity_definitions.cpp
@@ -8,7 +8,7 @@ set(Sources
 add_library(${TargetName} ${Sources})
 
 target_include_directories(${TargetName} PRIVATE
-    ${PROJECT_SOURCE_DIR}/lib/shared/include
+    ${PROJECT_SOURCE_DIR}/lib/definitions/include
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
 )
 

@@ -11,7 +11,7 @@
 
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/System/Clock.hpp>
-#include "messaging.h"
+#include "entity_data.h"
 #include "player_info.h"
 #include "region.h"
 #include <memory>
@@ -42,7 +42,7 @@ private:
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
     Region region;
-    shared::RegionName next_region;
+    definitions::RegionName next_region;
 
     void update();
     void listen();

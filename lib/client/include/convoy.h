@@ -22,7 +22,7 @@ public:
     static constexpr int CONSOLE_INTERACTION_DISTANCE = 75;
 
     Convoy();
-    Convoy(shared::ConvoyDefinition definition);
+    Convoy(definitions::ConvoyDefinition definition);
 
     void Update(sf::Time elapsed);
     void Draw();

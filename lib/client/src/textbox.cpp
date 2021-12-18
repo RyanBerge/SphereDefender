@@ -10,7 +10,6 @@
 #include "textbox.h"
 #include "resources.h"
 #include "event_handler.h"
-#include "game_manager.h"
 #include <functional>
 #include <iostream>
 
@@ -57,12 +56,12 @@ Textbox::Textbox(std::string font_name, sf::Vector2u box_size, sf::Color font_co
 
 void Textbox::Draw()
 {
-    GameManager::GetInstance().Window.draw(box);
-    GameManager::GetInstance().Window.draw(text);
+    resources::GetWindow().draw(box);
+    resources::GetWindow().draw(text);
 
     if (HasFocus)
     {
-        GameManager::GetInstance().Window.draw(cursor);
+        resources::GetWindow().draw(cursor);
     }
 }
 
@@ -72,8 +71,8 @@ void Textbox::UpdateMouseState(sf::Event::MouseButtonEvent mouse_event)
     {
         // TODO: Support moving cursor to a particular character on click
         sf::FloatRect bounds = box.getGlobalBounds();
-        // TODO: Will probably need a GUI view to map to for buttons with static GameManager::GetInstance().Window positions
-        sf::Vector2f mouse_position = GameManager::GetInstance().Window.mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
+        // TODO: Will probably need a GUI view to map to for buttons with static resources::GetWindow() positions
+        sf::Vector2f mouse_position = resources::GetWindow().mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
         bool in_bounds = mouse_position.x >= bounds.left &&
                         mouse_position.x <= bounds.left + bounds.width &&

@@ -31,7 +31,7 @@ add_executable(${TargetName} ${Sources})
 target_include_directories(${TargetName} PRIVATE
     ${PROJECT_SOURCE_DIR}/lib/client/include
     ${PROJECT_SOURCE_DIR}/lib/network/include
-    ${PROJECT_SOURCE_DIR}/lib/shared/include
+    ${PROJECT_SOURCE_DIR}/lib/definitions/include
     ${PROJECT_SOURCE_DIR}/lib/util/include
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
     ${PROJECT_SOURCE_DIR}/externals/Json/install/include
@@ -39,7 +39,7 @@ target_include_directories(${TargetName} PRIVATE
 
 target_link_libraries(${TargetName}
     network
-    shared
+    definitions
     util
     sfml-graphics
     Threads::Threads

@@ -44,7 +44,7 @@ struct PlayerData
 struct EnemyData
 {
     uint16_t id;
-    shared::EntityType type;
+    definitions::EntityType type;
     sf::Vector2f position;
     uint8_t health;
     float charge;

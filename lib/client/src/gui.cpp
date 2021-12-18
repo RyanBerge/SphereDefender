@@ -8,16 +8,13 @@
  *
  *************************************************************************************************/
 #include "gui.h"
-#include "game_manager.h"
-#include "messaging.h"
 #include "settings.h"
 #include "resources.h"
+#include "game_manager.h"
 #include <iostream>
 #include <string>
 
 using std::cout, std::cerr, std::endl;
-using network::ClientMessage, network::ServerMessage;
-#define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
 
@@ -118,37 +115,37 @@ void Gui::Draw()
 {
     if (enabled)
     {
-        sf::View old_view = GameManager::GetInstance().Window.getView();
+        sf::View old_view = resources::GetWindow().getView();
         GuiView.setViewport(old_view.getViewport());
-        GameManager::GetInstance().Window.setView(GuiView);
+        resources::GetWindow().setView(GuiView);
 
         ui_frame.Draw();
         menu_button.Draw();
 
         if (!InDialog)
         {
-            GameManager::GetInstance().Window.draw(healthbar);
+            resources::GetWindow().draw(healthbar);
             healthbar_frame.Draw();
         }
 
-        GameManager::GetInstance().Window.draw(battery_bar);
-        GameManager::GetInstance().Window.draw(battery_bar_frame);
+        resources::GetWindow().draw(battery_bar);
+        resources::GetWindow().draw(battery_bar_frame);
 
         if (Health == 0)
         {
-            GameManager::GetInstance().Window.draw(death_tint);
-            GameManager::GetInstance().Window.draw(death_text);
+            resources::GetWindow().draw(death_tint);
+            resources::GetWindow().draw(death_text);
         }
 
         if (InDialog)
         {
-            GameManager::GetInstance().Window.draw(dialog_frame);
+            resources::GetWindow().draw(dialog_frame);
             for (auto& text : dialog_text)
             {
-                GameManager::GetInstance().Window.draw(text);
+                resources::GetWindow().draw(text);
             }
-            GameManager::GetInstance().Window.draw(dialog_source_text);
-            GameManager::GetInstance().Window.draw(dialog_prompt_text);
+            resources::GetWindow().draw(dialog_source_text);
+            resources::GetWindow().draw(dialog_prompt_text);
         }
 
         if (overmap.Active)
@@ -165,7 +162,7 @@ void Gui::Draw()
             exit_button.Draw();
         }
 
-        GameManager::GetInstance().Window.setView(old_view);
+        resources::GetWindow().setView(old_view);
     }
 }
 

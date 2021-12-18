@@ -8,12 +8,11 @@
  *
  *************************************************************************************************/
 #include "avatar.h"
-#include "game_manager.h"
+#include "resources.h"
 #include <iostream>
 #include "game_math.h"
 
 using std::cout, std::endl;
-using namespace shared;
 
 namespace client {
 
@@ -25,24 +24,24 @@ Avatar::Avatar() { }
 
 Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
-    sphere.setRadius(PlayerDefinition::PLAYER_RADIUS);
+    sphere.setRadius(definitions::PlayerDefinition::PLAYER_RADIUS);
     sphere.setFillColor(color);
     sphere.setOutlineColor(sf::Color::Black);
     sphere.setOutlineThickness(1);
     sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
 
-    sword.setSize(sf::Vector2f(PlayerDefinition::SWORD_LENGTH, 4));
-    sword.setOrigin(sf::Vector2f(-PlayerDefinition::SWORD_OFFSET, 2));
+    sword.setSize(sf::Vector2f(definitions::PlayerDefinition::SWORD_LENGTH, 4));
+    sword.setOrigin(sf::Vector2f(-definitions::PlayerDefinition::SWORD_OFFSET, 2));
     sword.setFillColor(sf::Color::Red);
     sword.setPosition(sphere.getPosition());
 
-    gun.setSize(sf::Vector2f(PlayerDefinition::GUN_LENGTH, 4));
-    gun.setOrigin(sf::Vector2f(PlayerDefinition::GUN_OFFSET, 2));
+    gun.setSize(sf::Vector2f(definitions::PlayerDefinition::GUN_LENGTH, 4));
+    gun.setOrigin(sf::Vector2f(definitions::PlayerDefinition::GUN_OFFSET, 2));
     gun.setFillColor(sf::Color::Black);
     gun.setPosition(sphere.getPosition());
 
     gunshot.LoadAnimationData("player/gunfire.json");
-    gunshot.GetSprite().setOrigin(sf::Vector2f(PlayerDefinition::GUN_OFFSET - PlayerDefinition::GUN_LENGTH, gunshot.GetSprite().getGlobalBounds().height / 2));
+    gunshot.GetSprite().setOrigin(sf::Vector2f(definitions::PlayerDefinition::GUN_OFFSET - definitions::PlayerDefinition::GUN_LENGTH, gunshot.GetSprite().getGlobalBounds().height / 2));
     gunshot.SetPosition(sphere.getPosition().x, sphere.getPosition().y);
 }
 
@@ -96,19 +95,19 @@ void Avatar::Draw()
             {
                 case network::PlayerClass::Melee:
                 {
-                    GameManager::GetInstance().Window.draw(sword);
+                    resources::GetWindow().draw(sword);
                 }
                 break;
                 case network::PlayerClass::Ranged:
                 {
                     gunshot.Draw();
-                    GameManager::GetInstance().Window.draw(gun);
+                    resources::GetWindow().draw(gun);
                 }
                 break;
             }
         }
 
-        GameManager::GetInstance().Window.draw(sphere);
+        resources::GetWindow().draw(sphere);
     }
 }
 

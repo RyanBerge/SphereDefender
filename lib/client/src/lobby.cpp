@@ -16,8 +16,7 @@
 #include <iostream>
 
 using std::cout, std::cerr, std::endl;
-using network::ClientMessage, network::ServerMessage;
-#define ServerSocket GameManager::GetInstance().ServerSocket
+using network::ClientMessage;
 
 namespace client {
 
@@ -118,7 +117,7 @@ bool Lobby::Create(std::string player_name)
         return false;
     }
 
-    ClientMessage::InitLobby(ServerSocket, player_name);
+    ClientMessage::InitLobby(resources::GetServerSocket(), player_name);
 
     owner = true;
     local_player.data.name = player_name;
@@ -135,7 +134,7 @@ bool Lobby::Join(std::string player_name, std::string ip)
         return false;
     }
 
-    ClientMessage::JoinLobby(ServerSocket, player_name);
+    ClientMessage::JoinLobby(resources::GetServerSocket(), player_name);
 
     owner = false;
     local_player.data.name = player_name;
@@ -156,12 +155,12 @@ void Lobby::Draw()
     class_select_left.Draw();
     class_select_right.Draw();
 
-    GameManager::GetInstance().Window.draw(local_player.display_text);
-    GameManager::GetInstance().Window.draw(local_player.class_options[static_cast<uint8_t>(local_player.data.properties.player_class)]);
+    resources::GetWindow().draw(local_player.display_text);
+    resources::GetWindow().draw(local_player.class_options[static_cast<uint8_t>(local_player.data.properties.player_class)]);
     for (auto& display_player : player_display_list)
     {
-        GameManager::GetInstance().Window.draw(display_player.display_text);
-        GameManager::GetInstance().Window.draw(display_player.class_options[static_cast<uint8_t>(display_player.data.properties.player_class)]);
+        resources::GetWindow().draw(display_player.display_text);
+        resources::GetWindow().draw(display_player.class_options[static_cast<uint8_t>(display_player.data.properties.player_class)]);
     }
 }
 
@@ -169,7 +168,7 @@ void Lobby::StartGame()
 {
     if (owner)
     {
-        ClientMessage::StartGame(ServerSocket);
+        ClientMessage::StartGame(resources::GetServerSocket());
     }
 
     GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::LoadingScreen;
@@ -257,7 +256,7 @@ void Lobby::SetPlayerProperties(uint16_t player_id, network::PlayerProperties pr
 void Lobby::LeaveLobby()
 {
     Unload();
-    ClientMessage::LeaveGame(ServerSocket);
+    ClientMessage::LeaveGame(resources::GetServerSocket());
     GameManager::GetInstance().DisconnectFromServer();
     GameManager::GetInstance().MainMenu.CurrentMenu = MainMenu::MenuType::Main;
 }
@@ -294,7 +293,7 @@ void Lobby::scrollClassOption(int displacement)
     local_player.data.properties.player_class = static_cast<network::PlayerClass>(option);
 
     network::PlayerProperties properties{static_cast<network::PlayerClass>(option)};
-    ClientMessage::ChangePlayerProperty(ServerSocket, properties);
+    ClientMessage::ChangePlayerProperty(resources::GetServerSocket(), properties);
 }
 
 void Lobby::onMouseMove(sf::Event event)

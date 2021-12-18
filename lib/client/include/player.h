@@ -12,7 +12,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 #include "avatar.h"
-#include "messaging.h"
+#include "entity_data.h"
 
 namespace client {
 
