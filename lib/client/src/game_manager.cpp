@@ -39,10 +39,10 @@ void GameManager::Start()
     sf::Vector2u window_size{1280, 720};
     Window.create(sf::VideoMode(window_size.x, window_size.y), "Sphere Defender");
 
-    sf::Event event;
-    event.size.width = window_size.x;
-    event.size.height = window_size.y;
-    onResizeWindow(event);
+    sf::Event resize_event;
+    resize_event.size.width = window_size.x;
+    resize_event.size.height = window_size.y;
+    onResizeWindow(resize_event);
 
     Window.setKeyRepeatEnabled(false);
     sf::Clock clock;
@@ -51,7 +51,9 @@ void GameManager::Start()
 
     while (running && Window.isOpen())
     {
+        sf::Clock loop_timer;
         sf::Time elapsed = clock.restart();
+
         event_handler.RunCallbacks();
 
         // TODO: Will we need to update one of these even outside of its state?
@@ -89,12 +91,28 @@ void GameManager::Start()
         Window.display();
 
         sf::Event event;
+        int num = 0;
         while (Window.pollEvent(event))
         {
+            ++num;
             event_handler.AddEvent(event);
         }
 
         checkMessages();
+
+        static bool slow_loop = false;
+        if (loop_timer.getElapsedTime().asSeconds() > 1 / 120.0f)
+        {
+            if (slow_loop)
+            {
+                cerr << "Game loop took longer than desired twice in a row: " << loop_timer.getElapsedTime().asMilliseconds() << " milliseconds\n";
+            }
+            slow_loop = true;
+        }
+        else
+        {
+            slow_loop = false;
+        }
     }
 }
 
@@ -344,6 +362,10 @@ void GameManager::checkMessages()
                         State = GameState::Game;
                         Game.Start(spawn_position);
                     }
+                    else if (State == GameState::Game)
+                    {
+                        Game.EnterRegion(spawn_position);
+                    }
                 }
             }
             break;
@@ -394,11 +416,22 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::ChangeRegion:
+            {
+                shared::RegionName region_name;
+                if (ServerMessage::DecodeChangeRegion(ServerSocket, region_name))
+                {
+                    Game.ChangeRegion(region_name);
+                }
+            }
+            break;
             default:
             {
                 cerr << "Unrecognized code: " << static_cast<int>(code) << endl;
             }
         }
+
+        //cout << (int)code << endl;
 
         if (num_messages > 20)
         {
@@ -406,11 +439,6 @@ void GameManager::checkMessages()
         }
     }
     while (code != ServerMessage::Code::None);
-
-    if (num_messages > 10)
-    {
-        cerr << "WARNING: Too many messages received too quickly" << endl;
-    }
 }
 
 void GameManager::handleDisconnected()

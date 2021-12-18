@@ -20,7 +20,8 @@ Settings::Settings()
     Bindings.MoveRight = sf::Keyboard::Key::D;
     Bindings.MoveUp = sf::Keyboard::Key::W;
     Bindings.MoveDown = sf::Keyboard::Key::S;
-    Bindings.Pause = sf::Keyboard::Key::Escape;
+    Bindings.Escape = sf::Keyboard::Key::Escape;
+    Bindings.Interact = sf::Keyboard::Key::E;
 
     ServerSettings.ServerPort = 49879;
     DefaultServerIp = "127.0.0.1";

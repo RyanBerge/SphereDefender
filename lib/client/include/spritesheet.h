@@ -46,6 +46,7 @@ private:
 
     struct Animation
     {
+        std::string name;
         unsigned start;
         unsigned end;
         float speed;

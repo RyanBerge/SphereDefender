@@ -315,6 +315,28 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
     return true;
 }
 
+bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, shared::RegionName region)
+{
+    Code code = ClientMessage::Code::ChangeRegion;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(region);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &region, sizeof(region));
+    offset += sizeof(region);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name)
 {
     std::string name;
@@ -411,6 +433,20 @@ bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_a
 
     out_action = temp_action;
 
+    return true;
+}
+
+bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName&  out_region)
+{
+    shared::RegionName region;
+
+    if (!read(socket, &region, sizeof(region)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region name." << endl;
+        return false;
+    }
+
+    out_region = region;
     return true;
 }
 
@@ -797,6 +833,28 @@ bool ServerMessage::BatteryUpdate(sf::TcpSocket& socket, float battery_level)
     return true;
 }
 
+bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, shared::RegionName region)
+{
+    Code code = ServerMessage::Code::ChangeRegion;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(region);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &region, sizeof(region));
+    offset += sizeof(region);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -1118,6 +1176,20 @@ bool ServerMessage::DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_batter
     }
 
     out_battery_level = battery_level;
+    return true;
+}
+
+bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName&  out_region)
+{
+    shared::RegionName region;
+
+    if (!read(socket, &region, sizeof(region)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region name." << endl;
+        return false;
+    }
+
+    out_region = region;
     return true;
 }
 

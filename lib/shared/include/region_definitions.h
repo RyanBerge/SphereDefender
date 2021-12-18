@@ -42,14 +42,29 @@ struct Obstacle
     sf::FloatRect bounds;
 };
 
-struct RegionDefinition
+struct Npc
 {
-    ConvoyDefinition convoy;
-
-    std::vector<Obstacle> obstacles;
+    std::string name;
+    std::string sprite_file;
+    std::vector<std::string> dialog;
+    sf::Vector2f position;
 };
 
-RegionDefinition GetRegionDefinition(std::string region);
+enum class RegionName
+{
+    Town, Leyline, Neutral
+};
+
+struct RegionDefinition
+{
+    bool leyline;
+    std::string background_file;
+    ConvoyDefinition convoy;
+    std::vector<Obstacle> obstacles;
+    std::vector<Npc> npcs;
+};
+
+RegionDefinition GetRegionDefinition(RegionName region);
 sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy);
 
 } // namespace shared

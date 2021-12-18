@@ -67,6 +67,24 @@ sf::Vector2f Player::GetPosition()
     return Avatar.GetPosition();
 }
 
+void Player::DisableActions()
+{
+    actions_disabled = true;
+    ClientMessage::PlayerStateChange(ServerSocket, sf::Vector2i{0, 0});
+}
+
+void Player::EnableActions()
+{
+    actions_disabled = false;
+    updateMovement();
+}
+
+bool Player::ActionsDisabled()
+{
+    return actions_disabled;
+}
+
+
 void Player::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
     (void)event;
@@ -74,6 +92,11 @@ void Player::OnMouseMove(sf::Event::MouseMoveEvent event)
 
 void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
 {
+    if (actions_disabled)
+    {
+        return;
+    }
+
     if (event.button == sf::Mouse::Button::Right)
     {
         sf::Vector2i click_point{event.x, event.y};
@@ -137,6 +160,11 @@ void Player::OnKeyReleased(sf::Event::KeyEvent event)
 
 void Player::updateMovement()
 {
+    if (actions_disabled)
+    {
+        return;
+    }
+
     if (Avatar.Data.health > 0)
     {
         Settings::KeyBindings bindings = Settings::GetInstance().Bindings;

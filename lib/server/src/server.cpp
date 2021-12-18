@@ -170,7 +170,7 @@ void Server::checkMessages(PlayerInfo& player)
         break;
         case ClientMessage::Code::StartGame:
         {
-            startGame(player);
+            startLoading(player);
         }
         break;
         case ClientMessage::Code::LoadingComplete:
@@ -193,12 +193,35 @@ void Server::checkMessages(PlayerInfo& player)
             startPlayerAction(player);
         }
         break;
+        case ClientMessage::Code::ChangeRegion:
+        {
+            changeRegion(player);
+        }
+        break;
         default:
         {
             cerr << "Unrecognized code." << endl;
         }
         break;
     }
+}
+
+void Server::startGame()
+{
+    // Determine spawn positions
+    float angle = 2 * util::pi / players.size();
+
+    for (size_t i = 0; i < players.size(); ++i)
+    {
+        // TODO: Magic numbers for distance
+        sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+        ServerMessage::AllPlayersLoaded(*players[i].Socket, spawn_position);
+        players[i].Data.position = spawn_position;
+    }
+
+    region = Region(shared::RegionName::Town, players.size(), 0);
+
+    game_state = GameState::Game;
 }
 
 void Server::initLobby(PlayerInfo& player)
@@ -320,7 +343,7 @@ void Server::changePlayerProperty(PlayerInfo& player)
     }
 }
 
-void Server::startGame(PlayerInfo& player)
+void Server::startLoading(PlayerInfo& player)
 {
     if (game_state != GameState::Lobby)
     {
@@ -362,20 +385,37 @@ void Server::loadingComplete(PlayerInfo& player)
             }
         }
 
+        startGame();
+
+        cout << "All players have loaded!" << endl;
+    }
+    else if (game_state == GameState::Game)
+    {
+        cout << player.Data.name << " has finished loading the new region." << endl;
+        player.Status = PlayerInfo::PlayerStatus::Alive;
+        player.Data.health = 100;
+
+        for (auto& p : players)
+        {
+            if (p.Status == PlayerInfo::PlayerStatus::Loading)
+            {
+                return;
+            }
+        }
+
+        region = Region(next_region, players.size(), 0);
+
         // Determine spawn positions
         float angle = 2 * util::pi / players.size();
 
         for (size_t i = 0; i < players.size(); ++i)
         {
             // TODO: Magic numbers for distance
-            sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+            sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i)) + region.Convoy.position;
+            spawn_position.x += 200;
             ServerMessage::AllPlayersLoaded(*players[i].Socket, spawn_position);
             players[i].Data.position = spawn_position;
         }
-
-        game_state = GameState::Game;
-
-        cout << "All players have loaded!" << endl;
     }
 }
 
@@ -457,6 +497,24 @@ void Server::startPlayerAction(PlayerInfo& player)
         {
             ServerMessage::PlayerStartAction(*p.Socket, player.Data.id, action);
         }
+    }
+}
+
+void Server::changeRegion(PlayerInfo& player)
+{
+    shared::RegionName region_name;
+    if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_name))
+    {
+        player.Socket->disconnect();
+        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+    }
+
+    next_region = region_name;
+
+    for (auto& p : players)
+    {
+        p.Status = PlayerInfo::PlayerStatus::Loading;
+        ServerMessage::ChangeRegion(*p.Socket, region_name);
     }
 }
 

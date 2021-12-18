@@ -26,7 +26,8 @@ public:
         sf::Keyboard::Key MoveUp;
         sf::Keyboard::Key MoveDown;
 
-        sf::Keyboard::Key Pause;
+        sf::Keyboard::Key Escape;
+        sf::Keyboard::Key Interact;
     };
 
     Settings();

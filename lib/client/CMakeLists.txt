@@ -7,6 +7,7 @@ find_package(Threads REQUIRED)
 
 set(Sources
     src/avatar.cpp
+    src/convoy.cpp
     src/cursor_button.cpp
     src/enemy.cpp
     src/event_handler.cpp
@@ -16,6 +17,7 @@ set(Sources
     src/lobby.cpp
     src/main_menu.cpp
     src/main.cpp
+    src/overmap.cpp
     src/player.cpp
     src/resources.cpp
     src/settings.cpp

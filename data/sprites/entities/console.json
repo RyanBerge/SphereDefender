@@ -1,0 +1,33 @@
+{
+  "filename": "Console.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 7 ],
+      "size": [ 31, 28 ],
+      "origin": [ 16, 28 ]
+    },
+    {
+      "index": 1,
+      "location": [ 0, 0 ],
+      "size": [ 31, 35 ],
+      "origin": [ 16, 35 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Default",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Default"
+    },
+    {
+      "name": "Focus",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Focus"
+    }
+  ]
+}

@@ -29,10 +29,10 @@ Spritesheet::Spritesheet(std::string filename) : Spritesheet(filename, false) { 
 Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
     Frame frame = {sf::IntRect(0, 0, 0, 0), sf::Vector2f{0, 0}};
-    Animation animation{0, 0, 0, "Default"};
+    Animation animation{"Default", 0, 0, 0, "Default"};
 
     animation_data.frames.push_back(frame);
-    animation_data.animations["Default"] = animation;
+    animation_data.animations[animation.name] = animation;
 
     LoadAnimationData(filename);
     SetTiling(tiled);
@@ -103,12 +103,13 @@ void Spritesheet::LoadAnimationData(std::string filename)
     for (auto& object : j["animations"])
     {
         Animation animation;
+        animation.name = object["name"];
         animation.start = object["start_frame"];
         animation.end = object["end_frame"];
         animation.speed = object["animation_speed"];
         animation.next = object["next_animation"];
 
-        animation_data.animations[object["name"]] = animation;
+        animation_data.animations[animation.name] = animation;
     }
 
     SetAnimation(animation_data.animations.begin()->first);
@@ -121,6 +122,11 @@ sf::Sprite& Spritesheet::GetSprite()
 
 void Spritesheet::SetAnimation(std::string animation_name)
 {
+    if (current_animation.name == animation_name)
+    {
+        return;
+    }
+
     if (animation_data.animations.find(animation_name) != animation_data.animations.end())
     {
         current_animation = animation_data.animations[animation_name];

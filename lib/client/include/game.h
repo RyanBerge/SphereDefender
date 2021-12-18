@@ -39,20 +39,25 @@ public:
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void RemovePlayer(uint16_t player_id);
+    void ChangeRegion(shared::RegionName region);
+    void EnterRegion(sf::Vector2f spawn_position);
 
     sf::View WorldView;
     RegionMap region_map;
 
 private:
     Gui gui;
-
     Player local_player;
-
     std::map<uint16_t, Avatar> avatars;
     std::map<uint16_t, Enemy> enemies;
+    sf::RectangleShape black_overlay;
 
     std::atomic_bool loaded = false;
     bool menu_open = false;
+
+    bool leaving_region = false;
+    bool entering_region = false;
+    shared::RegionName next_region;
 
     int zoom_factor;
     float current_zoom;
@@ -61,6 +66,24 @@ private:
 
     void asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players);
     void updateScroll(sf::Time elapsed);
+
+    enum class LeavingRegionState
+    {
+        Start, Moving, Fading, Loading, Waiting
+    };
+
+    LeavingRegionState leaving_region_state = LeavingRegionState::Start;
+    void handleLeavingRegion();
+
+    enum class EnteringRegionState
+    {
+        Start, Fading, Moving
+    };
+
+    EnteringRegionState entering_region_state = EnteringRegionState::Start;
+    void handleEnteringRegion();
+
+    bool inCutscene();
 
     void onMouseMove(sf::Event event);
     void onMouseDown(sf::Event event);

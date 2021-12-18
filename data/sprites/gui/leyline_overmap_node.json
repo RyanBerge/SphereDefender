@@ -1,0 +1,40 @@
+{
+  "filename": "RegionNode.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 19 ],
+      "size": [ 22, 19 ],
+      "origin": [ 11, 10 ]
+    },
+    {
+      "index": 1,
+      "location": [ 22, 19 ],
+      "size": [ 22, 19 ],
+      "origin": [ 11, 10 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Up",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Up"
+    },
+    {
+      "name": "Hover",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Hover"
+    },
+    {
+      "name": "Down",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Down"
+    }
+  ]
+}

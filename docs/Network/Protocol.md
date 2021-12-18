@@ -21,7 +21,7 @@
 * Server responds by broadcasting a `ServerMessage::StartGame` message to all players
 
 #### `ClientMessage::LoadingComplete`
-* Sent after the server starts a game when the game environment is finished loading
+* Sent after the server starts a game or when changing regions, when the game environment is finished loading
 * Server responds after all players have finished loading with a `ServerMessage::AllPlayersLoaded` message
 
 #### `ClientMessage::LeaveGame`
@@ -35,6 +35,10 @@
 #### `ClientMessage::StartAction`
 * Sent whenever the player takes an action the server needs to know
 * `[actionflags:1][attackangle:2][...]`
+
+#### `ClientMessage::ChangeRegion`
+* Sent when a player interacts with the console to move regions
+* `[regionid:1]
 
 ## Server Messages
 
@@ -89,3 +93,7 @@
 #### `ServerMessage::BatteryUpdate`
 * Broadcasted every frame
 * `[batterylevel:4]`
+
+#### `ServerMessage::ChangeRegion`
+* Broadcasted when a region change happens
+* `[regionid:1]`

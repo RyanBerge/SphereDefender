@@ -30,6 +30,10 @@ public:
     void SetPosition(sf::Vector2f position);
     sf::Vector2f GetPosition();
 
+    void DisableActions();
+    void EnableActions();
+    bool ActionsDisabled();
+
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
     void OnMouseUp(sf::Event::MouseButtonEvent event);
@@ -41,6 +45,7 @@ public:
 
 private:
     bool attacking = false;
+    bool actions_disabled = false;
     sf::Clock attack_timer;
 
     void updateMovement();

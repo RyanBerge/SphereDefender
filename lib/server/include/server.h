@@ -42,22 +42,25 @@ private:
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
     Region region;
+    shared::RegionName next_region;
 
     void update();
-
     void listen();
     void checkMessages(PlayerInfo& player);
+
+    void startGame();
 
     uint16_t getPlayerUid();
 
     void initLobby(PlayerInfo& player);
     void playerJoined(PlayerInfo& player);
     void changePlayerProperty(PlayerInfo& player);
-    void startGame(PlayerInfo& player);
+    void startLoading(PlayerInfo& player);
     void loadingComplete(PlayerInfo& player);
     void leaveGame(PlayerInfo& player);
     void updatePlayerState(PlayerInfo& player);
     void startPlayerAction(PlayerInfo& player);
+    void changeRegion(PlayerInfo& player);
 
     void broadcastStates();
     void checkAttack(PlayerInfo& player);

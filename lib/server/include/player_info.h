@@ -25,6 +25,7 @@ public:
         Uninitialized,
         Disconnected,
         Menus,
+        Loading,
         Alive,
         Dead
     };

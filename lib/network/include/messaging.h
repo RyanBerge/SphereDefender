@@ -12,6 +12,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <string>
 #include "entity_data.h"
+#include "region_definitions.h"
 
 namespace network {
 
@@ -57,6 +58,7 @@ public:
 
         PlayerStateChange,
         StartAction,
+        ChangeRegion,
 
         LeaveGame,
 
@@ -73,12 +75,14 @@ public:
     static bool LeaveGame(sf::TcpSocket& socket);
     static bool PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i movement_vector);
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
+    static bool ChangeRegion(sf::TcpSocket& socket, shared::RegionName region);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
     static bool DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name);
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties& out_properties);
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
+    static bool DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName&  out_region);
 };
 
 class ServerMessage
@@ -104,6 +108,7 @@ public:
         PlayerStates,
         EnemyUpdate,
         BatteryUpdate,
+        ChangeRegion,
 
         Error = 0xFF
     };
@@ -123,6 +128,7 @@ public:
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
+    static bool ChangeRegion(sf::TcpSocket& socket, shared::RegionName region);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -135,6 +141,7 @@ public:
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
+    static bool DecodeChangeRegion(sf::TcpSocket& socket, shared::RegionName& out_region);
 };
 
 } // network

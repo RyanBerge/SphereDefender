@@ -9,32 +9,64 @@
  *************************************************************************************************/
 #pragma once
 #include <SFML/System/Time.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
+#include "convoy.h"
 #include "spritesheet.h"
 #include "entity_data.h"
 #include "region_definitions.h"
+#include "player.h"
 
 namespace client {
 
 class RegionMap
 {
 public:
+    enum class InteractionType
+    {
+        None, NpcDialog, ConvoyConsole
+    };
+
+    struct Interaction
+    {
+        InteractionType type;
+        std::vector<std::string> dialog;
+        std::string npc_name;
+    };
+
+    struct Npc
+    {
+        Spritesheet spritesheet;
+        std::string name;
+        std::vector<std::string> dialog;
+        bool fresh_interaction;
+    };
+
     RegionMap();
 
-    void Update(sf::Time elapsed);
+    void Update(sf::Time elapsed, Player local_player);
     void Draw();
 
-    void Load(std::string region);
+    void Load(shared::RegionName region);
     void Unload();
 
     void InitializeRegion(shared::RegionDefinition definition);
+    Interaction Interact(sf::Vector2f player_position);
+    void LeaveRegion();
+    void EnterRegion();
 
-    std::vector<sf::RectangleShape> obstacles;
+    sf::Vector2f GetConvoyPosition();
+
+    shared::RegionName RegionName;
 
 private:
     Spritesheet background;
     Spritesheet leyline;
-    sf::RectangleShape convoy;
+    Convoy convoy;
+    std::vector<sf::RectangleShape> obstacles;
+    std::vector<Npc> npcs;
+
+    bool leaving_region = false;
+
+    void updateInteractables(sf::Vector2f player_position);
 };
 
 } // client

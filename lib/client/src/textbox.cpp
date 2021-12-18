@@ -146,9 +146,9 @@ sf::FloatRect Textbox::GetBounds()
     return box.getGlobalBounds();
 }
 
-void Textbox::SetText(std::string text)
+void Textbox::SetText(std::string new_text)
 {
-    this->text.setString(text);
+    text.setString(new_text);
 }
 
 void Textbox::SetPosition(sf::Vector2f position)

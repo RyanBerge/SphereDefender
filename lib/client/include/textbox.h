@@ -36,7 +36,7 @@ public:
 
     sf::Text& GetText();
     sf::FloatRect GetBounds();
-    void SetText(std::string text);
+    void SetText(std::string new_text);
     void SetPosition(sf::Vector2f position);
     void SetTabNext(Textbox* next);
 

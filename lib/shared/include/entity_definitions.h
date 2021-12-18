@@ -39,6 +39,7 @@ namespace PlayerDefinition
 {
     constexpr int PLAYER_RADIUS = 18;
     constexpr int PLAYER_SPEED = 100;
+    //constexpr int PLAYER_SPEED = 250;
     constexpr int SWORD_OFFSET = 18;
     constexpr int SWORD_LENGTH = 20;
     constexpr int GUN_OFFSET = -18;

@@ -15,67 +15,86 @@
 using std::cout, std::endl;
 
 namespace {
-    const int MAX_ENEMIES = 5;
-    const float SPAWN_TIMER = 1; // seconds
+    constexpr int MAX_ENEMIES = 5;
+    constexpr float SPAWN_TIMER = 1; // seconds
+    constexpr int SPAWN_DELAY = 8; // seconds
 }
 
 namespace server {
 
-Region::Region() : Region(1) { }
+Region::Region() { }
 
-
-Region::Region(unsigned num_players) : num_players{num_players}
+Region::Region(shared::RegionName region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
-    Convoy.orientation = shared::GetRegionDefinition("default").convoy.orientation;
-    Convoy.position = shared::GetRegionDefinition("default").convoy.position;
+    shared::RegionDefinition definition = shared::GetRegionDefinition(region_name);
 
-    for (auto& obstacle : shared::GetRegionDefinition("default").obstacles)
+    Convoy.orientation = definition.convoy.orientation;
+    Convoy.position = definition.convoy.position;
+
+    for (auto& obstacle : definition.obstacles)
     {
         Obstacles.push_back(obstacle.bounds);
     }
 
-    for (unsigned i = 0; i < num_players * 3; ++i)
-    {
-        spawnEnemy();
-    }
+    spawn_enemies = definition.leyline;
 
-    battery_charge_rate = 5;
+    if (definition.leyline)
+    {
+        battery_charge_rate = 5;
+    }
 }
 
 void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
 {
-    (void)elapsed;
     for (auto& enemy : Enemies)
     {
         enemy.Update(elapsed, Convoy, players, Obstacles);
     }
 
-    if (Enemies.size() < num_players * MAX_ENEMIES)
+    if (spawn_enemies)
     {
-        if (spawn_timer.getElapsedTime().asSeconds() > SPAWN_TIMER / num_players)
+        if (delaying_enemy_spawn && spawn_timer.getElapsedTime().asSeconds() > SPAWN_DELAY)
         {
-            spawnEnemy();
+            delaying_enemy_spawn = false;
+        }
+        else if (!delaying_enemy_spawn)
+        {
+            if (Enemies.size() < num_players * MAX_ENEMIES)
+            {
+                if (spawn_timer.getElapsedTime().asSeconds() > SPAWN_TIMER / num_players)
+                {
+                    spawnEnemy();
+                }
+            }
         }
     }
 
-    int siphon_rate = 0;
-    for (auto& enemy : Enemies)
+    if (!charging && spawn_timer.getElapsedTime().asSeconds() > 6)
     {
-        if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
+        charging = true;
+    }
+
+    if (charging)
+    {
+        int siphon_rate = 0;
+        for (auto& enemy : Enemies)
         {
-            siphon_rate += enemy.GetSiphonRate();
+            if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
+            {
+                siphon_rate += enemy.GetSiphonRate();
+            }
         }
-    }
 
-    BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
-    if (BatteryLevel < 0)
-    {
-        BatteryLevel = 0;
-    }
+        BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
+        if (BatteryLevel < 0)
+        {
+            BatteryLevel = 0;
+        }
 
-    if (BatteryLevel > 1000)
-    {
-        BatteryLevel = 1000;
+        if (BatteryLevel > 1000)
+        {
+            BatteryLevel = 1000;
+        }
     }
 }
 

@@ -13,6 +13,7 @@
 #include "settings.h"
 #include <thread>
 #include <iostream>
+#include <cmath>
 #include "SFML/System/Sleep.hpp"
 
 using std::cout, std::cerr, std::endl;
@@ -20,13 +21,25 @@ using network::ClientMessage, network::ServerMessage;
 #define ServerSocket GameManager::GetInstance().ServerSocket
 
 namespace client {
+namespace {
+    constexpr int FADE_TIME = 3;
+}
 
-Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y)) { }
+Game::Game() : WorldView(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y))
+{
+    black_overlay.setSize(Settings::GetInstance().WindowResolution);
+    black_overlay.setFillColor(sf::Color{0, 0, 0, 0});
+}
 
 void Game::Update(sf::Time elapsed)
 {
     if (loaded)
     {
+        if (local_player.ActionsDisabled() && !gui.DisableActions() && !inCutscene())
+        {
+            local_player.EnableActions();
+        }
+
         local_player.Update(elapsed);
         for (auto& avatar : avatars)
         {
@@ -38,7 +51,7 @@ void Game::Update(sf::Time elapsed)
             enemy.second.Update(elapsed);
         }
 
-        region_map.Update(elapsed);
+        region_map.Update(elapsed, local_player);
 
         std::erase_if(enemies, [](const auto& element) {
             return element.second.Despawn;
@@ -57,7 +70,18 @@ void Game::Update(sf::Time elapsed)
             WorldView.setSize(Settings::GetInstance().WindowResolution * current_zoom);
         }
 
-        WorldView.setCenter(local_player.GetPosition());
+        if (leaving_region)
+        {
+            handleLeavingRegion();
+        }
+        else if (entering_region)
+        {
+            handleEnteringRegion();
+        }
+        else
+        {
+            WorldView.setCenter(local_player.GetPosition());
+        }
     }
 }
 
@@ -76,10 +100,13 @@ void Game::Draw()
             enemy.second.Draw();
         }
 
-        local_player.Draw();
-        for (auto& avatar : avatars)
+        if (!inCutscene())
         {
-            avatar.second.Draw();
+            local_player.Draw();
+            for (auto& avatar : avatars)
+            {
+                avatar.second.Draw();
+            }
         }
 
         GameManager::GetInstance().Window.setView(old_view);
@@ -89,6 +116,11 @@ void Game::Draw()
         if (menu_open)
         {
             Settings::GetInstance().Draw();
+        }
+
+        if (inCutscene())
+        {
+            GameManager::GetInstance().Window.draw(black_overlay);
         }
     }
 }
@@ -123,7 +155,8 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
 
     local_player = Player();
 
-    region_map.Load("default");
+    region_map = RegionMap();
+    region_map.Load(shared::RegionName::Town);
     gui.Load();
     local_player.Load(local);
 
@@ -223,6 +256,26 @@ void Game::RemovePlayer(uint16_t player_id)
     avatars.erase(player_id);
 }
 
+void Game::ChangeRegion(shared::RegionName region_name)
+{
+    gui.SetEnabled(false);
+    target_zoom = 1.2;
+    local_player.DisableActions();
+    region_map.LeaveRegion();
+    next_region = region_name;
+
+    leaving_region = true;
+    leaving_region_state = LeavingRegionState::Start;
+}
+
+void Game::EnterRegion(sf::Vector2f spawn_position)
+{
+    leaving_region = false;
+    entering_region = true;
+    entering_region_state = EnteringRegionState::Start;
+    local_player.SetPosition(spawn_position);
+}
+
 void Game::updateScroll(sf::Time elapsed)
 {
     sf::Vector2f mouse_coords = GameManager::GetInstance().Window.mapPixelToCoords(sf::Mouse::getPosition() - GameManager::GetInstance().Window.getPosition(), gui.GuiView);
@@ -251,6 +304,97 @@ void Game::updateScroll(sf::Time elapsed)
     }
 
     WorldView.move(sf::Vector2f(scroll_factor * Settings::GetInstance().ScrollSpeed) * current_zoom * elapsed.asSeconds());
+}
+
+void Game::handleLeavingRegion()
+{
+    static uint8_t overlay_opacity = 0;
+    static sf::Clock fade_timer;
+
+    switch (leaving_region_state)
+    {
+        case LeavingRegionState::Start:
+        {
+            overlay_opacity = 0;
+            [[fallthrough]];
+        }
+        case LeavingRegionState::Moving:
+        {
+            WorldView.setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
+            if (region_map.GetConvoyPosition().y < shared::GetRegionDefinition(region_map.RegionName).convoy.position.y - Settings::GetInstance().WindowResolution.y * 2)
+            {
+                fade_timer.restart();
+                leaving_region_state = LeavingRegionState::Fading;
+            }
+        }
+        break;
+        case LeavingRegionState::Fading:
+        {
+            overlay_opacity = std::floor(fade_timer.getElapsedTime().asSeconds() / FADE_TIME * 255);
+            black_overlay.setFillColor(sf::Color{0, 0, 0, overlay_opacity});
+            if (fade_timer.getElapsedTime().asSeconds() > FADE_TIME)
+            {
+                leaving_region_state = LeavingRegionState::Loading;
+            }
+        }
+        break;
+        case LeavingRegionState::Loading:
+        {
+            region_map = RegionMap();
+            region_map.Load(next_region);
+            ClientMessage::LoadingComplete(ServerSocket);
+            leaving_region_state = LeavingRegionState::Waiting;
+            [[fallthrough]];
+        }
+        case LeavingRegionState::Waiting: { }
+        break;
+    }
+}
+
+void Game::handleEnteringRegion()
+{
+    static uint8_t overlay_opacity = 255;
+    static sf::Clock fade_timer;
+
+    WorldView.setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
+
+    switch (entering_region_state)
+    {
+        case EnteringRegionState::Start:
+        {
+            region_map.EnterRegion();
+            enemies.clear();
+            entering_region_state = EnteringRegionState::Fading;
+            fade_timer.restart();
+            [[fallthrough]];
+        }
+        case EnteringRegionState::Fading:
+        {
+            overlay_opacity = 255 - std::floor(fade_timer.getElapsedTime().asSeconds() / FADE_TIME * 255);
+            black_overlay.setFillColor(sf::Color{0, 0, 0, overlay_opacity});
+            if (fade_timer.getElapsedTime().asSeconds() > FADE_TIME)
+            {
+                entering_region_state = EnteringRegionState::Moving;
+            }
+        }
+        break;
+        case EnteringRegionState::Moving:
+        {
+            if (region_map.GetConvoyPosition().y == shared::GetRegionDefinition(region_map.RegionName).convoy.position.y)
+            {
+                gui.SetEnabled(true);
+                local_player.EnableActions();
+                target_zoom = 1;
+                entering_region = false;
+            }
+        }
+        break;
+    }
+}
+
+bool Game::inCutscene()
+{
+    return entering_region || leaving_region;
 }
 
 // TODO: Ensure that these are only updated for elements that can be controlled at that time
@@ -298,15 +442,30 @@ void Game::onKeyPressed(sf::Event event)
             local_player.OnKeyPressed(event.key);
         }
 
-        if (event.key.code == Settings::GetInstance().Bindings.Pause)
+        if (event.key.code == Settings::GetInstance().Bindings.Escape)
         {
-            if (gui.InMenus)
+            gui.EscapePressed();
+        }
+
+        if (gui.Available() && event.key.code == Settings::GetInstance().Bindings.Interact)
+        {
+            RegionMap::Interaction interaction = region_map.Interact(local_player.GetPosition());
+            switch (interaction.type)
             {
-                gui.InMenus = false;
-            }
-            else
-            {
-                gui.DisplayMenu();
+                case RegionMap::InteractionType::None: { }
+                break;
+                case RegionMap::InteractionType::NpcDialog:
+                {
+                    gui.DisplayDialog(interaction.npc_name, interaction.dialog);
+                    local_player.DisableActions();
+                }
+                break;
+                case RegionMap::InteractionType::ConvoyConsole:
+                {
+                    gui.DisplayOvermap();
+                    local_player.DisableActions();
+                }
+                break;
             }
         }
     }
@@ -322,7 +481,7 @@ void Game::onKeyReleased(sf::Event event)
 
 void Game::onMouseWheel(sf::Event event)
 {
-    if (loaded)
+    if (loaded && !inCutscene())
     {
         Settings& settings = Settings::GetInstance();
 
