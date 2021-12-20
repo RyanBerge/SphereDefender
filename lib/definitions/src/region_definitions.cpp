@@ -7,6 +7,12 @@
  *
  *************************************************************************************************/
 #include "region_definitions.h"
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include "nlohmann/json.hpp"
+
+using std::cout, std::cerr, std::endl;
 
 namespace definitions
 {
@@ -22,8 +28,8 @@ public:
 
         region.background_file = "backgrounds/cracked_mud.json";
         region.leyline = true;
-        region.convoy.position = sf::Vector2f{-500, 0};
-        region.convoy.orientation = Orientation::North;
+        region.convoy = ConvoyDefinition(Orientation::North);
+        region.convoy.Position = sf::Vector2f{-500, 0};
 
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, 25, 50, 150)});
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(100, -100, 50, 150)});
@@ -36,8 +42,8 @@ public:
 
         region.background_file = "backgrounds/sand.json";
         region.leyline = false;
-        region.convoy.position = sf::Vector2f{-500, -200};
-        region.convoy.orientation = Orientation::North;
+        region.convoy = ConvoyDefinition(Orientation::North);
+        region.convoy.Position = sf::Vector2f{-500, -200};
 
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-2000, 200, 4000, 600)});
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-1500, -1200, 800, 1400)});
@@ -61,8 +67,8 @@ public:
 
         region.background_file = "backgrounds/sand.json";
         region.leyline = false;
-        region.convoy.position = sf::Vector2f{0, 0};
-        region.convoy.orientation = Orientation::North;
+        region.convoy = ConvoyDefinition(Orientation::North);
+        region.convoy.Position = sf::Vector2f{0, 0};
 
         Npc david;
         david.name = "David";
@@ -79,25 +85,88 @@ public:
 
 }
 
+ConvoyDefinition::ConvoyDefinition() { }
+
+ConvoyDefinition::ConvoyDefinition(Orientation orientation)
+{
+    load(orientation);
+}
+
+sf::FloatRect ConvoyDefinition::GetBounds()
+{
+    return sf::FloatRect(Position.x - origin.x, Position.y - origin.y, Width, Height);
+}
+
+std::vector<sf::FloatRect> ConvoyDefinition::GetCollisions()
+{
+    sf::Vector2f relative_position{Position.x - origin.x, Position.y - origin.y};
+
+    std::vector<sf::FloatRect> adjusted_collisions;
+
+    for (auto& collision : collisions)
+    {
+        sf::FloatRect adjusted(collision.left + relative_position.x, collision.top + relative_position.y, collision.width, collision.height);
+        adjusted_collisions.push_back(adjusted);
+    }
+
+    return adjusted_collisions;
+}
+
+void ConvoyDefinition::load(Orientation orientation)
+{
+    std::filesystem::path path;
+    if (orientation == Orientation::North || orientation == Orientation::South)
+    {
+        path = std::filesystem::path("../data/sprites/entities/convoy_vertical.json");
+    }
+    else
+    {
+        path = std::filesystem::path("../data/sprites/entities/convoy_horizontal.json");
+    }
+
+    if (!std::filesystem::exists(path))
+    {
+        cerr << "Could not open animation file: " << path << endl;
+        return;
+    }
+
+    std::ifstream file(path);
+    nlohmann::json j;
+    file >> j;
+
+    Width = 0;
+    Height = 0;
+
+    for (auto& object : j["collisions"])
+    {
+        sf::FloatRect rect;
+
+        rect.left = object["location"][0];
+        rect.top = object["location"][1];
+        rect.width = object["size"][0];
+        rect.height = object["size"][1];
+
+        if (rect.left + rect.width > Width)
+        {
+            Width = rect.left + rect.width;
+        }
+
+        if (rect.top + rect.height > Height)
+        {
+            Height = rect.top + rect.height;
+        }
+
+        collisions.push_back(rect);
+    }
+
+    origin.x = j["frames"][0]["origin"][0];
+    origin.y = j["frames"][0]["origin"][1];
+}
+
 RegionDefinition GetRegionDefinition(RegionName region)
 {
     static RegionInitializer initializer;
     return initializer.Regions[region];
-}
-
-sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy)
-{
-    sf::FloatRect bounds;
-    if (convoy.orientation == definitions::Orientation::North || convoy.orientation == definitions::Orientation::South)
-    {
-        bounds = sf::FloatRect(convoy.position.x - convoy.WIDTH / 2, convoy.position.y - convoy.HEIGHT / 2, convoy.WIDTH, convoy.HEIGHT);
-    }
-    else if (convoy.orientation == definitions::Orientation::East || convoy.orientation == definitions::Orientation::West)
-    {
-        bounds = sf::FloatRect(convoy.position.x - convoy.HEIGHT / 2, convoy.position.y - convoy.WIDTH / 2, convoy.HEIGHT, convoy.WIDTH);
-    }
-
-    return bounds;
 }
 
 } // definitions

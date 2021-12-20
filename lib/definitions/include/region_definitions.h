@@ -22,13 +22,25 @@ enum class Orientation
     North, South, East, West
 };
 
-struct ConvoyDefinition
+class ConvoyDefinition
 {
-    sf::Vector2f position;
-    Orientation orientation;
+public:
+    ConvoyDefinition();
+    ConvoyDefinition(Orientation orientation);
 
-    constexpr static int WIDTH = 150;
-    constexpr static int HEIGHT = 400;
+    sf::FloatRect GetBounds();
+    std::vector<sf::FloatRect> GetCollisions();
+
+    sf::Vector2f Position;
+    int Width;
+    int Height;
+
+    std::vector<sf::FloatRect> collisions;
+
+private:
+    sf::Vector2f origin;
+
+    void load(Orientation orientation);
 };
 
 enum class ObstacleType
@@ -65,6 +77,5 @@ struct RegionDefinition
 };
 
 RegionDefinition GetRegionDefinition(RegionName region);
-sf::FloatRect GetConvoyBounds(ConvoyDefinition convoy);
 
 } // namespace definitions

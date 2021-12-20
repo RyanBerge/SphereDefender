@@ -22,7 +22,7 @@ public:
     static constexpr int CONSOLE_INTERACTION_DISTANCE = 75;
 
     Convoy();
-    Convoy(definitions::ConvoyDefinition definition);
+    Convoy(definitions::ConvoyDefinition convoy_definition);
 
     void Update(sf::Time elapsed);
     void Draw();
@@ -36,8 +36,9 @@ public:
     sf::Vector2f GetConsolePosition();
 
 private:
-    sf::RectangleShape rectangle;
+    Spritesheet convoy_sprite;
     Spritesheet console;
+    definitions::ConvoyDefinition definition;
     sf::Vector2f base_position;
 
     bool leaving_region = false;

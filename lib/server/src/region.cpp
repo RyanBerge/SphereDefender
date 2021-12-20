@@ -28,8 +28,7 @@ Region::Region(definitions::RegionName region_name, unsigned player_count, float
 {
     definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
 
-    Convoy.orientation = definition.convoy.orientation;
-    Convoy.position = definition.convoy.position;
+    Convoy = definition.convoy;
 
     for (auto& obstacle : definition.obstacles)
     {

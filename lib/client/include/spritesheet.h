@@ -30,6 +30,7 @@ public:
 
     sf::Sprite& GetSprite();
     void LoadAnimationData(std::string filename);
+    void SetShadow(bool shadows_on);
 
     void SetAnimation(std::string animation_name);
     void SetPosition(float x, float y);
@@ -64,11 +65,13 @@ private:
     std::shared_ptr<sf::Texture> texture;
     AnimationData animation_data;
 
+    bool casts_shadow = false;
+    sf::Sprite shadow;
+    std::shared_ptr<sf::Texture> shadow_texture;
+
     Animation current_animation{};
     unsigned current_frame = 0;
     float animation_timer = 0;
-
-    sf::Sprite tiled_sprite;
 
     bool loadTexture(std::string filename);
     void setFrame(unsigned frame);

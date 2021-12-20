@@ -57,11 +57,12 @@ void Spritesheet::Update(sf::Time elapsed)
 
 void Spritesheet::Draw()
 {
-    resources::GetWindow().draw(sprite);
-    if (texture != nullptr && texture->isRepeated())
+    if (casts_shadow)
     {
-        //resources::GetWindow().draw(tiled_sprite);
+        resources::GetWindow().draw(shadow);
     }
+
+    resources::GetWindow().draw(sprite);
 }
 
 void Spritesheet::LoadAnimationData(std::string filename)
@@ -114,6 +115,16 @@ void Spritesheet::LoadAnimationData(std::string filename)
     SetAnimation(animation_data.animations.begin()->first);
 }
 
+void Spritesheet::SetShadow(bool shadows_on)
+{
+    casts_shadow = shadows_on;
+    shadow_texture = resources::CreateShadow(animation_data.filepath, *texture);
+    shadow.setTexture(*shadow_texture);
+    shadow.setColor(sf::Color{0, 0, 0, 75});
+
+    setFrame(current_frame);
+}
+
 sf::Sprite& Spritesheet::GetSprite()
 {
     return sprite;
@@ -141,9 +152,10 @@ void Spritesheet::SetAnimation(std::string animation_name)
 void Spritesheet::SetPosition(float x, float y)
 {
     sprite.setPosition(x, y);
-    if (texture != nullptr)
+
+    if (casts_shadow)
     {
-        tiled_sprite.setPosition(x + texture->getSize().x / 2, y + texture->getSize().y / 2);
+        shadow.setPosition(x + 4, y + 4);
     }
 }
 
@@ -168,9 +180,7 @@ void Spritesheet::SetTiling(bool tiled)
 
         if (tiled)
         {
-            tiled_sprite.setTexture(*texture);
             sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
-            tiled_sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
         }
     }
 }
@@ -198,6 +208,12 @@ void Spritesheet::setFrame(unsigned frame)
     current_frame = frame;
     sprite.setTextureRect(animation_data.frames[current_frame].bounds);
     sprite.setOrigin(animation_data.frames[current_frame].origin);
+
+    if (casts_shadow)
+    {
+        shadow.setTextureRect(animation_data.frames[current_frame].bounds);
+        shadow.setOrigin(animation_data.frames[current_frame].origin);
+    }
 }
 
 } // client

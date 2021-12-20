@@ -94,7 +94,7 @@ private:
     void checkAggro(std::vector<PlayerInfo>& players);
     sf::Vector2f getTargetConvoyPoint(definitions::ConvoyDefinition convoy);
     sf::Vector2f getTargetPlayerPoint(std::vector<PlayerInfo>& players);
-    void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles);
+    void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy);
     void handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players);
     void checkAttackHit(std::vector<PlayerInfo>& players);
     void handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);

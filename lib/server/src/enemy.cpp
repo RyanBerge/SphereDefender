@@ -258,7 +258,7 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
         break;
     }
 
-    move(elapsed, destination, obstacles);
+    move(elapsed, destination, obstacles, convoy);
 }
 
 void Enemy::checkAggro(std::vector<PlayerInfo>& players)
@@ -314,7 +314,7 @@ void Enemy::checkAggro(std::vector<PlayerInfo>& players)
 sf::Vector2f Enemy::getTargetConvoyPoint(definitions::ConvoyDefinition convoy)
 {
     sf::Vector2f destination;
-    sf::FloatRect convoy_bounds = definitions::GetConvoyBounds(convoy);
+    sf::FloatRect convoy_bounds = convoy.GetBounds();
 
     if (Data.position.x >= convoy_bounds.left && Data.position.x <= convoy_bounds.left + convoy_bounds.width)
     {
@@ -384,8 +384,10 @@ sf::Vector2f Enemy::getTargetPlayerPoint(std::vector<PlayerInfo>& players)
     return Data.position;
 }
 
-void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles)
+void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy)
 {
+    std::vector<sf::FloatRect> convoy_collisions = convoy.GetCollisions();
+    obstacles.insert(obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
     util::PathingGraph graph = util::CreatePathingGraph(Data.position, destination, obstacles, GetBounds().getSize());
     std::list<sf::Vector2f> path = util::GetPath(graph);
     sf::Vector2f target_point = path.front();
@@ -492,8 +494,7 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, 
                 }
             }
 
-            sf::FloatRect convoy_bounds = definitions::GetConvoyBounds(convoy);
-            if (util::Intersects(new_bounds, convoy_bounds))
+            if (util::Intersects(new_bounds, convoy.GetBounds()))
             {
                 collision = true;
             }

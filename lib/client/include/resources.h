@@ -22,6 +22,7 @@ namespace client::resources
     sf::View& GetWorldView();
 
     std::shared_ptr<sf::Texture> AllocTexture(std::string filename);
+    std::shared_ptr<sf::Texture> CreateShadow(std::string name, sf::Texture& texture);
 
     class FontManager
     {

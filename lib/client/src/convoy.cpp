@@ -22,40 +22,41 @@ namespace {
 
 Convoy::Convoy() { }
 
-Convoy::Convoy(definitions::ConvoyDefinition definition)
+Convoy::Convoy(definitions::ConvoyDefinition convoy_definition) : definition{convoy_definition}
 {
-    base_position = definition.position;
-    rectangle.setSize(definitions::GetConvoyBounds(definition).getSize());
-
-    rectangle.setOrigin(rectangle.getSize().x / 2, rectangle.getSize().y / 2);
-    rectangle.setPosition(definition.position);
-    rectangle.setFillColor(sf::Color(115, 150, 180));
-    rectangle.setOutlineColor(sf::Color::Black);
-    rectangle.setOutlineThickness(2);
+    convoy_sprite.LoadAnimationData("entities/convoy_vertical.json");
+    convoy_sprite.SetShadow(true);
+    convoy_sprite.SetPosition(definition.Position);
+    convoy_sprite.SetAnimation("Default");
+    sf::FloatRect sprite_bounds = convoy_sprite.GetSprite().getGlobalBounds();
 
     console.LoadAnimationData("entities/console.json");
-    console.SetPosition(sf::Vector2f{rectangle.getGlobalBounds().left + rectangle.getGlobalBounds().width - 30, rectangle.getGlobalBounds().top + 150});
+    console.SetPosition(sf::Vector2f{sprite_bounds.left + 65, sprite_bounds.top + 95});
+
+    base_position = definition.Position;
 }
 
 void Convoy::Update(sf::Time elapsed)
 {
+    convoy_sprite.Update(elapsed);
     console.Update(elapsed);
 
     if (leaving_region)
     {
         sf::Vector2f velocity = sf::Vector2f{0, -CONVOY_SPEED} * elapsed.asSeconds();
-        rectangle.move(velocity);
+        convoy_sprite.SetPosition(convoy_sprite.GetSprite().getPosition() + velocity);
         console.SetPosition(console.GetSprite().getPosition() + velocity);
     }
     else if (entering_region)
     {
         sf::Vector2f velocity = sf::Vector2f{0, -CONVOY_SPEED} * elapsed.asSeconds();
-        rectangle.move(velocity);
+        convoy_sprite.SetPosition(convoy_sprite.GetSprite().getPosition() + velocity);
         console.SetPosition(console.GetSprite().getPosition() + velocity);
-        if (rectangle.getPosition().y < base_position.y)
+        if (convoy_sprite.GetSprite().getPosition().y < base_position.y)
         {
-            rectangle.setPosition(base_position);
-            console.SetPosition(sf::Vector2f{rectangle.getGlobalBounds().left + rectangle.getGlobalBounds().width - 30, rectangle.getGlobalBounds().top + 150});
+            convoy_sprite.SetPosition(base_position);
+            sf::FloatRect sprite_bounds = convoy_sprite.GetSprite().getGlobalBounds();
+            console.SetPosition(sf::Vector2f{sprite_bounds.left + 65, sprite_bounds.top + 70});
             entering_region = false;
         }
     }
@@ -63,7 +64,7 @@ void Convoy::Update(sf::Time elapsed)
 
 void Convoy::Draw()
 {
-    resources::GetWindow().draw(rectangle);
+    convoy_sprite.Draw();
     console.Draw();
 }
 
@@ -75,7 +76,7 @@ void Convoy::LeaveRegion()
 void Convoy::EnterRegion()
 {
     entering_region = true;
-    rectangle.setPosition(rectangle.getPosition().x, rectangle.getPosition().y + CONVOY_SPAWN_OFFSET);
+    convoy_sprite.SetPosition(convoy_sprite.GetSprite().getPosition().x, convoy_sprite.GetSprite().getPosition().y + CONVOY_SPAWN_OFFSET);
     console.SetPosition(console.GetSprite().getPosition().x, console.GetSprite().getPosition().y + CONVOY_SPAWN_OFFSET);
 }
 
@@ -102,7 +103,7 @@ void Convoy::ClearInteractions()
 
 sf::Vector2f Convoy::GetPosition()
 {
-    return rectangle.getPosition();
+    return convoy_sprite.GetSprite().getPosition();
 }
 
 sf::Vector2f Convoy::GetConsolePosition()

@@ -322,7 +322,7 @@ void Game::handleLeavingRegion()
         case LeavingRegionState::Moving:
         {
             resources::GetWorldView().setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
-            if (region_map.GetConvoyPosition().y < definitions::GetRegionDefinition(region_map.RegionName).convoy.position.y - Settings::GetInstance().WindowResolution.y * 2)
+            if (region_map.GetConvoyPosition().y < definitions::GetRegionDefinition(region_map.RegionName).convoy.Position.y - Settings::GetInstance().WindowResolution.y * 2)
             {
                 fade_timer.restart();
                 leaving_region_state = LeavingRegionState::Fading;
@@ -381,7 +381,7 @@ void Game::handleEnteringRegion()
         break;
         case EnteringRegionState::Moving:
         {
-            if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionName).convoy.position.y)
+            if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionName).convoy.Position.y)
             {
                 gui.SetEnabled(true);
                 local_player.EnableActions();

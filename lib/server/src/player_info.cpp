@@ -20,29 +20,55 @@ namespace server {
 
 void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy)
 {
-    obstacles.push_back(definitions::GetConvoyBounds(convoy));
+    std::vector<sf::FloatRect> convoy_collisions = convoy.GetCollisions();
+    obstacles.insert(obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
+
     sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
     bool collision = false;
     for (auto& obstacle : obstacles)
     {
         if (util::Intersects(GetBoundingBox(new_position), obstacle))
         {
-            // Try it with only a partial movement vector
-            sf::Vector2f partial_x{new_position.x, Data.position.y};
-            sf::Vector2f partial_y{Data.position.x, new_position.y};
-            if (!util::Intersects(GetBoundingBox(partial_x), obstacle))
-            {
-                new_position = partial_x;
-            }
-            else if (!util::Intersects(GetBoundingBox(partial_y), obstacle))
-            {
-                new_position = partial_y;
-            }
-            else
+            collision = true;
+            break;
+        }
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{new_position.x, Data.position.y};
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Intersects(GetBoundingBox(partial), obstacle))
             {
                 collision = true;
                 break;
             }
+        }
+
+        if (!collision)
+        {
+            new_position = partial;
+        }
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{Data.position.x, new_position.y};
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Intersects(GetBoundingBox(partial), obstacle))
+            {
+                collision = true;
+                break;
+            }
+        }
+
+        if (!collision)
+        {
+            new_position = partial;
         }
     }
 
