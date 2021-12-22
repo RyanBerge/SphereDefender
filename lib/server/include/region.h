@@ -34,10 +34,11 @@ public:
 
 private:
     unsigned num_players = 1;
-    sf::Clock spawn_timer;
+    sf::Clock age_timer;
+    float spawn_interval;
+    float last_spawn;
     float battery_charge_rate = 0; // Units-per-second
     bool spawn_enemies = false;
-    bool delaying_enemy_spawn = true;
     bool charging = false;
 
     void spawnEnemy();

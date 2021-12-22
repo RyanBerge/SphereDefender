@@ -219,7 +219,7 @@ void Server::startGame()
         players[i].Data.position = spawn_position;
     }
 
-    region = Region(definitions::RegionName::Town, players.size(), 0);
+    region = Region(definitions::STARTNG_REGION, players.size(), 0);
 
     game_state = GameState::Game;
 }

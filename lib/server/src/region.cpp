@@ -15,9 +15,9 @@
 using std::cout, std::endl;
 
 namespace {
-    constexpr int MAX_ENEMIES = 5;
-    constexpr float SPAWN_TIMER = 1; // seconds
-    constexpr int SPAWN_DELAY = 8; // seconds
+    constexpr int BASE_SPAWN_INTERVAL = 4;
+    constexpr float SPAWN_ACCELERATION_PER_PLAYER = 0.15;
+    constexpr float MINIMUM_SPAWN_INTERVAL = 0.8;
 }
 
 namespace server {
@@ -41,59 +41,51 @@ Region::Region(definitions::RegionName region_name, unsigned player_count, float
     {
         battery_charge_rate = 5;
     }
+
+    spawn_interval = BASE_SPAWN_INTERVAL;
+
+    last_spawn = 0;
 }
 
 void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
 {
+    float region_age = age_timer.getElapsedTime().asSeconds();
+
     for (auto& enemy : Enemies)
     {
         enemy.Update(elapsed, Convoy, players, Obstacles);
     }
 
-    if (spawn_enemies)
+    int siphon_rate = 0;
+    for (auto& enemy : Enemies)
     {
-        if (delaying_enemy_spawn && spawn_timer.getElapsedTime().asSeconds() > SPAWN_DELAY)
+        if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
         {
-            delaying_enemy_spawn = false;
-        }
-        else if (!delaying_enemy_spawn)
-        {
-            if (Enemies.size() < num_players * MAX_ENEMIES)
-            {
-                if (spawn_timer.getElapsedTime().asSeconds() > SPAWN_TIMER / num_players)
-                {
-                    spawnEnemy();
-                }
-            }
+            siphon_rate += enemy.GetSiphonRate();
         }
     }
 
-    if (!charging && spawn_timer.getElapsedTime().asSeconds() > 6)
+    if (region_age < 6)
     {
-        charging = true;
+        BatteryLevel -= siphon_rate * elapsed.asSeconds();
     }
-
-    if (charging)
+    else
     {
-        int siphon_rate = 0;
-        for (auto& enemy : Enemies)
-        {
-            if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
-            {
-                siphon_rate += enemy.GetSiphonRate();
-            }
-        }
-
         BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
-        if (BatteryLevel < 0)
+        if (spawn_enemies && (last_spawn == 0 || age_timer.getElapsedTime().asSeconds() >= last_spawn + spawn_interval))
         {
-            BatteryLevel = 0;
+            spawnEnemy();
         }
+    }
 
-        if (BatteryLevel > 1000)
-        {
-            BatteryLevel = 1000;
-        }
+    if (BatteryLevel < 0)
+    {
+        BatteryLevel = 0;
+    }
+
+    if (BatteryLevel > 1000)
+    {
+        BatteryLevel = 1000;
     }
 }
 
@@ -116,7 +108,12 @@ void Region::spawnEnemy()
     //enemy.Data.position = sf::Vector2f{900, 0};
 
     Enemies.push_back(enemy);
-    spawn_timer.restart();
+    last_spawn = age_timer.getElapsedTime().asSeconds();
+    spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;
+    if (spawn_interval < MINIMUM_SPAWN_INTERVAL)
+    {
+        spawn_interval = MINIMUM_SPAWN_INTERVAL;
+    }
 }
 
 } // namespace server

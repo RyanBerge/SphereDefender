@@ -76,6 +76,8 @@ struct RegionDefinition
     std::vector<Npc> npcs;
 };
 
+constexpr RegionName STARTNG_REGION = RegionName::Town;
+
 RegionDefinition GetRegionDefinition(RegionName region);
 
 } // namespace definitions

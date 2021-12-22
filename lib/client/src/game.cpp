@@ -157,7 +157,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     local_player = Player();
 
     region_map = RegionMap();
-    region_map.Load(definitions::RegionName::Town);
+    region_map.Load(definitions::STARTNG_REGION);
     gui.Load();
     local_player.Load(local);
 
