@@ -13,6 +13,8 @@
 #include <cmath>
 #include "messaging.h"
 #include "game_math.h"
+#include "util.h"
+#include "player_list.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -53,7 +55,7 @@ void Server::update()
 {
     listen();
 
-    if (owner != 0 && players.size() == 0)
+    if (owner != 0 && PlayerList.size() == 0)
     {
         cout << "Shutting down" << endl;
         running = false;
@@ -61,16 +63,16 @@ void Server::update()
     }
 
     // Process any incoming messages
-    for (auto iter = players.begin(); iter != players.end(); ++iter)
+    for (auto iter = PlayerList.begin(); iter != PlayerList.end(); ++iter)
     {
         auto& player = *iter;
-        if (player.Status != PlayerInfo::PlayerStatus::Disconnected)
+        if (player.Status != Player::PlayerStatus::Disconnected)
         {
             checkMessages(player);
         }
         else
         {
-            players.erase(iter--);
+            PlayerList.erase(iter--);
         }
     }
 
@@ -78,17 +80,13 @@ void Server::update()
 
     if (game_state == GameState::Game)
     {
-        region.Update(elapsed, players);
+        region.Update(elapsed);
 
-        for (auto& player : players)
+        for (auto& player : PlayerList)
         {
-            if (player.Status == PlayerInfo::PlayerStatus::Alive)
+            if (player.Status == Player::PlayerStatus::Alive)
             {
-                player.Update(elapsed, region.Obstacles, region.Convoy);
-                if (player.Attacking)
-                {
-                    checkAttack(player);
-                }
+                player.Update(elapsed, region);
             }
         }
 
@@ -118,19 +116,21 @@ void Server::listen()
         return;
     }
 
-    PlayerInfo player{};
+    Player player{};
     player.Socket = player_socket;
     player.Socket->setBlocking(false);
     player.Data.name = "";
     player.Data.properties.player_class = network::PlayerClass::Melee;
-    player.Status = PlayerInfo::PlayerStatus::Uninitialized;
+    player.Data.properties.weapon_type = definitions::WeaponType::Sword;
+    player.SetWeapon(definitions::GetWeapon(player.Data.properties.weapon_type));
+    player.Status = Player::PlayerStatus::Uninitialized;
 
     cout << "New player connected to server." << endl;
 
-    players.push_back(player);
+    PlayerList.push_back(player);
 }
 
-void Server::checkMessages(PlayerInfo& player)
+void Server::checkMessages(Player& player)
 {
     ClientMessage::Code code;
     bool success = ClientMessage::PollForCode(*player.Socket, code);
@@ -209,27 +209,27 @@ void Server::checkMessages(PlayerInfo& player)
 void Server::startGame()
 {
     // Determine spawn positions
-    float angle = 2 * util::pi / players.size();
+    float angle = 2 * util::pi / PlayerList.size();
 
-    for (size_t i = 0; i < players.size(); ++i)
+    for (size_t i = 0; i < PlayerList.size(); ++i)
     {
         // TODO: Magic numbers for distance
         sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
-        ServerMessage::AllPlayersLoaded(*players[i].Socket, spawn_position);
-        players[i].Data.position = spawn_position;
+        ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
+        PlayerList[i].Data.position = spawn_position;
     }
 
-    region = Region(definitions::STARTNG_REGION, players.size(), 0);
+    region = Region(definitions::STARTNG_REGION, PlayerList.size(), 0);
 
     game_state = GameState::Game;
 }
 
-void Server::initLobby(PlayerInfo& player)
+void Server::initLobby(Player& player)
 {
     if (!ClientMessage::DecodeInitLobby(*player.Socket, player.Data.name))
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Uninitialized)
@@ -238,11 +238,11 @@ void Server::initLobby(PlayerInfo& player)
         return;
     }
 
-    if (player.Status != PlayerInfo::PlayerStatus::Uninitialized)
+    if (player.Status != Player::PlayerStatus::Uninitialized)
     {
         cerr << player.Data.name << " is already initialized." << endl;
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
         return;
     }
 
@@ -253,44 +253,44 @@ void Server::initLobby(PlayerInfo& player)
         player.Data.id = id;
         owner = player.Data.id;
         cout << "Server initialized by " << player.Data.name << "." << endl;
-        player.Status = PlayerInfo::PlayerStatus::Menus;
+        player.Status = Player::PlayerStatus::Menus;
         game_state = GameState::Lobby;
     }
     else
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 }
 
-void Server::playerJoined(PlayerInfo& player)
+void Server::playerJoined(Player& player)
 {
     if (!ClientMessage::DecodeJoinLobby(*player.Socket, player.Data.name))
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Lobby)
     {
         cerr << player.Data.name << " tried to join a game that was not in the lobby." << endl;
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
         return;
     }
 
-    if (player.Status != PlayerInfo::PlayerStatus::Uninitialized)
+    if (player.Status != Player::PlayerStatus::Uninitialized)
     {
         cerr << player.Data.name << " is already initialized." << endl;
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
         return;
     }
 
     player.Data.id = getPlayerUid();
     std::vector<network::PlayerData> players_in_lobby;
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
         if (player.Data.id != p.Data.id)
         {
@@ -310,31 +310,33 @@ void Server::playerJoined(PlayerInfo& player)
     if (ServerMessage::PlayersInLobby(*player.Socket, player.Data.id, players_in_lobby))
     {
         cout << player.Data.name << " joined the lobby" << endl;
-        player.Status = PlayerInfo::PlayerStatus::Menus;
+        player.Status = Player::PlayerStatus::Menus;
     }
     else
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 }
 
-void Server::changePlayerProperty(PlayerInfo& player)
+void Server::changePlayerProperty(Player& player)
 {
+    if (!ClientMessage::DecodeChangePlayerProperty(*player.Socket, player.Data.properties))
+    {
+        player.Socket->disconnect();
+        player.Status = Player::PlayerStatus::Disconnected;
+        return;
+    }
+
     if (game_state != GameState::Lobby)
     {
         cerr << player.Data.name << " tried to change properties while not in the lobby." << endl;
         return;
     }
 
-    if (!ClientMessage::DecodeChangePlayerProperty(*player.Socket, player.Data.properties))
-    {
-        player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
-        return;
-    }
+    player.SetWeapon(definitions::GetWeapon(player.Data.properties.weapon_type));
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
         if (p.Data.id != player.Data.id)
         {
@@ -343,7 +345,7 @@ void Server::changePlayerProperty(PlayerInfo& player)
     }
 }
 
-void Server::startLoading(PlayerInfo& player)
+void Server::startLoading(Player& player)
 {
     if (game_state != GameState::Lobby)
     {
@@ -360,7 +362,7 @@ void Server::startLoading(PlayerInfo& player)
     cout << player.Data.name << " started the game!" << endl;
     game_state = GameState::Loading;
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
         if (p.Data.id != owner)
         {
@@ -369,17 +371,17 @@ void Server::startLoading(PlayerInfo& player)
     }
 }
 
-void Server::loadingComplete(PlayerInfo& player)
+void Server::loadingComplete(Player& player)
 {
     if (game_state == GameState::Loading)
     {
         cout << player.Data.name << " has finished loading." << endl;
-        player.Status = PlayerInfo::PlayerStatus::Alive;
+        player.Status = Player::PlayerStatus::Alive;
         player.Data.health = 100;
 
-        for (auto& p : players)
+        for (auto& p : PlayerList)
         {
-            if (p.Status != PlayerInfo::PlayerStatus::Alive)
+            if (p.Status != Player::PlayerStatus::Alive)
             {
                 return;
             }
@@ -387,45 +389,45 @@ void Server::loadingComplete(PlayerInfo& player)
 
         startGame();
 
-        cout << "All players have loaded!" << endl;
+        cout << "All PlayerList have loaded!" << endl;
     }
     else if (game_state == GameState::Game)
     {
         cout << player.Data.name << " has finished loading the new region." << endl;
-        player.Status = PlayerInfo::PlayerStatus::Alive;
+        player.Status = Player::PlayerStatus::Alive;
         player.Data.health = 100;
 
-        for (auto& p : players)
+        for (auto& p : PlayerList)
         {
-            if (p.Status == PlayerInfo::PlayerStatus::Loading)
+            if (p.Status == Player::PlayerStatus::Loading)
             {
                 return;
             }
         }
 
-        region = Region(next_region, players.size(), 0);
+        region = Region(next_region, PlayerList.size(), 0);
 
         // Determine spawn positions
-        float angle = 2 * util::pi / players.size();
+        float angle = 2 * util::pi / PlayerList.size();
 
-        for (size_t i = 0; i < players.size(); ++i)
+        for (size_t i = 0; i < PlayerList.size(); ++i)
         {
             // TODO: Magic numbers for distance
             sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i)) + region.Convoy.Position;
             spawn_position.x += 200;
-            ServerMessage::AllPlayersLoaded(*players[i].Socket, spawn_position);
-            players[i].Data.position = spawn_position;
+            ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
+            PlayerList[i].Data.position = spawn_position;
         }
     }
 }
 
-void Server::leaveGame(PlayerInfo& player)
+void Server::leaveGame(Player& player)
 {
     cout << player.Data.name << " left the server." << endl;
     player.Socket->disconnect();
-    player.Status = PlayerInfo::PlayerStatus::Disconnected;
+    player.Status = Player::PlayerStatus::Disconnected;
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
         if (p.Data.id != player.Data.id)
         {
@@ -441,13 +443,13 @@ void Server::leaveGame(PlayerInfo& player)
     }
 }
 
-void Server::updatePlayerState(PlayerInfo& player)
+void Server::updatePlayerState(Player& player)
 {
     sf::Vector2i movement_vector;
     if (!ClientMessage::DecodePlayerStateChange(*player.Socket, movement_vector))
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Game)
@@ -456,7 +458,7 @@ void Server::updatePlayerState(PlayerInfo& player)
         return;
     }
 
-    if (player.Status != PlayerInfo::PlayerStatus::Alive)
+    if (player.Status != Player::PlayerStatus::Alive)
     {
         cerr << "Player attempted to change states while not alive." << endl;
         return;
@@ -465,13 +467,13 @@ void Server::updatePlayerState(PlayerInfo& player)
     player.UpdatePlayerState(movement_vector);
 }
 
-void Server::startPlayerAction(PlayerInfo& player)
+void Server::startPlayerAction(Player& player)
 {
     network::PlayerAction action;
     if (!ClientMessage::DecodeStartAction(*player.Socket, action))
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 
     if (game_state != GameState::Game)
@@ -480,7 +482,7 @@ void Server::startPlayerAction(PlayerInfo& player)
         return;
     }
 
-    if (player.Status != PlayerInfo::PlayerStatus::Alive)
+    if (player.Status != Player::PlayerStatus::Alive)
     {
         cerr << "Player attempted to take an action while not alive." << endl;
         return;
@@ -491,7 +493,7 @@ void Server::startPlayerAction(PlayerInfo& player)
         player.StartAttack(action.attack_angle);
     }
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
         if (p.Data.id != player.Data.id)
         {
@@ -500,20 +502,20 @@ void Server::startPlayerAction(PlayerInfo& player)
     }
 }
 
-void Server::changeRegion(PlayerInfo& player)
+void Server::changeRegion(Player& player)
 {
     definitions::RegionName region_name;
     if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_name))
     {
         player.Socket->disconnect();
-        player.Status = PlayerInfo::PlayerStatus::Disconnected;
+        player.Status = Player::PlayerStatus::Disconnected;
     }
 
     next_region = region_name;
 
-    for (auto& p : players)
+    for (auto& p : PlayerList)
     {
-        p.Status = PlayerInfo::PlayerStatus::Loading;
+        p.Status = Player::PlayerStatus::Loading;
         ServerMessage::ChangeRegion(*p.Socket, region_name);
     }
 }
@@ -523,7 +525,7 @@ void Server::broadcastStates()
     std::vector<network::PlayerData> player_list;
     std::vector<network::EnemyData> enemy_list;
 
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
         player_list.push_back(player.Data);
     }
@@ -533,100 +535,11 @@ void Server::broadcastStates()
         enemy_list.push_back(enemy.Data);
     }
 
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
         ServerMessage::PlayerStates(*player.Socket, player_list);
         ServerMessage::EnemyUpdate(*player.Socket, enemy_list);
         ServerMessage::BatteryUpdate(*player.Socket, region.BatteryLevel);
-    }
-}
-
-void Server::checkAttack(PlayerInfo& player)
-{
-    switch (player.Data.properties.player_class)
-    {
-        case network::PlayerClass::Melee:
-        {
-            util::LineSegment sword = player.GetSwordLocation();
-
-            for (auto& enemy : region.Enemies)
-            {
-                sf::FloatRect bounds = enemy.GetBounds();
-
-                if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
-                {
-                    enemy.WeaponHit(player.Data.id, player.GetWeaponDamage(), player.GetWeaponKnockback(), enemy.Data.position - player.Data.position, players);
-                }
-            }
-        }
-        break;
-        case network::PlayerClass::Ranged:
-        {
-            sf::Vector2f attack_vector = player.GetAttackVector();
-
-            bool collision = false;
-            sf::Vector2f point;
-            for (auto& rect : region.Obstacles)
-            {
-                sf::Vector2f temp;
-                if (util::IntersectionPoint(rect, util::LineVector{player.Data.position, attack_vector}, temp))
-                {
-                    if (!collision)
-                    {
-                        collision = true;
-                        point = temp;
-                    }
-                    else if (util::Distance(player.Data.position, temp) < util::Distance(player.Data.position, point))
-                    {
-                        point = temp;
-                    }
-                }
-            }
-
-            uint16_t target_enemy_id = region.Enemies.front().Data.id;
-            bool enemy_hit = false;
-            for (auto& enemy : region.Enemies)
-            {
-                sf::Vector2f temp;
-                if (util::IntersectionPoint(enemy.GetBounds(), util::LineVector{player.Data.position, attack_vector}, temp))
-                {
-                    if (!collision)
-                    {
-                        collision = true;
-                        point = temp;
-                        enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
-                    }
-                    else if (util::Distance(player.Data.position, temp) < util::Distance(player.Data.position, point))
-                    {
-                        point = temp;
-                        enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
-                    }
-                }
-            }
-
-            if (enemy_hit)
-            {
-                for (auto& enemy : region.Enemies)
-                {
-                    if (enemy.Data.id == target_enemy_id)
-                    {
-                        if (enemy.Data.health <= 10)
-                        {
-                            enemy.Data.health = 0;
-                        }
-                        else
-                        {
-                            enemy.WeaponHit(player.Data.id, player.GetWeaponDamage(), player.GetWeaponKnockback(), enemy.Data.position - player.Data.position, players);
-                        }
-                    }
-                }
-            }
-
-            player.Attacking = false;
-        }
-        break;
     }
 }
 

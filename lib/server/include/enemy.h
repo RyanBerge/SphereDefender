@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <list>
 #include "entity_data.h"
-#include "player_info.h"
 #include "region_definitions.h"
 #include "messaging.h"
 
@@ -43,8 +42,8 @@ public:
 
     Enemy();
 
-    void Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
-    void WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnockback knockback, sf::Vector2f hit_vector, std::vector<PlayerInfo>& players);
+    void Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector);
 
     Behavior GetBehavior();
     Action GetAction();
@@ -103,22 +102,22 @@ private:
     float leap_cooldown;
     sf::Clock leap_timer;
 
-    void setActionFlags(std::vector<PlayerInfo>& players);
-    void setBehavior(Behavior behavior, std::vector<PlayerInfo>& players);
-    void setAction(Action action, std::vector<PlayerInfo>& players);
+    void setActionFlags();
+    void setBehavior(Behavior behavior);
+    void setAction(Action action);
     void resetActionStates();
-    void chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles);
-    void checkAggro(std::vector<PlayerInfo>& players);
+    void chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    void checkAggro();
     sf::Vector2f getTargetConvoyPoint(definitions::ConvoyDefinition convoy);
-    sf::Vector2f getTargetPlayerPoint(std::vector<PlayerInfo>& players);
-    void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy);
-    void handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players);
-    bool checkAttackHit(std::vector<PlayerInfo>& players);
-    bool checkLeapHit(std::vector<PlayerInfo>& players);
-    void handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
-    void handleStunned(std::vector<PlayerInfo>& players);
-    void handleSniffing(std::vector<PlayerInfo>& players);
-    void handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
+    sf::Vector2f getTargetPlayerPoint();
+    void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles);
+    void handleAttack(sf::Time elapsed);
+    bool checkAttackHit();
+    bool checkLeapHit();
+    void handleKnockback(sf::Time elapsed, std::vector<sf::FloatRect> obstacles);
+    void handleStunned();
+    void handleSniffing();
+    void handleLeaping(sf::Time elapsed, std::vector<sf::FloatRect> obstacles);
 };
 
 } // server

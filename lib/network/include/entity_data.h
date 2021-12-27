@@ -30,6 +30,7 @@ enum class PlayerClass : uint8_t
 struct PlayerProperties
 {
     PlayerClass player_class;
+    definitions::WeaponType weapon_type;
 };
 
 struct PlayerData

@@ -10,6 +10,7 @@
 #include "enemy.h"
 #include "pathfinding.h"
 #include "messaging.h"
+#include "player_list.h"
 #include <iostream>
 #include <random>
 #include <SFML/System/Sleep.hpp>
@@ -60,44 +61,44 @@ int Enemy::GetSiphonRate()
     return BASE_SIPHON_RATE;
 }
 
-void Enemy::Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
+void Enemy::Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
     switch (current_action)
     {
         case Action::Attacking:
         {
-            handleAttack(elapsed, players);
+            handleAttack(elapsed);
         }
         break;
         case Action::Knockback:
         {
-            handleKnockback(elapsed, players, convoy, obstacles);
+            handleKnockback(elapsed, obstacles);
         }
         break;
         case Action::Stunned:
         {
-            handleStunned(players);
+            handleStunned();
         }
         break;
         case Action::Sniffing:
         {
-            handleSniffing(players);
+            handleSniffing();
         }
         break;
         case Action::Leaping:
         {
-            handleLeaping(elapsed, players, convoy, obstacles);
+            handleLeaping(elapsed, obstacles);
         }
         break;
         case Action::None:
         {
-            chooseAction(elapsed, convoy, players, obstacles);
+            chooseAction(elapsed, convoy, obstacles);
         }
         break;
     }
 }
 
-void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnockback knockback, sf::Vector2f hit_vector, std::vector<PlayerInfo>& players)
+void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector)
 {
     if (invulnerability_timers.find(player_id) == invulnerability_timers.end())
     {
@@ -125,8 +126,8 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnoc
 
     if (Data.health == 0)
     {
-        setAction(Action::None, players);
-        setBehavior(Behavior::Dead, players);
+        setAction(Action::None);
+        setBehavior(Behavior::Dead);
     }
 
     if (knockback.distance > 0)
@@ -135,7 +136,7 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, PlayerInfo::WeaponKnoc
         knockback_distance = knockback.distance;
         knockback_duration = knockback.duration;
 
-        setAction(Action::Knockback, players);
+        setAction(Action::Knockback);
     }
 }
 
@@ -149,7 +150,7 @@ Enemy::Action Enemy::GetAction()
     return current_action;
 }
 
-void Enemy::setActionFlags(std::vector<PlayerInfo>& players)
+void Enemy::setActionFlags()
 {
     network::EnemyAction enemy_action{};
 
@@ -157,7 +158,7 @@ void Enemy::setActionFlags(std::vector<PlayerInfo>& players)
     {
         case Action::Attacking:
         {
-            for (auto& player : players)
+            for (auto& player : PlayerList)
             {
                 if (player.Data.id == player_target)
                 {
@@ -187,7 +188,7 @@ void Enemy::setActionFlags(std::vector<PlayerInfo>& players)
         break;
         case Action::Leaping:
         {
-            for (auto& player : players)
+            for (auto& player : PlayerList)
             {
                 if (player.Data.id == player_target)
                 {
@@ -225,23 +226,23 @@ void Enemy::setActionFlags(std::vector<PlayerInfo>& players)
         break;
     }
 
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
         network::ServerMessage::EnemyChangeAction(*player.Socket, Data.id, enemy_action);
     }
 }
 
-void Enemy::setBehavior(Behavior behavior, std::vector<PlayerInfo>& players)
+void Enemy::setBehavior(Behavior behavior)
 {
     current_behavior = behavior;
-    setActionFlags(players);
+    setActionFlags();
 }
 
-void Enemy::setAction(Action action, std::vector<PlayerInfo>& players)
+void Enemy::setAction(Action action)
 {
     resetActionStates();
     current_action = action;
-    setActionFlags(players);
+    setActionFlags();
 }
 
 void Enemy::resetActionStates()
@@ -252,9 +253,9 @@ void Enemy::resetActionStates()
     leaping_state = LeapingState::Start;
 }
 
-void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<PlayerInfo>& players, std::vector<sf::FloatRect> obstacles)
+void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
-    checkAggro(players);
+    checkAggro();
     sf::Vector2f destination;
 
     switch (current_behavior)
@@ -264,13 +265,13 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
             destination = getTargetConvoyPoint(convoy);
             if (util::Distance(Data.position, destination) < definition.feeding_range)
             {
-                setBehavior(Behavior::Feeding, players);
+                setBehavior(Behavior::Feeding);
                 return;
             }
 
             if (sniff_timer.getElapsedTime().asSeconds() > sniff_cooldown)
             {
-                setAction(Action::Sniffing, players);
+                setAction(Action::Sniffing);
             }
         }
         break;
@@ -286,18 +287,18 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
         break;
         case Behavior::Hunting:
         {
-            destination = getTargetPlayerPoint(players);
+            destination = getTargetPlayerPoint();
             double target_distance = util::Distance(Data.position, destination);
             if (target_distance < definition.attack_range)
             {
-                setAction(Action::Attacking, players);
+                setAction(Action::Attacking);
                 return;
             }
             else if (target_distance > definition.minimum_leap_range && target_distance < definition.maximum_leap_range && leap_timer.getElapsedTime().asSeconds() >= leap_cooldown)
             {
                 if (util::GetRandomInt(0, 5) == 0)
                 {
-                    setAction(Action::Leaping, players);
+                    setAction(Action::Leaping);
                 }
                 else
                 {
@@ -318,12 +319,12 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
         break;
     }
 
-    move(elapsed, destination, obstacles, convoy);
+    move(elapsed, destination, obstacles);
 }
 
-void Enemy::checkAggro(std::vector<PlayerInfo>& players)
+void Enemy::checkAggro()
 {
-    // Aggro radius on players goes up polynomially as charge goes up
+    // Aggro radius on PlayerList goes up polynomially as charge goes up
     float aggro_range = AGGRO_COEFFICIENT * (Data.charge * Data.charge) + BASE_AGGRO_RADIUS;
 
     switch (current_behavior)
@@ -331,11 +332,11 @@ void Enemy::checkAggro(std::vector<PlayerInfo>& players)
         case Behavior::Hunting:
         {
             // TODO: Change targets when another player is much closer?
-            for (auto& player : players)
+            for (auto& player : PlayerList)
             {
-                if (player_target == player.Data.id && player.Status != PlayerInfo::PlayerStatus::Alive)
+                if (player_target == player.Data.id && player.Status != Player::PlayerStatus::Alive)
                 {
-                    setBehavior(Behavior::Moving, players);
+                    setBehavior(Behavior::Moving);
                     break;
                 }
             }
@@ -351,16 +352,16 @@ void Enemy::checkAggro(std::vector<PlayerInfo>& players)
         {
             float target_distance = aggro_range + 1;
 
-            for (auto& player : players)
+            for (auto& player : PlayerList)
             {
-                if (player.Status == PlayerInfo::PlayerStatus::Alive)
+                if (player.Status == Player::PlayerStatus::Alive)
                 {
                     float player_distance = util::Distance(player.Data.position, Data.position);
                     if (player_distance < target_distance)
                     {
                         target_distance = player_distance;
                         player_target = player.Data.id;
-                        setBehavior(Behavior::Hunting, players);
+                        setBehavior(Behavior::Hunting);
                     }
                 }
             }
@@ -429,9 +430,9 @@ sf::Vector2f Enemy::getTargetConvoyPoint(definitions::ConvoyDefinition convoy)
     return destination;
 }
 
-sf::Vector2f Enemy::getTargetPlayerPoint(std::vector<PlayerInfo>& players)
+sf::Vector2f Enemy::getTargetPlayerPoint()
 {
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
         if (player.Data.id == player_target)
         {
@@ -440,14 +441,12 @@ sf::Vector2f Enemy::getTargetPlayerPoint(std::vector<PlayerInfo>& players)
         }
     }
 
-    setBehavior(Behavior::Moving, players);
+    setBehavior(Behavior::Moving);
     return Data.position;
 }
 
-void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy)
+void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles)
 {
-    std::vector<sf::FloatRect> convoy_collisions = convoy.GetCollisions();
-    obstacles.insert(obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
     util::PathingGraph graph = util::CreatePathingGraph(Data.position, destination, obstacles, GetBounds().getSize());
     std::list<sf::Vector2f> path = util::GetPath(graph);
     sf::Vector2f target_point = path.front();
@@ -461,7 +460,7 @@ void Enemy::move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::Flo
     }
 }
 
-void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
+void Enemy::handleAttack(sf::Time elapsed)
 {
     sf::Vector2f velocity;
 
@@ -486,7 +485,7 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
         break;
         case AttackState::Hit:
         {
-            checkAttackHit(players);
+            checkAttackHit();
             attack_state = AttackState::Followthrough;
             [[fallthrough]];
         }
@@ -505,7 +504,7 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
         {
             if (attack_timer.getElapsedTime().asSeconds() >= (definition.attack_duration + definition.attack_cooldown))
             {
-                setAction(Action::None, players);
+                setAction(Action::None);
                 attack_state = AttackState::Start;
             }
         }
@@ -513,12 +512,12 @@ void Enemy::handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players)
     }
 }
 
-bool Enemy::checkAttackHit(std::vector<PlayerInfo>& players)
+bool Enemy::checkAttackHit()
 {
     bool hit = false;
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
-        if (player.Status == PlayerInfo::PlayerStatus::Alive)
+        if (player.Status == Player::PlayerStatus::Alive)
         {
             sf::FloatRect bounds(player.Data.position.x - 35, player.Data.position.y - 35, 70, 70);
             if (util::Intersects(bounds, GetBounds()))
@@ -532,12 +531,12 @@ bool Enemy::checkAttackHit(std::vector<PlayerInfo>& players)
     return hit;
 }
 
-bool Enemy::checkLeapHit(std::vector<PlayerInfo>& players)
+bool Enemy::checkLeapHit()
 {
     bool hit = false;
-    for (auto& player : players)
+    for (auto& player : PlayerList)
     {
-        if (player.Status == PlayerInfo::PlayerStatus::Alive)
+        if (player.Status == Player::PlayerStatus::Alive)
         {
             if (util::Intersects(player.GetBounds(), GetBounds()))
             {
@@ -550,7 +549,7 @@ bool Enemy::checkLeapHit(std::vector<PlayerInfo>& players)
     return hit;
 }
 
-void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
+void Enemy::handleKnockback(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
 {
     switch (knockback_state)
     {
@@ -576,11 +575,6 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, 
                 }
             }
 
-            if (util::Intersects(new_bounds, convoy.GetBounds()))
-            {
-                collision = true;
-            }
-
             if (!collision)
             {
                 Data.position = new_position;
@@ -588,14 +582,14 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, 
             if (collision || knockback_timer.getElapsedTime().asSeconds() >= knockback_duration)
             {
                 knockback_state = KnockbackState::Start;
-                setAction(Action::Stunned, players);
+                setAction(Action::Stunned);
             }
         }
         break;
     }
 }
 
-void Enemy::handleStunned(std::vector<PlayerInfo>& players)
+void Enemy::handleStunned()
 {
     if (!stunned)
     {
@@ -605,22 +599,22 @@ void Enemy::handleStunned(std::vector<PlayerInfo>& players)
 
     if (stun_timer.getElapsedTime().asSeconds() >= STUN_DURATION)
     {
-        setAction(Action::None, players);
+        setAction(Action::None);
         stunned = false;
     }
 }
 
-void Enemy::handleSniffing(std::vector<PlayerInfo>& players)
+void Enemy::handleSniffing()
 {
     if (sniff_timer.getElapsedTime().asSeconds() > sniff_cooldown + SNIFF_DURATION)
     {
         sniff_cooldown = SNIFF_COOLDOWN + util::GetRandomInt(0, 2);
         sniff_timer.restart();
-        setAction(Action::None, players);
+        setAction(Action::None);
     }
 }
 
-void Enemy::handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
+void Enemy::handleLeaping(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
 {
     static sf::Clock leap_tracking_timer;
 
@@ -644,7 +638,7 @@ void Enemy::handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, de
         {
             if (leap_tracking_timer.getElapsedTime().asSeconds() > LEAP_WINDUP + (definition.leaping_distance / definition.leaping_speed))
             {
-                setAction(Action::None, players);
+                setAction(Action::None);
                 leaping_state = LeapingState::Cleanup;
             }
 
@@ -664,12 +658,7 @@ void Enemy::handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, de
                 }
             }
 
-            if (util::Intersects(new_bounds, convoy.GetBounds()))
-            {
-                collision = true;
-            }
-
-            if (checkLeapHit(players))
+            if (checkLeapHit())
             {
                 collision = true;
             }
@@ -677,7 +666,7 @@ void Enemy::handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, de
             if (collision)
             {
                 leaping_state = LeapingState::Cleanup;
-                setAction(Action::Stunned, players);
+                setAction(Action::Stunned);
             }
             else
             {

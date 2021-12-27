@@ -291,9 +291,16 @@ void Lobby::scrollClassOption(int displacement)
     uint8_t option = static_cast<uint8_t>(local_player.data.properties.player_class);
     option = (option + displacement) % local_player.class_options.size();
     local_player.data.properties.player_class = static_cast<network::PlayerClass>(option);
+    if (local_player.data.properties.player_class == network::PlayerClass::Melee)
+    {
+        local_player.data.properties.weapon_type = definitions::WeaponType::Sword;
+    }
+    else
+    {
+        local_player.data.properties.weapon_type = definitions::WeaponType::BurstGun;
+    }
 
-    network::PlayerProperties properties{static_cast<network::PlayerClass>(option)};
-    ClientMessage::ChangePlayerProperty(resources::GetServerSocket(), properties);
+    ClientMessage::ChangePlayerProperty(resources::GetServerSocket(), local_player.data.properties);
 }
 
 void Lobby::onMouseMove(sf::Event event)

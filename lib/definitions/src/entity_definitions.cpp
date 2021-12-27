@@ -45,4 +45,65 @@ EntityDefinition GetEntityDefinition(EntityType type)
     return manager.definition_map[type];
 }
 
+Weapon GetWeapon(WeaponType type)
+{
+    Weapon weapon;
+    weapon.type = type;
+
+    switch (type)
+    {
+        case WeaponType::Sword:
+        {
+            weapon.offset = -18;
+            weapon.length = 20;
+            weapon.damage = 50;
+            weapon.knockback.distance = 35;
+            weapon.knockback.duration = 0.1; // seconds
+            weapon.attack_cooldown = 250; // milliseconds between attacks
+            weapon.arc = 90; // degrees;
+            weapon.arc_speed = 360; // degrees per second
+        }
+        break;
+        case WeaponType::HitscanGun:
+        {
+            weapon.offset = -18;
+            weapon.length = 7;
+            weapon.damage = 35;
+            weapon.attack_cooldown = 300; // milliseconds between attacks
+            weapon.knockback.distance = 0;
+            weapon.knockback.duration = 0;
+            weapon.projectiles_per_attack = 1;
+            weapon.projectile_spread = 0; // degrees
+        }
+        break;
+        case WeaponType::BurstGun:
+        {
+            weapon.offset = -18;
+            weapon.length = 7;
+            weapon.damage = 50;
+            weapon.attack_cooldown = 600; // milliseconds between attacks
+            weapon.knockback.distance = 0;
+            weapon.knockback.duration = 0;
+            weapon.projectiles_per_attack = 4;
+            weapon.delay_per_projectile = 50; // milliseconds
+            weapon.projectile_spread = 10; // degrees
+        }
+        break;
+    }
+
+    return weapon;
+}
+
+PlayerDefinition::PlayerDefinition()
+{
+    radius = 18;
+    speed = 100;
+}
+
+PlayerDefinition PlayerDefinition::Get()
+{
+    static PlayerDefinition definition;
+    return definition;
+}
+
 } // definitions

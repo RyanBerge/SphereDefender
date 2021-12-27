@@ -24,24 +24,29 @@ Avatar::Avatar() { }
 
 Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
-    sphere.setRadius(definitions::PlayerDefinition::PLAYER_RADIUS);
+    definitions::PlayerDefinition player_definition = definitions::PlayerDefinition::Get();
+    sphere.setRadius(player_definition.radius);
     sphere.setFillColor(color);
     sphere.setOutlineColor(sf::Color::Black);
     sphere.setOutlineThickness(1);
     sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
 
-    sword.setSize(sf::Vector2f(definitions::PlayerDefinition::SWORD_LENGTH, 4));
-    sword.setOrigin(sf::Vector2f(-definitions::PlayerDefinition::SWORD_OFFSET, 2));
+    definitions::Weapon weapon = definitions::GetWeapon(definitions::WeaponType::Sword);
+
+    sword.setSize(sf::Vector2f(weapon.length, 4));
+    sword.setOrigin(sf::Vector2f(weapon.offset, 2));
     sword.setFillColor(sf::Color::Red);
     sword.setPosition(sphere.getPosition());
 
-    gun.setSize(sf::Vector2f(definitions::PlayerDefinition::GUN_LENGTH, 4));
-    gun.setOrigin(sf::Vector2f(definitions::PlayerDefinition::GUN_OFFSET, 2));
+    weapon = definitions::GetWeapon(definitions::WeaponType::BurstGun);
+
+    gun.setSize(sf::Vector2f(weapon.length, 4));
+    gun.setOrigin(sf::Vector2f(weapon.offset, 2));
     gun.setFillColor(sf::Color::Black);
     gun.setPosition(sphere.getPosition());
 
     gunshot.LoadAnimationData("player/gunfire.json");
-    gunshot.GetSprite().setOrigin(sf::Vector2f(definitions::PlayerDefinition::GUN_OFFSET - definitions::PlayerDefinition::GUN_LENGTH, gunshot.GetSprite().getGlobalBounds().height / 2));
+    gunshot.GetSprite().setOrigin(sf::Vector2f(weapon.offset - weapon.length, gunshot.GetSprite().getGlobalBounds().height / 2));
     gunshot.SetPosition(sphere.getPosition().x, sphere.getPosition().y);
 }
 
@@ -51,9 +56,9 @@ void Avatar::Update(sf::Time elapsed)
     {
         if (Attacking)
         {
-            switch (Data.properties.player_class)
+            switch (Data.properties.weapon_type)
             {
-                case network::PlayerClass::Melee:
+                case definitions::WeaponType::Sword:
                 {
                     sword.setPosition(sphere.getPosition());
                     sword.rotate(360 * elapsed.asSeconds());
@@ -70,7 +75,8 @@ void Avatar::Update(sf::Time elapsed)
                     }
                 }
                 break;
-                case network::PlayerClass::Ranged:
+                case definitions::WeaponType::HitscanGun:
+                case definitions::WeaponType::BurstGun:
                 {
                     gun.setPosition(sphere.getPosition());
                     gunshot.SetPosition(sphere.getPosition());

@@ -12,7 +12,7 @@
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/System/Clock.hpp>
 #include "entity_data.h"
-#include "player_info.h"
+#include "player.h"
 #include "region.h"
 #include <memory>
 #include <vector>
@@ -37,7 +37,6 @@ private:
     bool running = false;
 
     sf::TcpListener listener;
-    std::vector<PlayerInfo> players;
     uint16_t owner = 0;
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
@@ -46,24 +45,23 @@ private:
 
     void update();
     void listen();
-    void checkMessages(PlayerInfo& player);
+    void checkMessages(Player& player);
 
     void startGame();
 
     uint16_t getPlayerUid();
 
-    void initLobby(PlayerInfo& player);
-    void playerJoined(PlayerInfo& player);
-    void changePlayerProperty(PlayerInfo& player);
-    void startLoading(PlayerInfo& player);
-    void loadingComplete(PlayerInfo& player);
-    void leaveGame(PlayerInfo& player);
-    void updatePlayerState(PlayerInfo& player);
-    void startPlayerAction(PlayerInfo& player);
-    void changeRegion(PlayerInfo& player);
+    void initLobby(Player& player);
+    void playerJoined(Player& player);
+    void changePlayerProperty(Player& player);
+    void startLoading(Player& player);
+    void loadingComplete(Player& player);
+    void leaveGame(Player& player);
+    void updatePlayerState(Player& player);
+    void startPlayerAction(Player& player);
+    void changeRegion(Player& player);
 
     void broadcastStates();
-    void checkAttack(PlayerInfo& player);
 };
 
 } // server

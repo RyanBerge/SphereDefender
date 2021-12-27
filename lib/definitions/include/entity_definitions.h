@@ -39,17 +39,46 @@ struct EntityDefinition
 
 EntityDefinition GetEntityDefinition(EntityType type);
 
-namespace PlayerDefinition
+enum class WeaponType
 {
-    constexpr int PLAYER_RADIUS = 18;
-    constexpr int PLAYER_SPEED = 100;
-    //constexpr int PLAYER_SPEED = 250;
-    constexpr int SWORD_OFFSET = 18;
-    constexpr int SWORD_LENGTH = 20;
-    constexpr int GUN_OFFSET = -18;
-    constexpr int GUN_LENGTH = 7;
-    constexpr int SWORD_DAMAGE = 50;
-    constexpr int GUN_DAMAGE = 20;
-}
+    Sword, BurstGun, HitscanGun
+};
+
+struct WeaponKnockback
+{
+    float distance; // total distance over duration in pixels
+    float duration; // duration in seconds
+};
+
+struct Weapon
+{
+    WeaponType type;
+    int damage;
+    int attack_cooldown;
+    WeaponKnockback knockback;
+    int length;
+    int offset;
+
+    int arc;
+    int arc_speed;
+
+    int projectiles_per_attack;
+    int delay_per_projectile;
+    int projectile_spread;
+};
+
+Weapon GetWeapon(WeaponType type);
+
+struct PlayerDefinition
+{
+public:
+    static PlayerDefinition Get();
+
+    int radius;
+    int speed;
+
+private:
+    PlayerDefinition();
+};
 
 } // definitions

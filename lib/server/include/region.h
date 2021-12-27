@@ -10,7 +10,6 @@
 #pragma once
 
 #include "enemy.h"
-#include "player_info.h"
 #include <list>
 #include <random>
 #include "SFML/System/Clock.hpp"
@@ -24,7 +23,7 @@ public:
     Region();
     Region(definitions::RegionName region_name, unsigned player_count, float battery_level);
 
-    void Update(sf::Time elapsed, std::vector<PlayerInfo>& players);
+    void Update(sf::Time elapsed);
     void Cull();
 
     definitions::ConvoyDefinition Convoy{};

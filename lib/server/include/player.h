@@ -1,6 +1,6 @@
 /**************************************************************************************************
  *  File:       player_info.h
- *  Class:      PlayerInfo
+ *  Class:      Player
  *
  *  Purpose:    The representation of players from the server's point-of-view
  *
@@ -11,13 +11,15 @@
 
 #include <SFML/Network/TcpSocket.hpp>
 #include <memory>
+#include <list>
 #include "entity_data.h"
 #include "game_math.h"
+#include "region.h"
 #include "region_definitions.h"
 
 namespace server {
 
-class PlayerInfo
+class Player
 {
 public:
     enum class PlayerStatus
@@ -30,20 +32,16 @@ public:
         Dead
     };
 
-    struct WeaponKnockback
-    {
-        float distance; // total distance over duration in pixels
-        float duration; // duration in seconds
-    };
+    Player();
 
-    void Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy);
+    void Update(sf::Time elapsed, Region& region);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     void StartAttack(uint16_t attack_angle);
     sf::FloatRect GetBounds();
     util::LineSegment GetSwordLocation();
     sf::Vector2f GetAttackVector();
-    uint8_t GetWeaponDamage();
-    WeaponKnockback GetWeaponKnockback();
+    definitions::Weapon GetWeapon();
+    void SetWeapon(definitions::Weapon new_weapon);
     void Damage(int damage_value);
 
     std::shared_ptr<sf::TcpSocket> Socket;
@@ -54,13 +52,10 @@ public:
 
 private:
     sf::FloatRect getBoundingBox(sf::Vector2f position);
+    void handleAttack(sf::Time elapsed, Region& region);
 
-    double movement_speed = definitions::PlayerDefinition::PLAYER_SPEED; // pixels per second
-    int swing_speed = 360; // degrees per second
-    int swing_arc = 90; // degrees
-    int sword_offset = definitions::PlayerDefinition::SWORD_OFFSET;
-    int sword_length = definitions::PlayerDefinition::SWORD_LENGTH;
-
+    definitions::PlayerDefinition definition;
+    definitions::Weapon weapon;
     sf::Vector2f velocity;
     double starting_attack_angle;
     double current_attack_angle;

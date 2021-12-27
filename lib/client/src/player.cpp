@@ -29,9 +29,9 @@ void Player::Update(sf::Time elapsed)
 {
     Avatar.Update(elapsed);
 
-    if (Avatar.Data.properties.player_class == network::PlayerClass::Ranged)
+    if (Avatar.Data.properties.weapon_type == definitions::WeaponType::BurstGun)
     {
-        if (attacking && attack_timer.getElapsedTime().asMilliseconds() >= GUN_ATTACK_COOLDOWN)
+        if (attacking && attack_timer.getElapsedTime().asMilliseconds() >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
         {
             startAttack(sf::Mouse::getPosition(resources::GetWindow()));
             attack_timer.restart();
@@ -99,24 +99,9 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
     {
         sf::Vector2i click_point{event.x, event.y};
 
-        switch (Avatar.Data.properties.player_class)
+        if (attack_timer.getElapsedTime().asMilliseconds() >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
         {
-            case network::PlayerClass::Melee:
-            {
-                if (!Avatar.Attacking)
-                {
-                    startAttack(click_point);
-                }
-            }
-            break;
-            case network::PlayerClass::Ranged:
-            {
-                if (attack_timer.getElapsedTime().asMilliseconds() >= GUN_ATTACK_COOLDOWN)
-                {
-                    startAttack(click_point);
-                }
-            }
-            break;
+            startAttack(click_point);
         }
     }
 }
@@ -201,11 +186,11 @@ void Player::startAttack(sf::Vector2i point)
         float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
 
         uint16_t attack_angle = 0;
-        if (Avatar.Data.properties.player_class == network::PlayerClass::Melee)
+        if (Avatar.Data.properties.weapon_type == definitions::WeaponType::Sword)
         {
             attack_angle = (static_cast<uint16_t>(rotation + 315)) % 360;
         }
-        else if (Avatar.Data.properties.player_class == network::PlayerClass::Ranged)
+        else
         {
             attack_angle = (static_cast<uint16_t>(rotation + 360)) % 360;
         }

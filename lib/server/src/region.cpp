@@ -35,6 +35,9 @@ Region::Region(definitions::RegionName region_name, unsigned player_count, float
         Obstacles.push_back(obstacle.bounds);
     }
 
+    auto convoy_collisions = Convoy.GetCollisions();
+    Obstacles.insert(Obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
+
     spawn_enemies = definition.leyline;
 
     if (definition.leyline)
@@ -47,13 +50,13 @@ Region::Region(definitions::RegionName region_name, unsigned player_count, float
     last_spawn = 0;
 }
 
-void Region::Update(sf::Time elapsed, std::vector<PlayerInfo>& players)
+void Region::Update(sf::Time elapsed)
 {
     float region_age = age_timer.getElapsedTime().asSeconds();
 
     for (auto& enemy : Enemies)
     {
-        enemy.Update(elapsed, Convoy, players, Obstacles);
+        enemy.Update(elapsed, Convoy, Obstacles);
     }
 
     int siphon_rate = 0;

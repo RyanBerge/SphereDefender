@@ -4,9 +4,11 @@ find_package(SFML COMPONENTS network PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/
 set(Sources
     src/enemy.cpp
     src/main.cpp
-    src/player_info.cpp
+    src/player_list.cpp
+    src/player.cpp
     src/region.cpp
     src/server.cpp
+    src/util.cpp
 )
 
 add_executable(${TargetName} ${Sources})
