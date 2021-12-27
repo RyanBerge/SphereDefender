@@ -27,6 +27,10 @@ struct EntityDefinition
     float base_movement_speed;
     float attack_damage;
     float attack_range;
+    float minimum_leap_range;
+    float maximum_leap_range;
+    float leaping_speed;
+    float leaping_distance;
     float feeding_range;
     float attack_distance;
     float attack_duration;

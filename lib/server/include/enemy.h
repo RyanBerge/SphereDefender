@@ -16,6 +16,7 @@
 #include "entity_data.h"
 #include "player_info.h"
 #include "region_definitions.h"
+#include "messaging.h"
 
 namespace server {
 
@@ -35,7 +36,9 @@ public:
         None,
         Attacking,
         Knockback,
-        Stunned
+        Sniffing,
+        Stunned,
+        Leaping
     };
 
     Enemy();
@@ -84,9 +87,23 @@ private:
     KnockbackState knockback_state = KnockbackState::Start;
     sf::Clock knockback_timer;
 
+    float sniff_cooldown;
+    sf::Clock sniff_timer;
+
     bool stunned = false;
     sf::Clock stun_timer;
 
+    enum class LeapingState
+    {
+        Start, Windup, Leap, Cleanup
+    };
+
+    LeapingState leaping_state = LeapingState::Start;
+    sf::Vector2f leap_vector;
+    float leap_cooldown;
+    sf::Clock leap_timer;
+
+    void setActionFlags(std::vector<PlayerInfo>& players);
     void setBehavior(Behavior behavior, std::vector<PlayerInfo>& players);
     void setAction(Action action, std::vector<PlayerInfo>& players);
     void resetActionStates();
@@ -96,9 +113,12 @@ private:
     sf::Vector2f getTargetPlayerPoint(std::vector<PlayerInfo>& players);
     void move(sf::Time elapsed, sf::Vector2f destination, std::vector<sf::FloatRect> obstacles, definitions::ConvoyDefinition convoy);
     void handleAttack(sf::Time elapsed, std::vector<PlayerInfo>& players);
-    void checkAttackHit(std::vector<PlayerInfo>& players);
+    bool checkAttackHit(std::vector<PlayerInfo>& players);
+    bool checkLeapHit(std::vector<PlayerInfo>& players);
     void handleKnockback(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
     void handleStunned(std::vector<PlayerInfo>& players);
+    void handleSniffing(std::vector<PlayerInfo>& players);
+    void handleLeaping(sf::Time elapsed, std::vector<PlayerInfo>& players, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
 };
 
 } // server

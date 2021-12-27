@@ -64,6 +64,7 @@ build() {
 
         ${CMAKE} \
             -G "${GENERATOR}" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DCMAKE_INSTALL_PREFIX=../../../install \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_BUILD_TYPE=${BUILD} \
@@ -83,6 +84,7 @@ build() {
 
         ${CMAKE} \
             -G "${GENERATOR}" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DCMAKE_INSTALL_PREFIX=../../../install \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_BUILD_TYPE=${BUILD} \
@@ -97,7 +99,7 @@ build() {
 
     mkdir -p build
     pushd build
-    ${CMAKE} -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=${BUILD} ../
+    ${CMAKE} -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../
     ${MAKE} --no-print-directory
     popd
 

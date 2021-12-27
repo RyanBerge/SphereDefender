@@ -29,6 +29,8 @@ struct EnemyActionFlags
     bool stunned: 1;
     bool start_attack: 1;
     bool dead: 1;
+    bool sniffing: 1;
+    bool leaping: 1;
 };
 
 struct PlayerAction

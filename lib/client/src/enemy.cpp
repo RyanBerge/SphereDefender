@@ -72,9 +72,17 @@ void Enemy::ChangeAction(network::EnemyAction action)
     {
         spritesheet.SetAnimation("Move");
     }
+    else if (action.flags.sniffing)
+    {
+        spritesheet.SetAnimation("Sniff");
+    }
     else if (action.flags.feed)
     {
         spritesheet.SetAnimation("Feed");
+    }
+    else if (action.flags.leaping)
+    {
+        spritesheet.SetAnimation("Leap");
     }
     else if (action.flags.knockback)
     {

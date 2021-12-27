@@ -21,6 +21,10 @@ public:
         small_demon.size = sf::Vector2f{25, 25};
         small_demon.attack_damage = 30;
         small_demon.attack_range = 36;
+        small_demon.minimum_leap_range = 75;
+        small_demon.maximum_leap_range = 150;
+        small_demon.leaping_speed = 750;
+        small_demon.leaping_distance = 175;
         small_demon.feeding_range = 18;
         small_demon.attack_distance = 30;
         small_demon.attack_duration = 0.25;

@@ -27,7 +27,7 @@ void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, 
     bool collision = false;
     for (auto& obstacle : obstacles)
     {
-        if (util::Intersects(GetBoundingBox(new_position), obstacle))
+        if (util::Intersects(getBoundingBox(new_position), obstacle))
         {
             collision = true;
             break;
@@ -40,7 +40,7 @@ void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, 
         sf::Vector2f partial{new_position.x, Data.position.y};
         for (auto& obstacle : obstacles)
         {
-            if (util::Intersects(GetBoundingBox(partial), obstacle))
+            if (util::Intersects(getBoundingBox(partial), obstacle))
             {
                 collision = true;
                 break;
@@ -59,7 +59,7 @@ void PlayerInfo::Update(sf::Time elapsed, std::vector<sf::FloatRect> obstacles, 
         sf::Vector2f partial{Data.position.x, new_position.y};
         for (auto& obstacle : obstacles)
         {
-            if (util::Intersects(GetBoundingBox(partial), obstacle))
+            if (util::Intersects(getBoundingBox(partial), obstacle))
             {
                 collision = true;
                 break;
@@ -120,6 +120,11 @@ void PlayerInfo::StartAttack(uint16_t attack_angle)
     starting_attack_angle = attack_angle;
     current_attack_angle = starting_attack_angle;
     Attacking = true;
+}
+
+sf::FloatRect PlayerInfo::GetBounds()
+{
+    return getBoundingBox(Data.position);
 }
 
 util::LineSegment PlayerInfo::GetSwordLocation()
@@ -188,7 +193,7 @@ void PlayerInfo::Damage(int damage_value)
     }
 }
 
-sf::FloatRect PlayerInfo::GetBoundingBox(sf::Vector2f position)
+sf::FloatRect PlayerInfo::getBoundingBox(sf::Vector2f position)
 {
     sf::FloatRect rect;
     rect.width = definitions::PlayerDefinition::PLAYER_RADIUS * 2;

@@ -9,6 +9,7 @@
 
 #include "game_math.h"
 #include <iostream>
+#include <random>
 
 using std::cout, std::endl;
 
@@ -247,6 +248,23 @@ sf::Vector2f Normalize(sf::Vector2f vector)
 {
     float magnitude = std::hypot(vector.x, vector.y);
     return sf::Vector2f{vector.x / magnitude, vector.y / magnitude};
+}
+
+namespace {
+    std::random_device random_device;
+    std::mt19937 random_generator{random_device()};
+}
+
+int GetRandomInt(int min, int max)
+{
+    std::uniform_int_distribution<> distribution(min, max);
+    return distribution(random_generator);
+}
+
+float GetRandomFloat(float min, float max)
+{
+    std::uniform_real_distribution<> distribution(min, max);
+    return distribution(random_generator);
 }
 
 } // util
