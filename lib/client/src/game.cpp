@@ -96,6 +96,11 @@ void Game::Draw()
 
         region_map.Draw();
 
+        for (auto& projectile : projectiles)
+        {
+            resources::GetWindow().draw(projectile);
+        }
+
         for (auto& enemy : enemies)
         {
             enemy.second.Draw();
@@ -223,6 +228,19 @@ void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
     for (auto& enemy : enemy_list)
     {
         enemies[enemy.id].UpdateData(enemy);
+    }
+}
+
+void Game::UpdateProjectiles(std::vector<network::ProjectileData> projectile_list)
+{
+    projectiles.clear();
+    for (auto& data : projectile_list)
+    {
+        sf::RectangleShape projectile;
+        projectile.setPosition(data.position);
+        projectile.setFillColor(sf::Color::Black);
+        projectile.setSize(sf::Vector2f{4, 4});
+        projectiles.push_back(projectile);
     }
 }
 

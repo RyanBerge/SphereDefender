@@ -23,7 +23,6 @@ namespace {
     constexpr int BASE_AGGRO_RADIUS = 175; // pixels
     constexpr float AGGRO_COEFFICIENT = 0.17;
     constexpr float CHARGE_RATE = 10;
-    constexpr float INVULNERABILITY_WINDOW = 0.3; // seconds
     constexpr float STUN_DURATION = 0.3; // seconds
     constexpr int BASE_SIPHON_RATE = 3;
     constexpr int DESPAWN_TIME = 5; // seconds
@@ -98,13 +97,13 @@ void Enemy::Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::
     }
 }
 
-void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector)
+void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector, float invulnerability_window)
 {
     if (invulnerability_timers.find(player_id) == invulnerability_timers.end())
     {
         invulnerability_timers[player_id] = sf::Clock();
     }
-    else if (invulnerability_timers[player_id].getElapsedTime().asSeconds() < INVULNERABILITY_WINDOW)
+    else if (invulnerability_timers[player_id].getElapsedTime().asSeconds() < invulnerability_windows[player_id])
     {
         return;
     }
@@ -114,6 +113,7 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKno
     }
 
     invulnerability_timers[player_id].restart();
+    invulnerability_windows[player_id] = invulnerability_window;
 
     if (Data.health < damage)
     {

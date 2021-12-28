@@ -35,6 +35,7 @@ public:
     int GetPlayerCount();
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
+    void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
@@ -49,6 +50,7 @@ private:
     Player local_player;
     std::map<uint16_t, Avatar> avatars;
     std::map<uint16_t, Enemy> enemies;
+    std::vector<sf::RectangleShape> projectiles;
     sf::RectangleShape black_overlay;
 
     std::atomic_bool loaded = false;

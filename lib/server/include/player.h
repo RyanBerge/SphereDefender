@@ -39,10 +39,10 @@ public:
     void StartAttack(uint16_t attack_angle);
     sf::FloatRect GetBounds();
     util::LineSegment GetSwordLocation();
-    sf::Vector2f GetAttackVector();
     definitions::Weapon GetWeapon();
     void SetWeapon(definitions::Weapon new_weapon);
     void Damage(int damage_value);
+    bool SpawnProjectile(definitions::Projectile& out_projectile);
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;
@@ -56,6 +56,9 @@ private:
 
     definitions::PlayerDefinition definition;
     definitions::Weapon weapon;
+    sf::Clock projectile_timer;
+    int projectiles_fired = 0;
+    bool spawn_projectile = false;
     sf::Vector2f velocity;
     double starting_attack_angle;
     double current_attack_angle;

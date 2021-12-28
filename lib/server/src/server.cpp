@@ -87,6 +87,12 @@ void Server::update()
             if (player.Status == Player::PlayerStatus::Alive)
             {
                 player.Update(elapsed, region);
+
+                definitions::Projectile projectile;
+                if (player.SpawnProjectile(projectile))
+                {
+                    region.Projectiles.push_front(projectile);
+                }
             }
         }
 
@@ -524,6 +530,7 @@ void Server::broadcastStates()
 {
     std::vector<network::PlayerData> player_list;
     std::vector<network::EnemyData> enemy_list;
+    std::vector<network::ProjectileData> projectile_list;
 
     for (auto& player : PlayerList)
     {
@@ -535,11 +542,20 @@ void Server::broadcastStates()
         enemy_list.push_back(enemy.Data);
     }
 
+    for (auto& projectile : region.Projectiles)
+    {
+        network::ProjectileData data;
+        data.id = projectile.id;
+        data.position = projectile.position;
+        projectile_list.push_back(data);
+    }
+
     for (auto& player : PlayerList)
     {
         ServerMessage::PlayerStates(*player.Socket, player_list);
         ServerMessage::EnemyUpdate(*player.Socket, enemy_list);
         ServerMessage::BatteryUpdate(*player.Socket, region.BatteryLevel);
+        ServerMessage::ProjectileUpdate(*player.Socket, projectile_list);
     }
 }
 

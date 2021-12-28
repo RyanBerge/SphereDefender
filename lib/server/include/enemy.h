@@ -43,7 +43,7 @@ public:
     Enemy();
 
     void Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
-    void WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector);
+    void WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector, float invulnerability_window);
 
     Behavior GetBehavior();
     Action GetAction();
@@ -63,6 +63,7 @@ private:
     sf::Vector2f attack_vector{};
 
     std::map<uint16_t, sf::Clock> invulnerability_timers;
+    std::map<uint16_t, float> invulnerability_windows;
     sf::Clock despawn_timer;
 
     sf::Vector2f knockback_vector{};

@@ -9,8 +9,11 @@
  *************************************************************************************************/
 #include "region.h"
 #include "region_definitions.h"
+#include "game_math.h"
 #include <algorithm>
 #include <iostream>
+
+using network::ClientMessage, network::ServerMessage;
 
 using std::cout, std::endl;
 
@@ -90,6 +93,8 @@ void Region::Update(sf::Time elapsed)
     {
         BatteryLevel = 1000;
     }
+
+    handleProjectiles(elapsed);
 }
 
 void Region::Cull()
@@ -116,6 +121,45 @@ void Region::spawnEnemy()
     if (spawn_interval < MINIMUM_SPAWN_INTERVAL)
     {
         spawn_interval = MINIMUM_SPAWN_INTERVAL;
+    }
+}
+
+void Region::handleProjectiles(sf::Time elapsed)
+{
+    auto iterator = Projectiles.begin();
+    while (iterator != Projectiles.end())
+    {
+        auto& projectile = *iterator;
+        projectile.position += projectile.velocity * elapsed.asSeconds();
+        bool destroy = false;
+        if (projectile.hostile == false)
+        {
+            for (auto& enemy : Enemies)
+            {
+                if (util::Contains(enemy.GetBounds(), projectile.position))
+                {
+                    enemy.WeaponHit(projectile.owner, projectile.damage, projectile.knockback, -projectile.velocity, projectile.invulnerability_window);
+                    destroy = true;
+                }
+            }
+        }
+
+        for (auto& obstacle : Obstacles)
+        {
+            if (util::Contains(obstacle, projectile.position))
+            {
+                destroy = true;
+            }
+        }
+
+        if (destroy)
+        {
+            iterator = Projectiles.erase(iterator);
+        }
+        else
+        {
+            ++iterator;
+        }
     }
 }
 

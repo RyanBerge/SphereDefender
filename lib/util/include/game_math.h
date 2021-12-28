@@ -35,6 +35,7 @@ namespace util
     bool IntersectionPoint(sf::FloatRect rect, LineVector line, sf::Vector2f& out_intersection_point);
     double Distance(sf::Vector2f p1, sf::Vector2f p2);
     sf::Vector2f Normalize(sf::Vector2f vector);
+    sf::Vector2f AngleToVector(double angle);
 
     int GetRandomInt(int min, int max);
     float GetRandomFloat(float min, float max);

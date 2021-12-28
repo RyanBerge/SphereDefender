@@ -94,6 +94,10 @@
 * Broadcasted every frame
 * `[batterylevel:4]`
 
+#### `ServerMessage::ProjectileUpdate`
+* Broadcasted every frame
+* `[numprojectiles:2][id:2][position:8]`
+
 #### `ServerMessage::ChangeRegion`
 * Broadcasted when a region change happens
 * `[regionid:1]`

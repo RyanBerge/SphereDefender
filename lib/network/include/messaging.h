@@ -110,6 +110,7 @@ public:
         PlayerStates,
         EnemyUpdate,
         BatteryUpdate,
+        ProjectileUpdate,
         ChangeRegion,
 
         Error = 0xFF
@@ -130,6 +131,7 @@ public:
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
+    static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
     static bool ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
@@ -143,6 +145,7 @@ public:
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
+    static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName& out_region);
 };
 

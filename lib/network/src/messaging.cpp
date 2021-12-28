@@ -833,6 +833,42 @@ bool ServerMessage::BatteryUpdate(sf::TcpSocket& socket, float battery_level)
     return true;
 }
 
+bool ServerMessage::ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles)
+{
+    Code code = ServerMessage::Code::ProjectileUpdate;
+
+    uint16_t num_projectiles = projectiles.size();
+
+    size_t buffer_size = sizeof(code) + sizeof(num_projectiles) + (sizeof(ProjectileData::id) + sizeof(ProjectileData::position)) * projectiles.size();
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &num_projectiles, sizeof(num_projectiles));
+    offset += sizeof(num_projectiles);
+
+    for (auto& projectile : projectiles)
+    {
+        std::memcpy(buffer + offset, &projectile.id, sizeof(projectile.id));
+        offset += sizeof(projectile.id);
+        std::memcpy(buffer + offset, &projectile.position.x, sizeof(projectile.position.x));
+        offset += sizeof(projectile.position.x);
+        std::memcpy(buffer + offset, &projectile.position.y, sizeof(projectile.position.y));
+        offset += sizeof(projectile.position.y);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
 bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
 {
     Code code = ServerMessage::Code::ChangeRegion;
@@ -1179,7 +1215,47 @@ bool ServerMessage::DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_batter
     return true;
 }
 
-bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName&  out_region)
+bool ServerMessage::DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles)
+{
+    uint16_t num_projectiles;
+    std::vector<ProjectileData> projectiles;
+
+    if (!read(socket, &num_projectiles, sizeof(num_projectiles)))
+    {
+        cerr << "Network: " << __func__ << " failed to read num projectiles." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < num_projectiles; ++i)
+    {
+        ProjectileData projectile;
+
+        if (!read(socket, &projectile.id, sizeof(projectile.id)))
+        {
+            cerr << "Network: " << __func__ << " failed to read projectile id." << endl;
+            return false;
+        }
+
+        if (!read(socket, &projectile.position.x, sizeof(projectile.position.x)))
+        {
+            cerr << "Network: " << __func__ << " failed to read projectile x position." << endl;
+            return false;
+        }
+
+        if (!read(socket, &projectile.position.y, sizeof(projectile.position.y)))
+        {
+            cerr << "Network: " << __func__ << " failed to read projectile y position." << endl;
+            return false;
+        }
+
+        projectiles.push_back(projectile);
+    }
+
+    out_projectiles = projectiles;
+    return true;
+}
+
+bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName& out_region)
 {
     definitions::RegionName region;
 

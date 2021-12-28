@@ -22,9 +22,9 @@ public:
         small_demon.attack_damage = 30;
         small_demon.attack_range = 36;
         small_demon.minimum_leap_range = 75;
-        small_demon.maximum_leap_range = 150;
+        small_demon.maximum_leap_range = 200;
         small_demon.leaping_speed = 750;
-        small_demon.leaping_distance = 175;
+        small_demon.leaping_distance = 225;
         small_demon.feeding_range = 18;
         small_demon.attack_distance = 30;
         small_demon.attack_duration = 0.25;
@@ -62,31 +62,35 @@ Weapon GetWeapon(WeaponType type)
             weapon.attack_cooldown = 250; // milliseconds between attacks
             weapon.arc = 90; // degrees;
             weapon.arc_speed = 360; // degrees per second
+            weapon.invulnerability_window = 0.3; // seconds
         }
         break;
         case WeaponType::HitscanGun:
         {
             weapon.offset = -18;
             weapon.length = 7;
-            weapon.damage = 35;
-            weapon.attack_cooldown = 300; // milliseconds between attacks
+            weapon.damage = 50;
+            weapon.attack_cooldown = 500; // milliseconds between attacks
             weapon.knockback.distance = 0;
             weapon.knockback.duration = 0;
             weapon.projectiles_per_attack = 1;
             weapon.projectile_spread = 0; // degrees
+            weapon.invulnerability_window = 0;
         }
         break;
         case WeaponType::BurstGun:
         {
             weapon.offset = -18;
             weapon.length = 7;
-            weapon.damage = 50;
-            weapon.attack_cooldown = 600; // milliseconds between attacks
+            weapon.damage = 25;
+            weapon.attack_cooldown = 900; // milliseconds between attacks
             weapon.knockback.distance = 0;
             weapon.knockback.duration = 0;
             weapon.projectiles_per_attack = 4;
-            weapon.delay_per_projectile = 50; // milliseconds
-            weapon.projectile_spread = 10; // degrees
+            weapon.delay_per_projectile = 75; // milliseconds
+            weapon.projectile_spread = 8; // degrees
+            weapon.projectile_speed = 800; // pixels per second
+            weapon.invulnerability_window = 0;
         }
         break;
     }

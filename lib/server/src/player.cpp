@@ -10,6 +10,7 @@
 
 #include "player.h"
 #include "game_math.h"
+#include "entity_definitions.h"
 #include "util.h"
 #include <cmath>
 #include <iostream>
@@ -103,6 +104,7 @@ void Player::StartAttack(uint16_t attack_angle)
 {
     starting_attack_angle = attack_angle;
     current_attack_angle = starting_attack_angle;
+    projectile_timer.restart();
     Attacking = true;
 }
 
@@ -119,11 +121,6 @@ util::LineSegment Player::GetSwordLocation()
     sword.p2.x = (-weapon.offset + weapon.length) * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
     sword.p2.y = (-weapon.offset + weapon.length) * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
     return sword;
-}
-
-sf::Vector2f Player::GetAttackVector()
-{
-    return sf::Vector2f{static_cast<float>(std::cos(current_attack_angle * util::pi / 180)), static_cast<float>(std::sin(current_attack_angle * util::pi / 180))};
 }
 
 definitions::Weapon Player::GetWeapon()
@@ -149,6 +146,38 @@ void Player::Damage(int damage_value)
     }
 }
 
+bool Player::SpawnProjectile(definitions::Projectile& out_projectile)
+{
+    static uint16_t projectile_id = 0;
+
+    if (spawn_projectile)
+    {
+        sf::Vector2f attack_vector = util::AngleToVector(current_attack_angle + util::GetRandomInt(-weapon.projectile_spread / 2, weapon.projectile_spread / 2));
+        definitions::Projectile projectile;
+        projectile.id = projectile_id++;
+        projectile.velocity = attack_vector * static_cast<float>(weapon.projectile_speed);
+        projectile.position = Data.position - attack_vector * static_cast<float>(weapon.offset);
+        projectile.owner = Data.id;
+        projectile.hostile = false;
+        projectile.damage = weapon.damage;
+        projectile.knockback = weapon.knockback;
+        projectile.invulnerability_window = weapon.invulnerability_window;
+
+        out_projectile = projectile;
+        ++projectiles_fired;
+        spawn_projectile = false;
+        if (projectiles_fired == weapon.projectiles_per_attack)
+        {
+            Attacking = false;
+            projectiles_fired = 0;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 void Player::handleAttack(sf::Time elapsed, Region& region)
 {
     switch (Data.properties.weapon_type)
@@ -171,15 +200,23 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
 
                 if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
                 {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position);
+                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
                 }
             }
         }
         break;
         case definitions::WeaponType::BurstGun:
+        {
+            if (projectiles_fired < weapon.projectiles_per_attack && projectile_timer.getElapsedTime().asMilliseconds() >= weapon.delay_per_projectile)
+            {
+                spawn_projectile = true;
+                projectile_timer.restart();
+            }
+        }
+        break;
         case definitions::WeaponType::HitscanGun:
         {
-            sf::Vector2f attack_vector = GetAttackVector();
+            sf::Vector2f attack_vector = util::AngleToVector(current_attack_angle);
 
             bool collision = false;
             sf::Vector2f point;
@@ -232,7 +269,7 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
                 }
                 else
                 {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position);
+                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
                 }
             }
 

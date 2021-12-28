@@ -29,6 +29,7 @@ public:
     definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;
     std::vector<sf::FloatRect> Obstacles;
+    std::list<definitions::Projectile> Projectiles;
     float BatteryLevel = 0;
 
 private:
@@ -41,6 +42,7 @@ private:
     bool charging = false;
 
     void spawnEnemy();
+    void handleProjectiles(sf::Time elapsed);
 };
 
 } // namespace server

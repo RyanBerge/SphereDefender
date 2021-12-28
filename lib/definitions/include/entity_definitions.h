@@ -58,6 +58,7 @@ struct Weapon
     WeaponKnockback knockback;
     int length;
     int offset;
+    float invulnerability_window;
 
     int arc;
     int arc_speed;
@@ -65,9 +66,22 @@ struct Weapon
     int projectiles_per_attack;
     int delay_per_projectile;
     int projectile_spread;
+    int projectile_speed;
 };
 
 Weapon GetWeapon(WeaponType type);
+
+struct Projectile
+{
+    uint16_t id;
+    sf::Vector2f position;
+    sf::Vector2f velocity;
+    bool hostile;
+    uint16_t owner;
+    int damage;
+    WeaponKnockback knockback;
+    float invulnerability_window;
+};
 
 struct PlayerDefinition
 {

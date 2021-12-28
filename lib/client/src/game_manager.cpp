@@ -408,6 +408,15 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::ProjectileUpdate:
+            {
+                std::vector<network::ProjectileData> projectile_list;
+                if (ServerMessage::DecodeProjectileUpdate(resources::GetServerSocket(), projectile_list))
+                {
+                    Game.UpdateProjectiles(projectile_list);
+                }
+            }
+            break;
             case ServerMessage::Code::BatteryUpdate:
             {
                 float battery_level;

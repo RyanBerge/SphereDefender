@@ -51,4 +51,10 @@ struct EnemyData
     float charge;
 };
 
+struct ProjectileData
+{
+    uint16_t id;
+    sf::Vector2f position;
+};
+
 } // namespace network

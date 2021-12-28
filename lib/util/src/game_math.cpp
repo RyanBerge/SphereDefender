@@ -250,6 +250,11 @@ sf::Vector2f Normalize(sf::Vector2f vector)
     return sf::Vector2f{vector.x / magnitude, vector.y / magnitude};
 }
 
+sf::Vector2f AngleToVector(double angle)
+{
+    return Normalize(sf::Vector2f{static_cast<float>(std::cos(angle * util::pi / 180)), static_cast<float>(std::sin(angle * util::pi / 180))});
+}
+
 namespace {
     std::random_device random_device;
     std::mt19937 random_generator{random_device()};
