@@ -43,6 +43,7 @@ public:
     void SetWeapon(definitions::Weapon new_weapon);
     void Damage(int damage_value);
     bool SpawnProjectile(definitions::Projectile& out_projectile);
+    definitions::ItemType UseItem();
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;
@@ -56,6 +57,7 @@ private:
 
     definitions::PlayerDefinition definition;
     definitions::Weapon weapon;
+    definitions::ItemType equipped_item = definitions::ItemType::Medpack;
     sf::Clock projectile_timer;
     int projectiles_fired = 0;
     bool spawn_projectile = false;

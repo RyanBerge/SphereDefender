@@ -40,6 +40,10 @@ Gui::Gui()
     healthbar_frame.GetSprite().setOrigin(sf::Vector2f{0, healthbar.getSize().y});
     healthbar_frame.SetPosition(sf::Vector2f{window_resolution.x * 0.05f - 2, window_resolution.y * 0.95f});
 
+    inventory_item.LoadAnimationData("gui/inventory_item.json");
+    inventory_item.SetPosition(sf::Vector2f{window_resolution.x * 0.15f, window_resolution.y * 0.88f});
+    inventory_item.SetAnimation("Medpack");
+
     battery_bar_frame.setSize(sf::Vector2f{800, 20});
     battery_bar_frame.setOrigin(sf::Vector2f{0, 10});
     battery_bar_frame.setPosition(sf::Vector2f{40, 40});
@@ -126,6 +130,7 @@ void Gui::Draw()
         {
             resources::GetWindow().draw(healthbar);
             healthbar_frame.Draw();
+            inventory_item.Draw();
         }
 
         resources::GetWindow().draw(battery_bar);
@@ -196,6 +201,23 @@ void Gui::UpdateHealth(uint8_t value)
 void Gui::UpdateBatteryBar(float battery_level)
 {
     battery_bar.setScale(sf::Vector2f{battery_level / 1000, 1});
+}
+
+void Gui::ChangeItem(definitions::ItemType item)
+{
+    switch (item)
+    {
+        case definitions::ItemType::None:
+        {
+            inventory_item.SetAnimation("None");
+        }
+        break;
+        case definitions::ItemType::Medpack:
+        {
+            inventory_item.SetAnimation("Medpack");
+        }
+        break;
+    }
 }
 
 bool Gui::Available()

@@ -83,6 +83,11 @@ struct Projectile
     float invulnerability_window;
 };
 
+enum class ItemType
+{
+    None, Medpack
+};
+
 struct PlayerDefinition
 {
 public:

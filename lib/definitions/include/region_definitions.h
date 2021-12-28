@@ -76,7 +76,7 @@ struct RegionDefinition
     std::vector<Npc> npcs;
 };
 
-constexpr RegionName STARTNG_REGION = RegionName::Town;
+constexpr RegionName STARTNG_REGION = RegionName::Leyline;
 
 RegionDefinition GetRegionDefinition(RegionName region);
 

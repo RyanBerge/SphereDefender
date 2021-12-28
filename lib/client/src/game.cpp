@@ -163,6 +163,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
 
     region_map = RegionMap();
     region_map.Load(definitions::STARTNG_REGION);
+    gui = Gui();
     gui.Load();
     local_player.Load(local);
 
@@ -273,6 +274,11 @@ void Game::RemovePlayer(uint16_t player_id)
     // TODO: Thread-safety
     cout << avatars[player_id].Data.name << " disconnected." << endl;
     avatars.erase(player_id);
+}
+
+void Game::ChangeItem(definitions::ItemType item)
+{
+    gui.ChangeItem(item);
 }
 
 void Game::ChangeRegion(definitions::RegionName region_name)
@@ -486,6 +492,11 @@ void Game::onKeyPressed(sf::Event event)
                 }
                 break;
             }
+        }
+
+        if (gui.Available() && event.key.code == Settings::GetInstance().Bindings.Item)
+        {
+            ClientMessage::UseItem(resources::GetServerSocket());
         }
     }
 }

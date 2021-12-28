@@ -199,6 +199,11 @@ void Server::checkMessages(Player& player)
             startPlayerAction(player);
         }
         break;
+        case ClientMessage::Code::UseItem:
+        {
+            useItem(player);
+        }
+        break;
         case ClientMessage::Code::ChangeRegion:
         {
             changeRegion(player);
@@ -506,6 +511,11 @@ void Server::startPlayerAction(Player& player)
             ServerMessage::PlayerStartAction(*p.Socket, player.Data.id, action);
         }
     }
+}
+
+void Server::useItem(Player& player)
+{
+    player.UseItem();
 }
 
 void Server::changeRegion(Player& player)

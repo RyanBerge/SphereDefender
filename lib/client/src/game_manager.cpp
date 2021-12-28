@@ -390,6 +390,15 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::ChangeItem:
+            {
+                definitions::ItemType item;
+                if (ServerMessage::DecodeChangeItem(resources::GetServerSocket(), item))
+                {
+                    Game.ChangeItem(item);
+                }
+            }
+            break;
             case ServerMessage::Code::PlayerStates:
             {
                 std::vector<network::PlayerData> player_list;

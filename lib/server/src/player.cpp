@@ -12,13 +12,18 @@
 #include "game_math.h"
 #include "entity_definitions.h"
 #include "util.h"
+#include "messaging.h"
 #include <cmath>
 #include <iostream>
 #include "SFML/Graphics/Vertex.hpp"
 
 using std::cout, std::endl;
+using network::ClientMessage, network::ServerMessage;
 
 namespace server {
+namespace {
+    constexpr int MEDPACK_HEAL_VALUE = 60;
+}
 
 Player::Player() : definition{definitions::PlayerDefinition::Get()} { }
 
@@ -176,6 +181,32 @@ bool Player::SpawnProjectile(definitions::Projectile& out_projectile)
     }
 
     return false;
+}
+
+definitions::ItemType Player::UseItem()
+{
+    switch (equipped_item)
+    {
+        case definitions::ItemType::None:
+        {
+            return equipped_item;
+        }
+        break;
+        case definitions::ItemType::Medpack:
+        {
+            Data.health += MEDPACK_HEAL_VALUE;
+            if (Data.health > 100)
+            {
+                Data.health = 100;
+            }
+        }
+        break;
+    }
+
+    definitions::ItemType item = equipped_item;
+    equipped_item = definitions::ItemType::None;
+    ServerMessage::ChangeItem(*Socket, equipped_item);
+    return item;
 }
 
 void Player::handleAttack(sf::Time elapsed, Region& region)

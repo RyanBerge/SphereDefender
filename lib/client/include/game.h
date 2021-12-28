@@ -39,6 +39,7 @@ public:
     void UpdateBattery(float battery_level);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
+    void ChangeItem(definitions::ItemType item);
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(definitions::RegionName region);
     void EnterRegion(sf::Vector2f spawn_position);

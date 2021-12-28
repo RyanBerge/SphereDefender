@@ -28,6 +28,7 @@ public:
 
         sf::Keyboard::Key Escape;
         sf::Keyboard::Key Interact;
+        sf::Keyboard::Key Item;
     };
 
     Settings();

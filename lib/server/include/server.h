@@ -59,6 +59,7 @@ private:
     void leaveGame(Player& player);
     void updatePlayerState(Player& player);
     void startPlayerAction(Player& player);
+    void useItem(Player& player);
     void changeRegion(Player& player);
 
     void broadcastStates();

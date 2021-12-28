@@ -315,6 +315,19 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
     return true;
 }
 
+bool ClientMessage::UseItem(sf::TcpSocket& socket)
+{
+    Code code = ClientMessage::Code::UseItem;
+
+    if (!writeBuffer(socket, &code, sizeof(code)))
+    {
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
 {
     Code code = ClientMessage::Code::ChangeRegion;
@@ -768,6 +781,28 @@ bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, 
     return true;
 }
 
+bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::ItemType item)
+{
+    Code code = ServerMessage::Code::ChangeItem;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(item);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &item, sizeof(item));
+    offset += sizeof(code);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Networ: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
 {
     Code code = ServerMessage::Code::EnemyUpdate;
@@ -1146,6 +1181,20 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
     out_enemy_id = id;
     out_action = temp_action;
 
+    return true;
+}
+
+bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item)
+{
+    definitions::ItemType item;
+
+    if (!read(socket, &item, sizeof(item)))
+    {
+        cerr << "Network: " << __func__ << " failed to read num enemies." << endl;
+        return false;
+    }
+
+    out_item = item;
     return true;
 }
 

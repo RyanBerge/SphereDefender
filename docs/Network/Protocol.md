@@ -36,6 +36,9 @@
 * Sent whenever the player takes an action the server needs to know
 * `[actionflags:1][attackangle:2][...]`
 
+#### `ClientMessage::UseItem`
+* Sent when a player uses an item
+
 #### `ClientMessage::ChangeRegion`
 * Sent when a player interacts with the console to move regions
 * `[regionid:1]
@@ -81,6 +84,10 @@
 #### `ServerMessage::EnemyChangeAction`
 * Sent whenever an enemy begins an action
 * `[enemyid:2][actionflags:1][attackvector:8]`
+
+#### `ServerMessage::ChangeItem`
+* Sent to a player when their item changes
+* `[itemtype:1]`
 
 #### `ServerMessage::PlayerStates`
 * Sent every frame

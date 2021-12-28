@@ -11,6 +11,7 @@
 
 #include "cursor_button.h"
 #include "overmap.h"
+#include "entity_definitions.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -33,6 +34,7 @@ public:
     void DisplayOvermap();
     void UpdateHealth(uint8_t value);
     void UpdateBatteryBar(float battery_level);
+    void ChangeItem(definitions::ItemType item);
     bool Available();
     bool DisableActions();
     void EscapePressed();
@@ -63,6 +65,7 @@ private:
 
     sf::RectangleShape healthbar;
     Spritesheet healthbar_frame;
+    Spritesheet inventory_item;
     sf::RectangleShape battery_bar;
     sf::RectangleShape battery_bar_frame;
     sf::RectangleShape death_tint;

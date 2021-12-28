@@ -85,6 +85,13 @@ MainMenu::MainMenu()
     exit_button.RegisterLeftMouseUp([this](void){ CurrentMenu = MenuType::Exit; exitGame(); });
     main_menu.buttons.push_back(exit_button);
 
+    sf::Text controls_text;
+    controls_text.setString("Move: WASD\nAttack: Right-Click\nInteract: E\nUse Item: Shift\nOpen Menu: Escape\n");
+    controls_text.setCharacterSize(20);
+    controls_text.setPosition(window_resolution.x * 0.05f, window_resolution.y * 0.7);
+    controls_text.setFont(*font);
+    main_menu.text.push_back(controls_text);
+
     menus[MenuType::Main] = main_menu;
 
     // ========================================= Create/Join Lobby =========================================

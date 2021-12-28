@@ -60,6 +60,7 @@ public:
 
         PlayerStateChange,
         StartAction,
+        UseItem,
         ChangeRegion,
 
         LeaveGame,
@@ -77,6 +78,7 @@ public:
     static bool LeaveGame(sf::TcpSocket& socket);
     static bool PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i movement_vector);
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
+    static bool UseItem(sf::TcpSocket& socket);
     static bool ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
@@ -107,6 +109,7 @@ public:
 
         PlayerStartAction,
         EnemyChangeAction,
+        ChangeItem,
         PlayerStates,
         EnemyUpdate,
         BatteryUpdate,
@@ -128,6 +131,7 @@ public:
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
+    static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
@@ -142,6 +146,7 @@ public:
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
+    static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);

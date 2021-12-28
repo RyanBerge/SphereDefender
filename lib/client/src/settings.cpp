@@ -22,6 +22,7 @@ Settings::Settings()
     Bindings.MoveDown = sf::Keyboard::Key::S;
     Bindings.Escape = sf::Keyboard::Key::Escape;
     Bindings.Interact = sf::Keyboard::Key::E;
+    Bindings.Item = sf::Keyboard::Key::LShift;
 
     ServerSettings.ServerPort = 49879;
     DefaultServerIp = "127.0.0.1";
