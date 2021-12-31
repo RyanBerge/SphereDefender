@@ -11,12 +11,16 @@
 #include "settings.h"
 #include "resources.h"
 #include "game_manager.h"
+#include "game_math.h"
 #include <iostream>
 #include <string>
 
 using std::cout, std::cerr, std::endl;
 
 namespace client {
+namespace {
+    constexpr int INTERACTION_DISTANCE = 75;
+}
 
 Gui::Gui()
 {
@@ -88,6 +92,8 @@ Gui::Gui()
     death_tint.setPosition(0, 0);
     death_tint.setFillColor(sf::Color{100, 100, 100, 230});
 
+    interaction_marker.LoadAnimationData("gui/interaction_marker.json");
+
     menu.LoadAnimationData("gui/menu.json");
     bounds = menu.GetSprite().getGlobalBounds();
     menu.SetPosition(sf::Vector2f{window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.125f});
@@ -120,7 +126,16 @@ void Gui::Draw()
     if (enabled)
     {
         sf::View old_view = resources::GetWindow().getView();
-        GuiView.setViewport(old_view.getViewport());
+
+        resources::GetWorldView().setViewport(old_view.getViewport());
+        resources::GetWindow().setView(resources::GetWorldView());
+
+        if (!overmap.Active)
+        {
+            interaction_marker.Draw();
+        }
+
+        GuiView.setViewport(resources::GetWorldView().getViewport());
         resources::GetWindow().setView(GuiView);
 
         ui_frame.Draw();
@@ -158,6 +173,11 @@ void Gui::Draw()
             overmap.Draw();
         }
 
+        if (stash.Active)
+        {
+            stash.Draw();
+        }
+
         if (InMenus)
         {
             menu.Draw();
@@ -190,6 +210,7 @@ void Gui::SetEnabled(bool new_enabled)
     InMenus = false;
     InDialog = false;
     overmap.Active = false;
+    stash.Active = false;
 }
 
 void Gui::UpdateHealth(uint8_t value)
@@ -201,6 +222,11 @@ void Gui::UpdateHealth(uint8_t value)
 void Gui::UpdateBatteryBar(float battery_level)
 {
     battery_bar.setScale(sf::Vector2f{battery_level / 1000, 1});
+}
+
+void Gui::UpdateStash(std::array<definitions::ItemType, 24> items)
+{
+    stash.UpdateItems(items);
 }
 
 void Gui::ChangeItem(definitions::ItemType item)
@@ -220,6 +246,33 @@ void Gui::ChangeItem(definitions::ItemType item)
     }
 }
 
+void Gui::MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list)
+{
+    double distance = std::numeric_limits<double>::infinity();
+    unsigned index;
+
+    for (unsigned i = 0; i < bounds_list.size(); ++i)
+    {
+        sf::Vector2f position = sf::Vector2f{bounds_list[i].left + bounds_list[i].width / 2, bounds_list[i].top + bounds_list[i].height / 2};
+        double temp_distance = util::Distance(player_position, position);
+        if (temp_distance < distance)
+        {
+            distance = temp_distance;
+            index = i;
+        }
+    }
+
+    if (distance < INTERACTION_DISTANCE)
+    {
+        interaction_marker.SetVisible(true);
+        interaction_marker.SetPosition(bounds_list[index].left + bounds_list[index].width / 2, bounds_list[index].top - 5);
+    }
+    else
+    {
+        interaction_marker.SetVisible(false);
+    }
+}
+
 bool Gui::Available()
 {
     return !(InMenus || InDialog || overmap.Active);
@@ -227,7 +280,7 @@ bool Gui::Available()
 
 bool Gui::DisableActions()
 {
-    return InDialog || overmap.Active;
+    return InDialog || overmap.Active || stash.Active;
 }
 
 void Gui::EscapePressed()
@@ -235,6 +288,10 @@ void Gui::EscapePressed()
     if (overmap.Active)
     {
         overmap.Active = false;
+    }
+    else if (stash.Active)
+    {
+        stash.Active = false;
     }
     else if (InDialog)
     {
@@ -272,6 +329,11 @@ void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list
 void Gui::DisplayOvermap()
 {
     overmap.Active = true;
+}
+
+void Gui::DisplayStash()
+{
+    stash.Active = true;
 }
 
 void Gui::exitGame()
@@ -367,6 +429,10 @@ void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
         else if (overmap.Active)
         {
             overmap.OnMouseDown(event);
+        }
+        else if (stash.Active)
+        {
+            stash.OnMouseDown(event);
         }
 
         if (InDialog && !InMenus && event.button == sf::Mouse::Left)

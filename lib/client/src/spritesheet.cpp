@@ -57,12 +57,15 @@ void Spritesheet::Update(sf::Time elapsed)
 
 void Spritesheet::Draw()
 {
-    if (casts_shadow)
+    if (is_visible)
     {
-        resources::GetWindow().draw(shadow);
-    }
+        if (casts_shadow)
+        {
+            resources::GetWindow().draw(shadow);
+        }
 
-    resources::GetWindow().draw(sprite);
+        resources::GetWindow().draw(sprite);
+    }
 }
 
 void Spritesheet::LoadAnimationData(std::string filename)
@@ -183,6 +186,11 @@ void Spritesheet::SetTiling(bool tiled)
             sprite.setTextureRect(sf::Rect{0, 0, 12000, 12000 });
         }
     }
+}
+
+void Spritesheet::SetVisible(bool visible)
+{
+    is_visible = visible;
 }
 
 bool Spritesheet::loadTexture(std::string filename)

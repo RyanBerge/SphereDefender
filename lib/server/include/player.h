@@ -44,6 +44,7 @@ public:
     void Damage(int damage_value);
     bool SpawnProjectile(definitions::Projectile& out_projectile);
     definitions::ItemType UseItem();
+    definitions::ItemType ChangeItem(definitions::ItemType item);
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;

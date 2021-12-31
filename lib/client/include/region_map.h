@@ -21,7 +21,7 @@ class RegionMap
 public:
     enum class InteractionType
     {
-        None, NpcDialog, ConvoyConsole
+        None, NpcDialog, ConvoyConsole, ConvoyStash
     };
 
     struct Interaction
@@ -41,13 +41,14 @@ public:
 
     RegionMap();
 
-    void Update(sf::Time elapsed, Player local_player);
+    void Update(sf::Time elapsed);
     void Draw();
 
     void Load(definitions::RegionName region);
     void Unload();
 
     void InitializeRegion(definitions::RegionDefinition definition);
+    std::vector<sf::FloatRect> GetInteractablePositions();
     Interaction Interact(sf::Vector2f player_position);
     void LeaveRegion();
     void EnterRegion();
@@ -64,8 +65,6 @@ private:
     std::vector<Npc> npcs;
 
     bool leaving_region = false;
-
-    void updateInteractables(sf::Vector2f player_position);
 };
 
 } // client

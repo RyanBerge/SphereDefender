@@ -328,6 +328,28 @@ bool ClientMessage::UseItem(sf::TcpSocket& socket)
     return true;
 }
 
+bool ClientMessage::SwapItem(sf::TcpSocket& socket, uint8_t item_index)
+{
+    Code code = ClientMessage::Code::SwapItem;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(item_index);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &item_index, sizeof(item_index));
+    offset += sizeof(item_index);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
 {
     Code code = ClientMessage::Code::ChangeRegion;
@@ -446,6 +468,20 @@ bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_a
 
     out_action = temp_action;
 
+    return true;
+}
+
+bool ClientMessage::DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_index)
+{
+    uint8_t item_index;
+
+    if (!read(socket, &item_index, sizeof(item_index)))
+    {
+        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
+        return false;
+    }
+
+    out_item_index = item_index;
     return true;
 }
 
@@ -926,6 +962,32 @@ bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName 
     return true;
 }
 
+bool ServerMessage::UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items)
+{
+    Code code = ServerMessage::Code::UpdateStash;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(definitions::ItemType) * 24;
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+
+    for (unsigned i = 0; i < 24; ++i)
+    {
+        std::memcpy(buffer + offset, &items[i], sizeof(items[i]));
+        offset += sizeof(items[i]);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -1315,6 +1377,25 @@ bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::Regio
     }
 
     out_region = region;
+    return true;
+}
+
+bool ServerMessage::DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items)
+{
+    std::array<definitions::ItemType, 24> items;
+
+    for (unsigned i = 0; i < 24; ++i)
+    {
+        definitions::ItemType item;
+        if (!read(socket, &item, sizeof(item)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a region name." << endl;
+            return false;
+        }
+        items[i] = item;
+    }
+
+    out_items = items;
     return true;
 }
 

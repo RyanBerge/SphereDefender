@@ -43,6 +43,7 @@ public:
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(definitions::RegionName region);
     void EnterRegion(sf::Vector2f spawn_position);
+    void UpdateStash(std::array<definitions::ItemType, 24> items);
 
     RegionMap region_map;
 

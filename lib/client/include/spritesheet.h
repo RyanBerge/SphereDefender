@@ -31,12 +31,12 @@ public:
     sf::Sprite& GetSprite();
     void LoadAnimationData(std::string filename);
     void SetShadow(bool shadows_on);
-
     void SetAnimation(std::string animation_name);
     void SetPosition(float x, float y);
     void SetPosition(sf::Vector2f position);
     void CenterOrigin();
     void SetTiling(bool tiled);
+    void SetVisible(bool visible);
 
 private:
     struct Frame
@@ -72,6 +72,8 @@ private:
     Animation current_animation{};
     unsigned current_frame = 0;
     float animation_timer = 0;
+
+    bool is_visible = true;
 
     bool loadTexture(std::string filename);
     void setFrame(unsigned frame);

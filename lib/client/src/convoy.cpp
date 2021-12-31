@@ -80,20 +80,13 @@ void Convoy::EnterRegion()
     console.SetPosition(console.GetSprite().getPosition().x, console.GetSprite().getPosition().y + CONVOY_SPAWN_OFFSET);
 }
 
-double Convoy::UpdateInteractables(double distance, sf::Vector2f player_position)
+std::vector<sf::FloatRect> Convoy::GetInteractablePositions()
 {
-    double new_distance = util::Distance(console.GetSprite().getPosition(), player_position);
-    if (new_distance <= CONSOLE_INTERACTION_DISTANCE && new_distance < distance)
-    {
-        console.SetAnimation("Focus");
-        distance = new_distance;
-    }
-    else
-    {
-        console.SetAnimation("Default");
-    }
+    std::vector<sf::FloatRect> bounds_list;
+    bounds_list.push_back(console.GetSprite().getGlobalBounds());
+    bounds_list.push_back(sf::FloatRect(convoy_sprite.GetSprite().getGlobalBounds().left + 62, convoy_sprite.GetSprite().getGlobalBounds().top + 321, 72, 19));
 
-    return new_distance;
+    return bounds_list;
 }
 
 void Convoy::ClearInteractions()
@@ -109,6 +102,11 @@ sf::Vector2f Convoy::GetPosition()
 sf::Vector2f Convoy::GetConsolePosition()
 {
     return console.GetSprite().getPosition();
+}
+
+sf::Vector2f Convoy::GetStashPosition()
+{
+    return sf::Vector2f{convoy_sprite.GetSprite().getGlobalBounds().left + 62 + 72 / 2, convoy_sprite.GetSprite().getGlobalBounds().top + 321 + 19 / 2};
 }
 
 } // client

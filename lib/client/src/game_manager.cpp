@@ -444,6 +444,15 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::UpdateStash:
+            {
+                std::array<definitions::ItemType, 24> items;
+                if (ServerMessage::DecodeUpdateStash(resources::GetServerSocket(), items))
+                {
+                    Game.UpdateStash(items);
+                }
+            }
+            break;
             default:
             {
                 cerr << "Unrecognized code: " << static_cast<int>(code) << endl;

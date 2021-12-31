@@ -11,6 +11,7 @@
 
 #include "cursor_button.h"
 #include "overmap.h"
+#include "stash.h"
 #include "entity_definitions.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -32,9 +33,12 @@ public:
     void DisplayMenu();
     void DisplayDialog(std::string source, std::vector<std::string> dialog_list);
     void DisplayOvermap();
+    void DisplayStash();
     void UpdateHealth(uint8_t value);
     void UpdateBatteryBar(float battery_level);
+    void UpdateStash(std::array<definitions::ItemType, 24> items);
     void ChangeItem(definitions::ItemType item);
+    void MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list);
     bool Available();
     bool DisableActions();
     void EscapePressed();
@@ -60,6 +64,7 @@ private:
     CursorButton menu_button;
 
     Overmap overmap;
+    Stash stash;
 
     sf::Font* font;
 
@@ -70,6 +75,7 @@ private:
     sf::RectangleShape battery_bar_frame;
     sf::RectangleShape death_tint;
     sf::Text death_text;
+    Spritesheet interaction_marker;
 
     Spritesheet menu;
     CursorButton resume_button;

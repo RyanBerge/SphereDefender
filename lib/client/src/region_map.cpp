@@ -25,13 +25,8 @@ RegionMap::RegionMap()
 
 }
 
-void RegionMap::Update(sf::Time elapsed, Player local_player)
+void RegionMap::Update(sf::Time elapsed)
 {
-    if (!leaving_region)
-    {
-        updateInteractables(local_player.GetPosition());
-    }
-
     convoy.Update(elapsed);
 
     leyline.Update(elapsed);
@@ -117,6 +112,27 @@ void RegionMap::InitializeRegion(definitions::RegionDefinition definition)
     }
 }
 
+std::vector<sf::FloatRect> RegionMap::GetInteractablePositions()
+{
+    std::vector<sf::FloatRect> bounds_list;
+
+    if (leaving_region)
+    {
+        return bounds_list;
+    }
+
+    for (auto& npc : npcs)
+    {
+        bounds_list.push_back(npc.spritesheet.GetSprite().getGlobalBounds());
+    }
+
+    std::vector<sf::FloatRect> convoy_interactables = convoy.GetInteractablePositions();
+
+    bounds_list.insert(bounds_list.end(), convoy_interactables.begin(), convoy_interactables.end());
+
+    return bounds_list;
+}
+
 RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
 {
     Interaction interaction;
@@ -146,6 +162,13 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
         interaction.type = InteractionType::ConvoyConsole;
     }
 
+    new_distance = util::Distance(convoy.GetStashPosition(), player_position);
+    if (new_distance < distance && new_distance < Convoy::CONSOLE_INTERACTION_DISTANCE)
+    {
+        distance = new_distance;
+        interaction.type = InteractionType::ConvoyStash;
+    }
+
     switch (interaction.type)
     {
         case InteractionType::NpcDialog:
@@ -153,6 +176,7 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
             interaction.dialog = npcs[index].dialog;
             interaction.npc_name = npcs[index].name;
             npcs[index].fresh_interaction = false;
+            npcs[index].spritesheet.SetAnimation("Default");
         }
         break;
         default: { }
@@ -177,51 +201,6 @@ void RegionMap::LeaveRegion()
 void RegionMap::EnterRegion()
 {
     convoy.EnterRegion();
-}
-
-void RegionMap::updateInteractables(sf::Vector2f player_position)
-{
-    double distance = std::numeric_limits<double>::infinity();
-    unsigned index;
-
-    for (unsigned i = 0; i < npcs.size(); ++i)
-    {
-        double new_distance = util::Distance(player_position, npcs[i].spritesheet.GetSprite().getPosition());
-        if (new_distance < NPC_DIALOG_DISTANCE)
-        {
-            if (!npcs[i].dialog.empty())
-            {
-                if (new_distance < distance)
-                {
-                    distance = new_distance;
-                    index = i;
-                }
-            }
-        }
-
-        if (npcs[i].fresh_interaction)
-        {
-            npcs[i].spritesheet.SetAnimation("AvailableDialog");
-        }
-        else
-        {
-            npcs[i].spritesheet.SetAnimation("Default");
-        }
-    }
-
-    double new_distance = convoy.UpdateInteractables(distance, player_position);
-
-    if (distance < new_distance && distance < std::numeric_limits<double>::infinity())
-    {
-        if (npcs[index].fresh_interaction)
-        {
-            npcs[index].spritesheet.SetAnimation("AvailableDialogAndFocus");
-        }
-        else
-        {
-            npcs[index].spritesheet.SetAnimation("Focus");
-        }
-    }
 }
 
 sf::Vector2f RegionMap::GetConvoyPosition()

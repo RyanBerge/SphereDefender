@@ -39,9 +39,13 @@
 #### `ClientMessage::UseItem`
 * Sent when a player uses an item
 
+#### `ClientMessage::SwapItem`
+* Sent when a player swaps an item from the stash
+* `[itemindex:1]`
+
 #### `ClientMessage::ChangeRegion`
 * Sent when a player interacts with the console to move regions
-* `[regionid:1]
+* `[regionid:1]`
 
 ## Server Messages
 
@@ -108,3 +112,7 @@
 #### `ServerMessage::ChangeRegion`
 * Broadcasted when a region change happens
 * `[regionid:1]`
+
+#### `ServerMessage::UpdateStash`
+* Broadcasted when the stash changes
+* `[itemtype:1][itemtype:1][...]`

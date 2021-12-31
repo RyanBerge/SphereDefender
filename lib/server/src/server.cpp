@@ -204,6 +204,11 @@ void Server::checkMessages(Player& player)
             useItem(player);
         }
         break;
+        case ClientMessage::Code::SwapItem:
+        {
+            swapItem(player);
+        }
+        break;
         case ClientMessage::Code::ChangeRegion:
         {
             changeRegion(player);
@@ -231,6 +236,23 @@ void Server::startGame()
     }
 
     region = Region(definitions::STARTNG_REGION, PlayerList.size(), 0);
+
+    for (unsigned i = 0; i < item_stash.size(); ++i)
+    {
+        if (i < 6)
+        {
+            item_stash[i] = definitions::ItemType::Medpack;
+        }
+        else
+        {
+            item_stash[i] = definitions::ItemType::None;
+        }
+    }
+
+    for (auto& player : PlayerList)
+    {
+        ServerMessage::UpdateStash(*player.Socket, item_stash);
+    }
 
     game_state = GameState::Game;
 }
@@ -516,6 +538,25 @@ void Server::startPlayerAction(Player& player)
 void Server::useItem(Player& player)
 {
     player.UseItem();
+}
+
+void Server::swapItem(Player& player)
+{
+    uint8_t item_index;
+    if (!ClientMessage::DecodeSwapItem(*player.Socket, item_index))
+    {
+        player.Socket->disconnect();
+        player.Status = Player::PlayerStatus::Disconnected;
+    }
+
+    definitions::ItemType item = player.ChangeItem(item_stash[item_index]);
+    ServerMessage::ChangeItem(*player.Socket, item_stash[item_index]);
+    item_stash[item_index] = item;
+
+    for (auto& p : PlayerList)
+    {
+        ServerMessage::UpdateStash(*p.Socket, item_stash);
+    }
 }
 
 void Server::changeRegion(Player& player)

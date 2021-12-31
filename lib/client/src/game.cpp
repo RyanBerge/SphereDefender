@@ -52,7 +52,9 @@ void Game::Update(sf::Time elapsed)
             enemy.second.Update(elapsed);
         }
 
-        region_map.Update(elapsed, local_player);
+        region_map.Update(elapsed);
+
+        gui.MarkInteractables(local_player.GetPosition(), region_map.GetInteractablePositions());
 
         std::erase_if(enemies, [](const auto& element) {
             return element.second.Despawn;
@@ -301,6 +303,11 @@ void Game::EnterRegion(sf::Vector2f spawn_position)
     local_player.SetPosition(spawn_position);
 }
 
+void Game::UpdateStash(std::array<definitions::ItemType, 24> items)
+{
+    gui.UpdateStash(items);
+}
+
 void Game::updateScroll(sf::Time elapsed)
 {
     sf::Vector2f mouse_coords = resources::GetWindow().mapPixelToCoords(sf::Mouse::getPosition() - resources::GetWindow().getPosition(), gui.GuiView);
@@ -488,6 +495,12 @@ void Game::onKeyPressed(sf::Event event)
                 case RegionMap::InteractionType::ConvoyConsole:
                 {
                     gui.DisplayOvermap();
+                    local_player.DisableActions();
+                }
+                break;
+                case RegionMap::InteractionType::ConvoyStash:
+                {
+                    gui.DisplayStash();
                     local_player.DisableActions();
                 }
                 break;

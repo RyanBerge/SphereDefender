@@ -83,7 +83,7 @@ struct Projectile
     float invulnerability_window;
 };
 
-enum class ItemType
+enum class ItemType : uint8_t
 {
     None, Medpack
 };

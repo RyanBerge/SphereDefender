@@ -209,6 +209,13 @@ definitions::ItemType Player::UseItem()
     return item;
 }
 
+definitions::ItemType Player::ChangeItem(definitions::ItemType item)
+{
+    definitions::ItemType temp = equipped_item;
+    equipped_item = item;
+    return temp;
+}
+
 void Player::handleAttack(sf::Time elapsed, Region& region)
 {
     switch (Data.properties.weapon_type)

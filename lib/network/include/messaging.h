@@ -61,6 +61,7 @@ public:
         PlayerStateChange,
         StartAction,
         UseItem,
+        SwapItem,
         ChangeRegion,
 
         LeaveGame,
@@ -79,6 +80,7 @@ public:
     static bool PlayerStateChange(sf::TcpSocket& socket, sf::Vector2i movement_vector);
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
     static bool UseItem(sf::TcpSocket& socket);
+    static bool SwapItem(sf::TcpSocket& socket, uint8_t item_index);
     static bool ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
@@ -86,6 +88,7 @@ public:
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, PlayerProperties& out_properties);
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
+    static bool DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_index);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName&  out_region);
 };
 
@@ -115,6 +118,7 @@ public:
         BatteryUpdate,
         ProjectileUpdate,
         ChangeRegion,
+        UpdateStash,
 
         Error = 0xFF
     };
@@ -137,6 +141,7 @@ public:
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
     static bool ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region);
+    static bool UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -152,6 +157,7 @@ public:
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName& out_region);
+    static bool DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items);
 };
 
 } // network

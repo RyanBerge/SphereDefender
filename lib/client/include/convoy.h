@@ -29,11 +29,12 @@ public:
 
     void LeaveRegion();
     void EnterRegion();
-    double UpdateInteractables(double distance, sf::Vector2f player_position);
+    std::vector<sf::FloatRect> GetInteractablePositions();
     void ClearInteractions();
 
     sf::Vector2f GetPosition();
     sf::Vector2f GetConsolePosition();
+    sf::Vector2f GetStashPosition();
 
 private:
     Spritesheet convoy_sprite;
