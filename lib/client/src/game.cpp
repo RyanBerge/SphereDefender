@@ -164,7 +164,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     local_player = Player();
 
     region_map = RegionMap();
-    region_map.Load(definitions::STARTNG_REGION);
+    region_map.Load(definitions::GetZone().regions[definitions::STARTING_REGION].type);
     gui = Gui();
     gui.Load();
     local_player.Load(local);
@@ -283,13 +283,14 @@ void Game::ChangeItem(definitions::ItemType item)
     gui.ChangeItem(item);
 }
 
-void Game::ChangeRegion(definitions::RegionName region_name)
+void Game::ChangeRegion(uint16_t region_id)
 {
     gui.SetEnabled(false);
     target_zoom = 1.2;
     local_player.DisableActions();
     region_map.LeaveRegion();
-    next_region = region_name;
+
+    next_region = region_id;
 
     leaving_region = true;
     leaving_region_state = LeavingRegionState::Start;
@@ -353,7 +354,7 @@ void Game::handleLeavingRegion()
         case LeavingRegionState::Moving:
         {
             resources::GetWorldView().setCenter(region_map.GetConvoyPosition().x + 200, region_map.GetConvoyPosition().y);
-            if (region_map.GetConvoyPosition().y < definitions::GetRegionDefinition(region_map.RegionName).convoy.Position.y - Settings::GetInstance().WindowResolution.y * 2)
+            if (region_map.GetConvoyPosition().y < definitions::GetRegionDefinition(region_map.RegionType).convoy.Position.y - Settings::GetInstance().WindowResolution.y * 2)
             {
                 fade_timer.restart();
                 leaving_region_state = LeavingRegionState::Fading;
@@ -373,7 +374,18 @@ void Game::handleLeavingRegion()
         case LeavingRegionState::Loading:
         {
             region_map = RegionMap();
-            region_map.Load(next_region);
+
+            auto zone = definitions::GetZone();
+            for (auto& node : zone.regions)
+            {
+                if (node.id == next_region)
+                {
+                    region_map.Load(node.type);
+                    break;
+                }
+            }
+
+            gui.ChangeRegion(next_region);
             ClientMessage::LoadingComplete(resources::GetServerSocket());
             leaving_region_state = LeavingRegionState::Waiting;
             [[fallthrough]];
@@ -412,7 +424,7 @@ void Game::handleEnteringRegion()
         break;
         case EnteringRegionState::Moving:
         {
-            if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionName).convoy.Position.y)
+            if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionType).convoy.Position.y)
             {
                 gui.SetEnabled(true);
                 local_player.EnableActions();

@@ -437,10 +437,10 @@ void GameManager::checkMessages()
             break;
             case ServerMessage::Code::ChangeRegion:
             {
-                definitions::RegionName region_name;
-                if (ServerMessage::DecodeChangeRegion(resources::GetServerSocket(), region_name))
+                uint16_t region_id;
+                if (ServerMessage::DecodeChangeRegion(resources::GetServerSocket(), region_id))
                 {
-                    Game.ChangeRegion(region_name);
+                    Game.ChangeRegion(region_id);
                 }
             }
             break;

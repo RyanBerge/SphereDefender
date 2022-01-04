@@ -21,7 +21,7 @@ class Region
 {
 public:
     Region();
-    Region(definitions::RegionName region_name, unsigned player_count, float battery_level);
+    Region(definitions::RegionType region_name, unsigned player_count, float battery_level);
 
     void Update(sf::Time elapsed);
     void Cull();

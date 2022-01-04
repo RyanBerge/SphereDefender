@@ -10,6 +10,7 @@
 
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 #include <cmath>
 
 namespace util
@@ -36,6 +37,9 @@ namespace util
     double Distance(sf::Vector2f p1, sf::Vector2f p2);
     sf::Vector2f Normalize(sf::Vector2f vector);
     sf::Vector2f AngleToVector(double angle);
+    double VectorToAngle(sf::Vector2f vector);
+
+    sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color color, int thickness);
 
     int GetRandomInt(int min, int max);
     float GetRandomFloat(float min, float max);

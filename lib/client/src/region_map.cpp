@@ -54,9 +54,9 @@ void RegionMap::Draw()
     }
 }
 
-void RegionMap::Load(definitions::RegionName region)
+void RegionMap::Load(definitions::RegionType region)
 {
-    RegionName = region;
+    RegionType = region;
     InitializeRegion(definitions::GetRegionDefinition(region));
 }
 

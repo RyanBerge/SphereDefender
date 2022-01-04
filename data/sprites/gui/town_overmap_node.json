@@ -12,6 +12,12 @@
       "location": [ 22, 0 ],
       "size": [ 22, 19 ],
       "origin": [ 11, 10 ]
+    },
+    {
+      "index": 2,
+      "location": [ 44, 0 ],
+      "size": [ 22, 19 ],
+      "origin": [ 11, 10 ]
     }
   ],
   "animations": [
@@ -35,6 +41,13 @@
       "end_frame": 1,
       "animation_speed": 0,
       "next_animation": "Down"
+    },
+    {
+      "name": "Disabled",
+      "start_frame": 2,
+      "end_frame": 2,
+      "animation_speed": 0,
+      "next_animation": "Disabled"
     }
   ]
 }

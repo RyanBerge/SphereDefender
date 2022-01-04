@@ -43,6 +43,19 @@ void CursorButton::SetAnimation(std::string animation_name)
     spritesheet.SetAnimation(animation_name);
 }
 
+void CursorButton::SetEnabled(bool enable)
+{
+    enabled = enable;
+    if (enabled)
+    {
+        SetAnimation("Up");
+    }
+    else
+    {
+        SetAnimation("Disabled");
+    }
+}
+
 sf::Sprite& CursorButton::GetSprite()
 {
     return spritesheet.GetSprite();
@@ -121,37 +134,47 @@ void CursorButton::RegisterCursorExit(std::function<void(void)> f)
 
 void CursorButton::onLeftMouseDown(bool in_bounds)
 {
-    if (in_bounds)
+    if (enabled)
     {
-        spritesheet.SetAnimation("Down");
-        for (auto& callback : leftMouseDownCallbacks)
+        if (in_bounds)
         {
-            callback();
+            spritesheet.SetAnimation("Down");
+            for (auto& callback : leftMouseDownCallbacks)
+            {
+                callback();
+            }
         }
     }
 }
 
 void CursorButton::onLeftMouseUp(bool in_bounds)
 {
-    if (in_bounds)
+    if (enabled)
     {
-        spritesheet.SetAnimation("Hover");
-        for (auto& callback : leftMouseUpCallbacks)
+        if (in_bounds)
         {
-            callback();
+            spritesheet.SetAnimation("Hover");
+            for (auto& callback : leftMouseUpCallbacks)
+            {
+                callback();
+            }
         }
-    }
-    else
-    {
-        spritesheet.SetAnimation("Up");
+        else
+        {
+            spritesheet.SetAnimation("Up");
+        }
     }
 }
 
 void CursorButton::onHoverEnter()
 {
+    if (enabled)
+    {
+        spritesheet.SetAnimation("Hover");
+    }
+
     mouse_hover = true;
 
-    spritesheet.SetAnimation("Hover");
     for (auto& callback : cursorEnterCallbacks)
     {
         callback();
@@ -160,9 +183,13 @@ void CursorButton::onHoverEnter()
 
 void CursorButton::onHoverExit()
 {
+    if (enabled)
+    {
+        spritesheet.SetAnimation("Up");
+    }
+
     mouse_hover = false;
 
-    spritesheet.SetAnimation("Up");
     for (auto& callback : cursorExitCallbacks)
     {
         callback();

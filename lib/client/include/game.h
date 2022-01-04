@@ -41,7 +41,7 @@ public:
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void ChangeItem(definitions::ItemType item);
     void RemovePlayer(uint16_t player_id);
-    void ChangeRegion(definitions::RegionName region);
+    void ChangeRegion(uint16_t region_id);
     void EnterRegion(sf::Vector2f spawn_position);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
 
@@ -60,7 +60,7 @@ private:
 
     bool leaving_region = false;
     bool entering_region = false;
-    definitions::RegionName next_region;
+    uint16_t next_region;
 
     int zoom_factor;
     float current_zoom;

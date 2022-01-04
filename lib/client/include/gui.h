@@ -38,6 +38,7 @@ public:
     void UpdateBatteryBar(float battery_level);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
     void ChangeItem(definitions::ItemType item);
+    void ChangeRegion(uint16_t region_id);
     void MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list);
     bool Available();
     bool DisableActions();

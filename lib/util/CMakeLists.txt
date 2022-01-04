@@ -1,4 +1,5 @@
 set(TargetName util)
+find_package(SFML COMPONENTS graphics PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/install)
 
 set(Sources
     src/game_math.cpp
@@ -12,4 +13,4 @@ target_include_directories(${TargetName} PRIVATE
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
 )
 
-target_link_libraries(${TargetName})
+target_link_libraries(${TargetName} sfml-graphics)

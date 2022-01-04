@@ -350,18 +350,18 @@ bool ClientMessage::SwapItem(sf::TcpSocket& socket, uint8_t item_index)
     return true;
 }
 
-bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
+bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, uint16_t region_id)
 {
     Code code = ClientMessage::Code::ChangeRegion;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(region);
+    constexpr size_t buffer_size = sizeof(code) + sizeof(region_id);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &region, sizeof(region));
-    offset += sizeof(region);
+    std::memcpy(buffer + offset, &region_id, sizeof(region_id));
+    offset += sizeof(region_id);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -485,17 +485,17 @@ bool ClientMessage::DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_inde
     return true;
 }
 
-bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName&  out_region)
+bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id)
 {
-    definitions::RegionName region;
+    uint16_t region_id;
 
-    if (!read(socket, &region, sizeof(region)))
+    if (!read(socket, &region_id, sizeof(region_id)))
     {
-        cerr << "Network: " << __func__ << " failed to read a region name." << endl;
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
         return false;
     }
 
-    out_region = region;
+    out_region_id = region_id;
     return true;
 }
 
@@ -940,18 +940,18 @@ bool ServerMessage::ProjectileUpdate(sf::TcpSocket& socket, std::vector<Projecti
     return true;
 }
 
-bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, definitions::RegionName region)
+bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, uint16_t region_id)
 {
     Code code = ServerMessage::Code::ChangeRegion;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(region);
+    constexpr size_t buffer_size = sizeof(code) + sizeof(region_id);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &region, sizeof(region));
-    offset += sizeof(region);
+    std::memcpy(buffer + offset, &region_id, sizeof(region_id));
+    offset += sizeof(region_id);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -1366,17 +1366,17 @@ bool ServerMessage::DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<Pr
     return true;
 }
 
-bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, definitions::RegionName& out_region)
+bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id)
 {
-    definitions::RegionName region;
+    uint16_t region_id;
 
-    if (!read(socket, &region, sizeof(region)))
+    if (!read(socket, &region_id, sizeof(region_id)))
     {
-        cerr << "Network: " << __func__ << " failed to read a region name." << endl;
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
         return false;
     }
 
-    out_region = region;
+    out_region_id = region_id;
     return true;
 }
 

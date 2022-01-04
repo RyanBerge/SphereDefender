@@ -45,7 +45,7 @@
 
 #### `ClientMessage::ChangeRegion`
 * Sent when a player interacts with the console to move regions
-* `[regionid:1]`
+* `[regionid:2]`
 
 ## Server Messages
 
@@ -111,7 +111,7 @@
 
 #### `ServerMessage::ChangeRegion`
 * Broadcasted when a region change happens
-* `[regionid:1]`
+* `[regionid:2]`
 
 #### `ServerMessage::UpdateStash`
 * Broadcasted when the stash changes

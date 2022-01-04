@@ -19,7 +19,7 @@ using std::cout, std::endl;
 
 namespace {
     constexpr int BASE_SPAWN_INTERVAL = 4;
-    constexpr float SPAWN_ACCELERATION_PER_PLAYER = 0.15;
+    constexpr float SPAWN_ACCELERATION_PER_PLAYER = 0.1;
     constexpr float MINIMUM_SPAWN_INTERVAL = 0.8;
 }
 
@@ -27,7 +27,7 @@ namespace server {
 
 Region::Region() { }
 
-Region::Region(definitions::RegionName region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionType region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
     definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
 

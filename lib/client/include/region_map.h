@@ -44,7 +44,7 @@ public:
     void Update(sf::Time elapsed);
     void Draw();
 
-    void Load(definitions::RegionName region);
+    void Load(definitions::RegionType region);
     void Unload();
 
     void InitializeRegion(definitions::RegionDefinition definition);
@@ -55,7 +55,7 @@ public:
 
     sf::Vector2f GetConvoyPosition();
 
-    definitions::RegionName RegionName;
+    definitions::RegionType RegionType;
 
 private:
     Spritesheet background;

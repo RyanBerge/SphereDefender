@@ -62,9 +62,9 @@ struct Npc
     sf::Vector2f position;
 };
 
-enum class RegionName
+enum class RegionType
 {
-    Town, Leyline, Neutral
+    Town, Leyline, Neutral, Secret
 };
 
 struct RegionDefinition
@@ -76,8 +76,29 @@ struct RegionDefinition
     std::vector<Npc> npcs;
 };
 
-constexpr RegionName STARTNG_REGION = RegionName::Neutral;
+struct Zone
+{
+    struct RegionNode
+    {
+        uint16_t id;
+        RegionType type;
+        sf::Vector2f overmap_position;
+    };
 
-RegionDefinition GetRegionDefinition(RegionName region);
+    struct Link
+    {
+        uint16_t start;
+        uint16_t finish;
+        double distance;
+    };
+
+    std::vector<RegionNode> regions;
+    std::vector<Link> links;
+};
+
+extern uint16_t STARTING_REGION;
+
+RegionDefinition GetRegionDefinition(RegionType region);
+Zone GetZone();
 
 } // namespace definitions

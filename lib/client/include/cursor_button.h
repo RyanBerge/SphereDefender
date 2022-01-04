@@ -33,6 +33,8 @@ public:
     void LoadAnimationData(std::string filepath);
     void SetAnimation(std::string animation_name);
 
+    void SetEnabled(bool enable);
+
     void UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event);
     void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);
 
@@ -53,6 +55,7 @@ protected:
     void onHoverEnter();
     void onHoverExit();
 
+    bool enabled = true;
     bool mouse_hover = false;
     State left_mouse_button_state = State::Up;
 

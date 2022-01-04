@@ -23,6 +23,7 @@ namespace server {
 
 namespace {
     constexpr float MAX_BROADCAST_RATE = 120; // Hz
+    constexpr float STARTING_BATTERY = 300;
 } // anonymous namespace
 
 Server::Server()
@@ -235,7 +236,9 @@ void Server::startGame()
         PlayerList[i].Data.position = spawn_position;
     }
 
-    region = Region(definitions::STARTNG_REGION, PlayerList.size(), 0);
+    zone = definitions::GetZone();
+    current_region = definitions::STARTING_REGION;
+    region = Region(zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -428,7 +431,6 @@ void Server::loadingComplete(Player& player)
     {
         cout << player.Data.name << " has finished loading the new region." << endl;
         player.Status = Player::PlayerStatus::Alive;
-        player.Data.health = 100;
 
         for (auto& p : PlayerList)
         {
@@ -438,7 +440,38 @@ void Server::loadingComplete(Player& player)
             }
         }
 
-        region = Region(next_region, PlayerList.size(), 0);
+        double battery_cost = 0;
+        for (auto& link : zone.links)
+        {
+            if ((link.start == current_region && link.finish == next_region) ||
+                (link.finish == current_region && link.start == next_region))
+            {
+                battery_cost = link.distance;
+                break;
+            }
+        }
+
+        if (battery_cost == 0)
+        {
+            cerr << "Moved to a region not adjacent." << endl;
+        }
+
+        if (battery_cost > region.BatteryLevel)
+        {
+            cerr << "Moved to a region with insufficient battery power." << endl;
+            battery_cost = region.BatteryLevel;
+        }
+
+        current_region = next_region;
+
+        for (auto& node : zone.regions)
+        {
+            if (node.id == current_region)
+            {
+                region = Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
+                break;
+            }
+        }
 
         // Determine spawn positions
         float angle = 2 * util::pi / PlayerList.size();
@@ -561,19 +594,19 @@ void Server::swapItem(Player& player)
 
 void Server::changeRegion(Player& player)
 {
-    definitions::RegionName region_name;
-    if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_name))
+    uint16_t region_id;
+    if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_id))
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
     }
 
-    next_region = region_name;
+    next_region = region_id;
 
     for (auto& p : PlayerList)
     {
         p.Status = Player::PlayerStatus::Loading;
-        ServerMessage::ChangeRegion(*p.Socket, region_name);
+        ServerMessage::ChangeRegion(*p.Socket, region_id);
     }
 }
 

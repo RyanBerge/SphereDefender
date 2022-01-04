@@ -7,6 +7,7 @@
  *
  *************************************************************************************************/
 #include "region_definitions.h"
+#include "game_math.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -16,6 +17,11 @@ using std::cout, std::cerr, std::endl;
 
 namespace definitions
 {
+    #define REGION_TOWN 0
+    #define REGION_LEYLINE 1
+    #define REGION_NEUTRAL 2
+    #define REGION_SECRET 9
+    uint16_t STARTING_REGION = 0;
 
 namespace {
 
@@ -36,7 +42,7 @@ public:
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 75, 50, 150)});
         region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-125, -300, 100, 250)});
 
-        Regions[RegionName::Leyline] = region;
+        Regions[RegionType::Leyline] = region;
 
         region = RegionDefinition{};
 
@@ -61,7 +67,7 @@ public:
 
         region.npcs.push_back(old_man);
 
-        Regions[RegionName::Town] = region;
+        Regions[RegionType::Town] = region;
 
         region = RegionDefinition{};
 
@@ -77,10 +83,27 @@ public:
         david.position = sf::Vector2f{400, 0};
 
         region.npcs.push_back(david);
-        Regions[RegionName::Neutral] = region;
+        Regions[RegionType::Neutral] = region;
+
+        region = RegionDefinition{};
+
+        region.background_file = "backgrounds/cracked_mud.json";
+        region.leyline = false;
+        region.convoy = ConvoyDefinition(Orientation::North);
+        region.convoy.Position = sf::Vector2f{0, 0};
+
+        Npc prophet;
+        prophet.name = "The Prophet";
+        prophet.sprite_file = "entities/old_man.json";
+        prophet.dialog.push_back("How did you get here? What are you doing here?");
+        prophet.dialog.push_back("You shouldn't have come.");
+        prophet.position = sf::Vector2f{400, 0};
+
+        region.npcs.push_back(prophet);
+        Regions[RegionType::Secret] = region;
     }
 
-    std::map<RegionName, RegionDefinition> Regions;
+    std::map<RegionType, RegionDefinition> Regions;
 };
 
 }
@@ -163,10 +186,157 @@ void ConvoyDefinition::load(Orientation orientation)
     origin.y = j["frames"][0]["origin"][1];
 }
 
-RegionDefinition GetRegionDefinition(RegionName region)
+RegionDefinition GetRegionDefinition(RegionType region)
 {
     static RegionInitializer initializer;
     return initializer.Regions[region];
+}
+
+Zone GetZone()
+{
+    //uint16_t id_counter = 0;
+
+    Zone zone;
+
+    Zone::RegionNode node;
+    node.id = 0;
+    node.type = RegionType::Town;
+    node.overmap_position = sf::Vector2f{100, 900};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 1;
+    node.type = RegionType::Leyline;
+    node.overmap_position = sf::Vector2f{120, 700};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 2;
+    node.type = RegionType::Neutral;
+    node.overmap_position = sf::Vector2f{190, 800};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 3;
+    node.type = RegionType::Leyline;
+    node.overmap_position = sf::Vector2f{280, 760};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 4;
+    node.type = RegionType::Neutral;
+    node.overmap_position = sf::Vector2f{350, 500};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 5;
+    node.type = RegionType::Leyline;
+    node.overmap_position = sf::Vector2f{170, 450};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 6;
+    node.type = RegionType::Neutral;
+    node.overmap_position = sf::Vector2f{320, 820};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 7;
+    node.type = RegionType::Neutral;
+    node.overmap_position = sf::Vector2f{400, 730};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 8;
+    node.type = RegionType::Leyline;
+    node.overmap_position = sf::Vector2f{420, 600};
+    zone.regions.push_back(node);
+
+    node = Zone::RegionNode{};
+    node.id = 9;
+    node.type = RegionType::Secret;
+    node.overmap_position = sf::Vector2f{650, 500};
+    zone.regions.push_back(node);
+
+    Zone::Link link;
+    link.start = 0;
+    link.finish = 1;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 0;
+    link.finish = 2;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 1;
+    link.finish = 2;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 2;
+    link.finish = 3;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 3;
+    link.finish = 4;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 2;
+    link.finish = 4;
+    link.distance = 400;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 1;
+    link.finish = 5;
+    link.distance = 550;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 4;
+    link.finish = 5;
+    link.distance = 200;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 3;
+    link.finish = 6;
+    link.distance = 75;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 6;
+    link.finish = 7;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 7;
+    link.finish = 8;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 4;
+    link.finish = 8;
+    link.distance = 250;
+    zone.links.push_back(link);
+
+    link = Zone::Link{};
+    link.start = 8;
+    link.finish = 9;
+    link.distance = 800;
+    zone.links.push_back(link);
+
+    return zone;
 }
 
 } // definitions

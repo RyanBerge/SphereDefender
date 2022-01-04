@@ -38,4 +38,15 @@ struct PathingGraph
 PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size);
 std::list<sf::Vector2f> GetPath(PathingGraph& graph);
 
+struct DjikstraNode
+{
+    std::map<int, float> connections;
+    bool visited = false;
+
+    int parent;
+    double cost;
+};
+
+std::vector<uint16_t> GetPath(std::vector<DjikstraNode> nodes, uint16_t start, uint16_t finish);
+
 } // namespace util

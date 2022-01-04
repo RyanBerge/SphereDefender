@@ -130,7 +130,7 @@ void Gui::Draw()
         resources::GetWorldView().setViewport(old_view.getViewport());
         resources::GetWindow().setView(resources::GetWorldView());
 
-        if (!overmap.Active)
+        if (!overmap.IsActive())
         {
             interaction_marker.Draw();
         }
@@ -168,7 +168,7 @@ void Gui::Draw()
             resources::GetWindow().draw(dialog_prompt_text);
         }
 
-        if (overmap.Active)
+        if (overmap.IsActive())
         {
             overmap.Draw();
         }
@@ -196,6 +196,8 @@ void Gui::Load()
     InMenus = false;
     InDialog = false;
     UpdateHealth(100);
+    overmap.Load();
+    overmap.SetRegion(definitions::STARTING_REGION);
 }
 
 void Gui::Unload()
@@ -209,7 +211,7 @@ void Gui::SetEnabled(bool new_enabled)
 
     InMenus = false;
     InDialog = false;
-    overmap.Active = false;
+    overmap.SetActive(false);
     stash.Active = false;
 }
 
@@ -246,6 +248,11 @@ void Gui::ChangeItem(definitions::ItemType item)
     }
 }
 
+void Gui::ChangeRegion(uint16_t region_id)
+{
+    overmap.SetRegion(region_id);
+}
+
 void Gui::MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list)
 {
     double distance = std::numeric_limits<double>::infinity();
@@ -275,19 +282,19 @@ void Gui::MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatR
 
 bool Gui::Available()
 {
-    return !(InMenus || InDialog || overmap.Active);
+    return !(InMenus || InDialog || overmap.IsActive());
 }
 
 bool Gui::DisableActions()
 {
-    return InDialog || overmap.Active || stash.Active;
+    return InDialog || overmap.IsActive() || stash.Active;
 }
 
 void Gui::EscapePressed()
 {
-    if (overmap.Active)
+    if (overmap.IsActive())
     {
-        overmap.Active = false;
+        overmap.SetActive(false);
     }
     else if (stash.Active)
     {
@@ -328,7 +335,7 @@ void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list
 
 void Gui::DisplayOvermap()
 {
-    overmap.Active = true;
+    overmap.SetActive(true, battery_bar.getScale().x * 1000);
 }
 
 void Gui::DisplayStash()
@@ -407,7 +414,7 @@ void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
             settings_button.UpdateMousePosition(event);
             exit_button.UpdateMousePosition(event);
         }
-        else if (overmap.Active)
+        else if (overmap.IsActive())
         {
             overmap.OnMouseMove(event);
         }
@@ -426,7 +433,7 @@ void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
             settings_button.UpdateMouseState(event, CursorButton::State::Down);
             exit_button.UpdateMouseState(event, CursorButton::State::Down);
         }
-        else if (overmap.Active)
+        else if (overmap.IsActive())
         {
             overmap.OnMouseDown(event);
         }
@@ -454,7 +461,7 @@ void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
             settings_button.UpdateMouseState(event, CursorButton::State::Up);
             exit_button.UpdateMouseState(event, CursorButton::State::Up);
         }
-        else if (overmap.Active)
+        else if (overmap.IsActive())
         {
             overmap.OnMouseUp(event);
         }

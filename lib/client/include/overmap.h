@@ -10,6 +10,9 @@
 #pragma once
 
 #include "cursor_button.h"
+#include "region_definitions.h"
+#include "pathfinding.h"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 
 namespace client
@@ -20,20 +23,50 @@ class Overmap
 public:
     Overmap();
 
+    void Load();
     void Update(sf::Time elapsed);
     void Draw();
 
-    bool Active = false;
+    void SetActive(bool is_active, float battery_level = 0);
+    bool IsActive();
+    void SetRegion(uint16_t region_id);
+    uint16_t GetRegion();
 
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
     void OnMouseUp(sf::Event::MouseButtonEvent event);
 
 private:
+    struct Node
+    {
+        definitions::Zone::RegionNode definition;
+        CursorButton button;
+        bool visited;
+    };
+
+    struct Link
+    {
+        definitions::Zone::Link definition;
+        sf::RectangleShape line;
+        sf::RectangleShape highlight;
+    };
+
+    bool active = false;
+    float battery;
+    uint16_t current_region;
+
     sf::RectangleShape frame;
     sf::RectangleShape map_area;
+    sf::Text information;
 
-    std::vector<CursorButton> region_nodes;
+    Spritesheet marker;
+    std::vector<Node> region_nodes;
+    std::vector<Link> links;
+    std::vector<util::DjikstraNode> node_graph;
+
+    void onClickNode(uint16_t region_id);
+    void onHoverNodeEnter(uint16_t node_id);
+    void onHoverNodeExit();
 };
 
 } // namespace client

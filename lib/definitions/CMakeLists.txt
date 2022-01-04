@@ -10,10 +10,12 @@ add_library(${TargetName} ${Sources})
 
 target_include_directories(${TargetName} PRIVATE
     ${PROJECT_SOURCE_DIR}/lib/definitions/include
+    ${PROJECT_SOURCE_DIR}/lib/util/include
     ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
     ${PROJECT_SOURCE_DIR}/externals/Json/install/include
 )
 
 target_link_libraries(${TargetName}
     nlohmann_json::nlohmann_json
+    util
 )

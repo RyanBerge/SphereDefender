@@ -40,8 +40,10 @@ private:
     uint16_t owner = 0;
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
+    definitions::Zone zone;
     Region region;
-    definitions::RegionName next_region;
+    uint16_t current_region;
+    uint16_t next_region;
     std::array<definitions::ItemType, 24> item_stash;
 
     void update();

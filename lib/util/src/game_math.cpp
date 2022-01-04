@@ -255,6 +255,23 @@ sf::Vector2f AngleToVector(double angle)
     return Normalize(sf::Vector2f{static_cast<float>(std::cos(angle * util::pi / 180)), static_cast<float>(std::sin(angle * util::pi / 180))});
 }
 
+double VectorToAngle(sf::Vector2f vector)
+{
+    return std::atan2(vector.y, vector.x) * 180 / util::pi;
+}
+
+sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color color, int thickness)
+{
+    sf::RectangleShape rect;
+    rect.setSize(sf::Vector2f{static_cast<float>(Distance(start, finish)), static_cast<float>(thickness)});
+    rect.setOrigin(0, rect.getGlobalBounds().height / 2);
+    rect.rotate(VectorToAngle(sf::Vector2f{finish.x - start.x, finish.y - start.y}));
+    rect.setFillColor(color);
+    rect.setPosition(start);
+
+    return rect;
+}
+
 namespace {
     std::random_device random_device;
     std::mt19937 random_generator{random_device()};

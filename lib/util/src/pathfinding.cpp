@@ -192,4 +192,53 @@ std::list<sf::Vector2f> GetPath(PathingGraph& graph)
     return path;
 }
 
+std::vector<uint16_t> GetPath(std::vector<DjikstraNode> nodes, uint16_t start, uint16_t finish)
+{
+    uint16_t current = finish;
+
+    for (auto& node : nodes)
+    {
+        node.cost = std::numeric_limits<float>::infinity();
+        node.visited = false;
+    }
+
+    nodes[current].cost = 0;
+
+    while (current != start)
+    {
+        nodes[current].visited = true;
+
+        for (auto& [index, cost] : nodes[current].connections)
+        {
+            if (nodes[current].cost + cost < nodes[index].cost)
+            {
+                nodes[index].cost = nodes[current].cost + cost;
+                nodes[index].parent = current;
+            }
+        }
+
+        float minimum = std::numeric_limits<float>::infinity();
+        for (unsigned i = 0; i < nodes.size(); ++i)
+        {
+            DjikstraNode& node = nodes[i];
+            if (!node.visited && node.cost < minimum)
+            {
+                current = i;
+                minimum = node.cost;
+            }
+        }
+    }
+
+    std::vector<uint16_t> path;
+
+    while (current != finish)
+    {
+        path.push_back(current);
+        current = nodes[current].parent;
+    }
+    path.push_back(finish);
+
+    return path;
+}
+
 } // util
