@@ -21,7 +21,7 @@ namespace definitions
     #define REGION_LEYLINE 1
     #define REGION_NEUTRAL 2
     #define REGION_SECRET 9
-    uint16_t STARTING_REGION = 0;
+    uint16_t STARTING_REGION = REGION_LEYLINE;
 
 namespace {
 

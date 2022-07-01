@@ -1,16 +1,17 @@
 /**************************************************************************************************
- *  File:       player_list.cpp
+ *  File:       global_state.h
  *
- *  Purpose:    A globally-accessible list of players in the server
+ *  Purpose:    Contains any state information needed globally by the server
  *
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
-#include "player_list.h"
+#include "global_state.h"
 
-namespace server
+namespace server::global
 {
 
 std::vector<Player> PlayerList;
+bool Paused = false;
 
 } // namespace server

@@ -37,6 +37,7 @@ public:
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);
+    void SetPaused(bool paused);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void ChangeItem(definitions::ItemType item);
@@ -46,6 +47,7 @@ public:
     void UpdateStash(std::array<definitions::ItemType, 24> items);
 
     RegionMap region_map;
+    bool IsPaused = false;
 
 private:
     Gui gui;

@@ -5,3 +5,4 @@
 [submodule "externals/Json/json"]
 	path = externals/Json/json
 	url = git@github.com:nlohmann/json.git
+	ignore = dirty

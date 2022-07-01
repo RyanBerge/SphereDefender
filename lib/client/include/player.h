@@ -46,7 +46,7 @@ public:
 private:
     bool attacking = false;
     bool actions_disabled = false;
-    sf::Clock attack_timer;
+    util::Seconds attack_timer;
 
     void updateMovement();
     void startAttack(sf::Vector2i point);

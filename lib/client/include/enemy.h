@@ -11,6 +11,7 @@
 
 #include "messaging.h"
 #include "spritesheet.h"
+#include "types.h"
 
 namespace client
 {
@@ -34,14 +35,14 @@ private:
     network::EnemyData data;
 
     bool alive = true;
-    sf::Clock despawn_timer;
+    util::Seconds despawn_timer;
 
     bool attacking;
     sf::Vector2f attack_vector;
     sf::Vector2f attack_starting_position;
 
     bool damage_flash = false;
-    sf::Clock damage_timer;
+    util::Seconds damage_timer;
 };
 
 } // namespace client

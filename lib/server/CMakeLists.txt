@@ -4,7 +4,7 @@ find_package(SFML COMPONENTS network PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/
 set(Sources
     src/enemy.cpp
     src/main.cpp
-    src/player_list.cpp
+    src/global_state.cpp
     src/player.cpp
     src/region.cpp
     src/server.cpp

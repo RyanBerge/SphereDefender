@@ -62,6 +62,7 @@ public:
         StartAction,
         UseItem,
         SwapItem,
+        Console,
         ChangeRegion,
 
         LeaveGame,
@@ -81,6 +82,7 @@ public:
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
     static bool UseItem(sf::TcpSocket& socket);
     static bool SwapItem(sf::TcpSocket& socket, uint8_t item_index);
+    static bool Console(sf::TcpSocket& socket, bool activate);
     static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
@@ -89,6 +91,7 @@ public:
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
     static bool DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_index);
+    static bool DecodeConsole(sf::TcpSocket& socket, bool& out_activate);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
 };
 
@@ -110,6 +113,7 @@ public:
 
         RegionInfo,
 
+        SetPaused,
         PlayerStartAction,
         EnemyChangeAction,
         ChangeItem,
@@ -133,6 +137,7 @@ public:
     static bool OwnerLeft(sf::TcpSocket& socket);
     static bool StartGame(sf::TcpSocket& socket);
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
+    static bool SetPaused(sf::TcpSocket& socket, bool paused);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
     static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
@@ -149,6 +154,7 @@ public:
     static bool DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id, std::vector<PlayerData>& out_players);
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties);
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
+    static bool DecodeSetPaused(sf::TcpSocket& socket, bool& out_paused);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);

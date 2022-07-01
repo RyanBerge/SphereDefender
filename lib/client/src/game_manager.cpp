@@ -370,6 +370,18 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::SetPaused:
+            {
+                bool paused;
+                if (ServerMessage::DecodeSetPaused(resources::GetServerSocket(), paused))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.SetPaused(paused);
+                    }
+                }
+            }
+            break;
             case ServerMessage::Code::PlayerStartAction:
             {
                 uint16_t player_id;

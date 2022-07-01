@@ -14,10 +14,11 @@
 #include "messaging.h"
 #include "game_math.h"
 #include "util.h"
-#include "player_list.h"
+#include "global_state.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
+using server::global::PlayerList;
 
 namespace server {
 
@@ -208,6 +209,11 @@ void Server::checkMessages(Player& player)
         case ClientMessage::Code::SwapItem:
         {
             swapItem(player);
+        }
+        break;
+        case ClientMessage::Code::Console:
+        {
+            consoleInteract(player);
         }
         break;
         case ClientMessage::Code::ChangeRegion:
@@ -589,6 +595,24 @@ void Server::swapItem(Player& player)
     for (auto& p : PlayerList)
     {
         ServerMessage::UpdateStash(*p.Socket, item_stash);
+    }
+}
+
+void Server::consoleInteract(Player& player)
+{
+    bool activate;
+    if (!ClientMessage::DecodeConsole(*player.Socket, activate))
+    {
+        player.Socket->disconnect();
+        player.Status = Player::PlayerStatus::Disconnected;
+    }
+
+    // TODO: Activating the console should not pause right away
+    global::Paused = activate;
+
+    for (auto& p : PlayerList)
+    {
+        ServerMessage::SetPaused(*p.Socket, global::Paused);
     }
 }
 

@@ -16,6 +16,7 @@
 #include "entity_data.h"
 #include "region_definitions.h"
 #include "messaging.h"
+#include "types.h"
 
 namespace server {
 
@@ -62,9 +63,9 @@ private:
     uint16_t player_target;
     sf::Vector2f attack_vector{};
 
-    std::map<uint16_t, sf::Clock> invulnerability_timers;
+    std::map<uint16_t, util::Seconds> invulnerability_timers;
     std::map<uint16_t, float> invulnerability_windows;
-    sf::Clock despawn_timer;
+    util::Seconds despawn_timer;
 
     sf::Vector2f knockback_vector{};
     float knockback_distance;
@@ -77,7 +78,7 @@ private:
 
     AttackState attack_state = AttackState::Start;
     sf::Vector2f starting_attack_position{};
-    sf::Clock attack_timer;
+    util::Seconds attack_timer;
 
     enum class KnockbackState
     {
@@ -85,13 +86,13 @@ private:
     };
 
     KnockbackState knockback_state = KnockbackState::Start;
-    sf::Clock knockback_timer;
+    util::Seconds knockback_timer;
 
     float sniff_cooldown;
-    sf::Clock sniff_timer;
+    util::Seconds sniff_timer;
 
     bool stunned = false;
-    sf::Clock stun_timer;
+    util::Seconds stun_timer;
 
     enum class LeapingState
     {
@@ -101,8 +102,9 @@ private:
     LeapingState leaping_state = LeapingState::Start;
     sf::Vector2f leap_vector;
     float leap_cooldown;
-    sf::Clock leap_timer;
+    util::Seconds leap_timer;
 
+    void updateTimers(sf::Time elapsed);
     void setActionFlags();
     void setBehavior(Behavior behavior);
     void setAction(Action action);

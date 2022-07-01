@@ -252,6 +252,23 @@ void Game::UpdateBattery(float battery_level)
     gui.UpdateBatteryBar(battery_level);
 }
 
+void Game::SetPaused(bool paused)
+{
+    // TODO: Maybe shouldn't tie opening the gui directly to the pause request?
+    if (paused)
+    {
+        gui.DisplayOvermap();
+        local_player.DisableActions();
+    }
+    else
+    {
+        local_player.EnableActions();
+        // TODO: GUI?
+    }
+
+    IsPaused = paused;
+}
+
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
 {
     if (local_player.Avatar.Data.id == player_id)
@@ -506,7 +523,7 @@ void Game::onKeyPressed(sf::Event event)
                 break;
                 case RegionMap::InteractionType::ConvoyConsole:
                 {
-                    gui.DisplayOvermap();
+                    ClientMessage::Console(resources::GetServerSocket(), true);
                     local_player.DisableActions();
                 }
                 break;

@@ -100,6 +100,7 @@ Gui::Gui()
 
     sf::FloatRect reference_bounds = menu.GetSprite().getGlobalBounds();
 
+    // TODO: These callbacks are not instance-safe and will cause crashes
     resume_button.LoadAnimationData("gui/resume.json");
     bounds = resume_button.GetSprite().getGlobalBounds();
     resume_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.2 - bounds.height / 2);

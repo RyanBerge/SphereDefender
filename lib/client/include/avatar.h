@@ -14,6 +14,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "spritesheet.h"
 #include "entity_data.h"
+#include "types.h"
 
 namespace client {
 
@@ -41,7 +42,7 @@ private:
     Spritesheet gunshot;
 
     float starting_attack_angle;
-    sf::Clock attack_timer;
+    util::Seconds attack_timer;
 
 };
 

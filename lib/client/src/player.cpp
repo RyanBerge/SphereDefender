@@ -27,14 +27,16 @@ Player::Player() : Avatar(sf::Color(115, 180, 115), network::PlayerData{}) { }
 
 void Player::Update(sf::Time elapsed)
 {
+    attack_timer += elapsed.asSeconds();
+
     Avatar.Update(elapsed);
 
     if (Avatar.Data.properties.weapon_type == definitions::WeaponType::BurstGun)
     {
-        if (attacking && attack_timer.getElapsedTime().asMilliseconds() >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
+        if (attacking && attack_timer * 1000 >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
         {
             startAttack(sf::Mouse::getPosition(resources::GetWindow()));
-            attack_timer.restart();
+            attack_timer = 0;
         }
     }
 }
@@ -99,7 +101,7 @@ void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
     {
         sf::Vector2i click_point{event.x, event.y};
 
-        if (attack_timer.getElapsedTime().asMilliseconds() >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
+        if (attack_timer * 1000 >= definitions::GetWeapon(Avatar.Data.properties.weapon_type).attack_cooldown)
         {
             startAttack(click_point);
         }
@@ -203,7 +205,7 @@ void Player::startAttack(sf::Vector2i point)
         Avatar.StartAttack(attack_angle);
 
         attacking = true;
-        attack_timer.restart();
+        attack_timer = 0;
     }
 }
 

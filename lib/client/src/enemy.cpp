@@ -8,6 +8,7 @@
  *
  *************************************************************************************************/
 #include "enemy.h"
+#include "game_manager.h"
 #include <iostream>
 
 using std::cout, std::endl;
@@ -16,8 +17,8 @@ namespace client
 {
 
 namespace {
-    int FLASH_TIMER = 100; // milliseconds
-    int DESPAWN_TIMER = 3; // seconds
+    util::Milliseconds FLASH_TIMER = 100;
+    util::Seconds DESPAWN_TIMER = 3;
 }
 
 Enemy::Enemy()
@@ -29,14 +30,22 @@ Enemy::Enemy()
 
 void Enemy::Update(sf::Time elapsed)
 {
+    if (GameManager::GetInstance().Game.IsPaused)
+    {
+        return;
+    }
+
+    damage_timer += elapsed.asSeconds();
+    despawn_timer += elapsed.asSeconds();
+
     spritesheet.Update(elapsed);
-    if (damage_flash && damage_timer.getElapsedTime().asMilliseconds() >= FLASH_TIMER)
+    if (damage_flash && damage_timer * 1000 >= FLASH_TIMER)
     {
         damage_flash = false;
         spritesheet.GetSprite().setColor(sf::Color::White);
     }
 
-    if (!alive && despawn_timer.getElapsedTime().asSeconds() > DESPAWN_TIMER)
+    if (!alive && despawn_timer > DESPAWN_TIMER)
     {
         Despawn = true;
     }
@@ -52,7 +61,7 @@ void Enemy::UpdateData(network::EnemyData new_data)
     if (new_data.health < data.health)
     {
         damage_flash = true;
-        damage_timer.restart();
+        damage_timer = 0;
         spritesheet.GetSprite().setColor(sf::Color{255, 150, 0});
     }
 
@@ -100,7 +109,7 @@ void Enemy::ChangeAction(network::EnemyAction action)
     {
         alive = false;
         spritesheet.SetAnimation("Death");
-        despawn_timer.restart();
+        despawn_timer = 0;
     }
 }
 

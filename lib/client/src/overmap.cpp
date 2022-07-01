@@ -149,6 +149,12 @@ void Overmap::SetActive(bool is_active, float battery_level)
     active = is_active;
     battery = battery_level;
     information.setString("");
+
+    // TODO: There will eventually be ways to look at the overmap without interacting with the console
+    if (!is_active)
+    {
+        ClientMessage::Console(resources::GetServerSocket(), false);
+    }
 }
 
 bool Overmap::IsActive()

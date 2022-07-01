@@ -13,6 +13,7 @@
 #include "entity_definitions.h"
 #include "util.h"
 #include "messaging.h"
+#include "global_state.h"
 #include <cmath>
 #include <iostream>
 #include "SFML/Graphics/Vertex.hpp"
@@ -29,6 +30,13 @@ Player::Player() : definition{definitions::PlayerDefinition::Get()} { }
 
 void Player::Update(sf::Time elapsed, Region& region)
 {
+    if (global::Paused)
+    {
+        return;
+    }
+
+    projectile_timer += elapsed.asSeconds();
+
     sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
     bool collision = false;
     for (auto& obstacle : region.Obstacles)
@@ -109,7 +117,7 @@ void Player::StartAttack(uint16_t attack_angle)
 {
     starting_attack_angle = attack_angle;
     current_attack_angle = starting_attack_angle;
-    projectile_timer.restart();
+    projectile_timer = 0;
     Attacking = true;
 }
 
@@ -245,10 +253,10 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
         break;
         case definitions::WeaponType::BurstGun:
         {
-            if (projectiles_fired < weapon.projectiles_per_attack && projectile_timer.getElapsedTime().asMilliseconds() >= weapon.delay_per_projectile)
+            if (projectiles_fired < weapon.projectiles_per_attack && projectile_timer * 1000 >= weapon.delay_per_projectile)
             {
                 spawn_projectile = true;
-                projectile_timer.restart();
+                projectile_timer = 0;
             }
         }
         break;

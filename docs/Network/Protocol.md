@@ -43,6 +43,10 @@
 * Sent when a player swaps an item from the stash
 * `[itemindex:1]`
 
+#### `ClientMessage::Console`
+* Sent when a player opens or closes the console
+* `[activate:1]`
+
 #### `ClientMessage::ChangeRegion`
 * Sent when a player interacts with the console to move regions
 * `[regionid:2]`
@@ -80,6 +84,10 @@
 #### `ServerMessage::AllPlayersLoaded`
 * Sent after a game is started once the server has received a `ClientMessage::LoadingComplete` message from all players
 * `[spawnpos:4][spawnpox:4]`
+
+#### `ServerMessage::SetPaused`
+* Broadcasted whenever the game needs to be paused or resumed
+* `[pause:1]`
 
 #### `ServerMessage::PlayerStartAction`
 * Broadcasted whenever a player starts an action

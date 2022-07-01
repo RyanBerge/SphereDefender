@@ -9,6 +9,7 @@
  *************************************************************************************************/
 #pragma once
 
+#include "types.h"
 #include "enemy.h"
 #include <list>
 #include <random>
@@ -34,7 +35,7 @@ public:
 
 private:
     unsigned num_players = 1;
-    sf::Clock age_timer;
+    util::Seconds region_age = 0; // In seconds
     float spawn_interval;
     float last_spawn;
     float battery_charge_rate = 0; // Units-per-second

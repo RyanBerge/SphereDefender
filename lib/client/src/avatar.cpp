@@ -11,6 +11,7 @@
 #include "resources.h"
 #include <iostream>
 #include "game_math.h"
+#include "game_manager.h"
 
 using std::cout, std::endl;
 
@@ -52,6 +53,13 @@ Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 
 void Avatar::Update(sf::Time elapsed)
 {
+    if (GameManager::GetInstance().Game.IsPaused)
+    {
+        return;
+    }
+
+    attack_timer += elapsed.asSeconds();
+
     if (Data.health > 0)
     {
         if (Attacking)
@@ -80,7 +88,7 @@ void Avatar::Update(sf::Time elapsed)
                 {
                     gun.setPosition(sphere.getPosition());
                     gunshot.SetPosition(sphere.getPosition());
-                    if (attack_timer.getElapsedTime().asMilliseconds() > GUN_TIMER)
+                    if (attack_timer * 1000 > GUN_TIMER)
                     {
                         Attacking = false;
                     }
@@ -134,7 +142,7 @@ void Avatar::StartAttack(uint16_t attack_angle)
     sword.setRotation(starting_attack_angle);
     gun.setRotation(starting_attack_angle);
     gunshot.GetSprite().setRotation(starting_attack_angle);
-    attack_timer.restart();
+    attack_timer = 0;
     Attacking = true;
 }
 

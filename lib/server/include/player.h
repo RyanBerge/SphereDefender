@@ -59,7 +59,7 @@ private:
     definitions::PlayerDefinition definition;
     definitions::Weapon weapon;
     definitions::ItemType equipped_item = definitions::ItemType::Medpack;
-    sf::Clock projectile_timer;
+    util::Seconds projectile_timer = 0;
     int projectiles_fired = 0;
     bool spawn_projectile = false;
     sf::Vector2f velocity;

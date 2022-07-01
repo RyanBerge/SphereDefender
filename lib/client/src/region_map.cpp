@@ -11,6 +11,7 @@
 #include "resources.h"
 #include "settings.h"
 #include "game_math.h"
+#include "game_manager.h"
 #include <iostream>
 
 using std::cout, std::endl;
@@ -27,6 +28,11 @@ RegionMap::RegionMap()
 
 void RegionMap::Update(sf::Time elapsed)
 {
+    if (GameManager::GetInstance().Game.IsPaused)
+    {
+        return;
+    }
+
     convoy.Update(elapsed);
 
     leyline.Update(elapsed);

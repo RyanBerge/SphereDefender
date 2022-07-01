@@ -1,15 +1,18 @@
 /**************************************************************************************************
- *  File:       player_list.h
+ *  File:       types.h
  *
- *  Purpose:    A globally-accessible list of players in the server
+ *  Purpose:    Types
  *
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
 #pragma once
-#include "player.h"
 
-namespace server
+#include <cstdint>
+
+namespace util
 {
-    extern std::vector<Player> PlayerList;
-} // namespace server
+    using Seconds = float;
+    using Milliseconds = int32_t;
+    using Microseconds = int64_t;
+} // util

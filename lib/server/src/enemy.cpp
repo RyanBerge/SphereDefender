@@ -10,12 +10,13 @@
 #include "enemy.h"
 #include "pathfinding.h"
 #include "messaging.h"
-#include "player_list.h"
+#include "global_state.h"
 #include <iostream>
 #include <random>
 #include <SFML/System/Sleep.hpp>
 
 using std::cout, std::endl;
+using server::global::PlayerList;
 
 namespace server {
 
@@ -62,6 +63,8 @@ int Enemy::GetSiphonRate()
 
 void Enemy::Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles)
 {
+    updateTimers(elapsed);
+
     switch (current_action)
     {
         case Action::Attacking:
@@ -101,9 +104,9 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKno
 {
     if (invulnerability_timers.find(player_id) == invulnerability_timers.end())
     {
-        invulnerability_timers[player_id] = sf::Clock();
+        invulnerability_timers[player_id] = 0;
     }
-    else if (invulnerability_timers[player_id].getElapsedTime().asSeconds() < invulnerability_windows[player_id])
+    else if (invulnerability_timers[player_id] < invulnerability_windows[player_id])
     {
         return;
     }
@@ -112,7 +115,7 @@ void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKno
         return;
     }
 
-    invulnerability_timers[player_id].restart();
+    invulnerability_timers[player_id] = 0;
     invulnerability_windows[player_id] = invulnerability_window;
 
     if (Data.health < damage)
@@ -148,6 +151,21 @@ Enemy::Behavior Enemy::GetBehavior()
 Enemy::Action Enemy::GetAction()
 {
     return current_action;
+}
+
+void Enemy::updateTimers(sf::Time elapsed)
+{
+    for (auto& [id, timer] : invulnerability_timers)
+    {
+        timer += elapsed.asSeconds();
+    }
+
+    despawn_timer += elapsed.asSeconds();
+    attack_timer += elapsed.asSeconds();
+    knockback_timer += elapsed.asSeconds();
+    sniff_timer += elapsed.asSeconds();
+    stun_timer += elapsed.asSeconds();
+    leap_timer += elapsed.asSeconds();
 }
 
 void Enemy::setActionFlags()
@@ -218,7 +236,7 @@ void Enemy::setActionFlags()
                 case Behavior::Dead:
                 {
                     enemy_action.flags.dead = true;
-                    despawn_timer.restart();
+                    despawn_timer = 0;
                 }
                 break;
             }
@@ -269,7 +287,7 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
                 return;
             }
 
-            if (sniff_timer.getElapsedTime().asSeconds() > sniff_cooldown)
+            if (sniff_timer > sniff_cooldown)
             {
                 setAction(Action::Sniffing);
             }
@@ -294,7 +312,7 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
                 setAction(Action::Attacking);
                 return;
             }
-            else if (target_distance > definition.minimum_leap_range && target_distance < definition.maximum_leap_range && leap_timer.getElapsedTime().asSeconds() >= leap_cooldown)
+            else if (target_distance > definition.minimum_leap_range && target_distance < definition.maximum_leap_range && leap_timer >= leap_cooldown)
             {
                 if (util::GetRandomInt(0, 5) == 0)
                 {
@@ -303,7 +321,7 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
                 else
                 {
                     leap_cooldown = 0.25f;
-                    leap_timer.restart();
+                    leap_timer = 0;
                 }
             }
         }
@@ -470,14 +488,14 @@ void Enemy::handleAttack(sf::Time elapsed)
         {
             starting_attack_position = Data.position;
             attack_state = AttackState::Windup;
-            attack_timer.restart();
+            attack_timer = 0;
             [[fallthrough]];
         }
         case AttackState::Windup:
         {
             velocity = attack_vector * (definition.attack_distance / definition.attack_duration);
             Data.position += velocity * elapsed.asSeconds();
-            if (attack_timer.getElapsedTime().asSeconds() >= definition.attack_duration / 2)
+            if (attack_timer >= definition.attack_duration / 2)
             {
                 attack_state = AttackState::Hit;
             }
@@ -493,7 +511,7 @@ void Enemy::handleAttack(sf::Time elapsed)
         {
             velocity = -attack_vector * (definition.attack_distance / definition.attack_duration);
             Data.position += velocity * elapsed.asSeconds();
-            if (attack_timer.getElapsedTime().asSeconds() >= definition.attack_duration)
+            if (attack_timer >= definition.attack_duration)
             {
                 attack_state = AttackState::Cooldown;
                 Data.position = starting_attack_position;
@@ -502,7 +520,7 @@ void Enemy::handleAttack(sf::Time elapsed)
         break;
         case AttackState::Cooldown:
         {
-            if (attack_timer.getElapsedTime().asSeconds() >= (definition.attack_duration + definition.attack_cooldown))
+            if (attack_timer >= (definition.attack_duration + definition.attack_cooldown))
             {
                 setAction(Action::None);
                 attack_state = AttackState::Start;
@@ -555,7 +573,7 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<sf::FloatRect> obstacl
     {
         case KnockbackState::Start:
         {
-            knockback_timer.restart();
+            knockback_timer = 0;
             knockback_state = KnockbackState::Knockback;
             [[fallthrough]];
         };
@@ -579,7 +597,7 @@ void Enemy::handleKnockback(sf::Time elapsed, std::vector<sf::FloatRect> obstacl
             {
                 Data.position = new_position;
             }
-            if (collision || knockback_timer.getElapsedTime().asSeconds() >= knockback_duration)
+            if (collision || knockback_timer >= knockback_duration)
             {
                 knockback_state = KnockbackState::Start;
                 setAction(Action::Stunned);
@@ -593,11 +611,11 @@ void Enemy::handleStunned()
 {
     if (!stunned)
     {
-        stun_timer.restart();
+        stun_timer = 0;
         stunned = true;
     }
 
-    if (stun_timer.getElapsedTime().asSeconds() >= STUN_DURATION)
+    if (stun_timer >= STUN_DURATION)
     {
         setAction(Action::None);
         stunned = false;
@@ -606,29 +624,30 @@ void Enemy::handleStunned()
 
 void Enemy::handleSniffing()
 {
-    if (sniff_timer.getElapsedTime().asSeconds() > sniff_cooldown + SNIFF_DURATION)
+    if (sniff_timer > sniff_cooldown + SNIFF_DURATION)
     {
         sniff_cooldown = SNIFF_COOLDOWN + util::GetRandomInt(0, 2);
-        sniff_timer.restart();
+        sniff_timer = 0;
         setAction(Action::None);
     }
 }
 
 void Enemy::handleLeaping(sf::Time elapsed, std::vector<sf::FloatRect> obstacles)
 {
-    static sf::Clock leap_tracking_timer;
+    static util::Seconds leap_tracking_timer;
+    leap_tracking_timer += elapsed.asSeconds();
 
     switch (leaping_state)
     {
         case LeapingState::Start:
         {
-            leap_tracking_timer.restart();
+            leap_tracking_timer = 0;
             leaping_state = LeapingState::Windup;
             [[fallthrough]];
         }
         case LeapingState::Windup:
         {
-            if (leap_tracking_timer.getElapsedTime().asSeconds() > LEAP_WINDUP)
+            if (leap_tracking_timer > LEAP_WINDUP)
             {
                 leaping_state = LeapingState::Leap;
             }
@@ -636,7 +655,7 @@ void Enemy::handleLeaping(sf::Time elapsed, std::vector<sf::FloatRect> obstacles
         break;
         case LeapingState::Leap:
         {
-            if (leap_tracking_timer.getElapsedTime().asSeconds() > LEAP_WINDUP + (definition.leaping_distance / definition.leaping_speed))
+            if (leap_tracking_timer > LEAP_WINDUP + (definition.leaping_distance / definition.leaping_speed))
             {
                 setAction(Action::None);
                 leaping_state = LeapingState::Cleanup;
@@ -676,7 +695,7 @@ void Enemy::handleLeaping(sf::Time elapsed, std::vector<sf::FloatRect> obstacles
         break;
         case LeapingState::Cleanup:
         {
-            leap_timer.restart();
+            leap_timer = 0;
             leap_cooldown = LEAP_COOLDOWN;
             leaping_state = LeapingState::Start;
         }

@@ -10,6 +10,7 @@
 #include "region.h"
 #include "region_definitions.h"
 #include "game_math.h"
+#include "global_state.h"
 #include <algorithm>
 #include <iostream>
 
@@ -55,7 +56,12 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 
 void Region::Update(sf::Time elapsed)
 {
-    float region_age = age_timer.getElapsedTime().asSeconds();
+    if (global::Paused)
+    {
+        return;
+    }
+
+    region_age += elapsed.asSeconds();
 
     for (auto& enemy : Enemies)
     {
@@ -78,7 +84,7 @@ void Region::Update(sf::Time elapsed)
     else
     {
         BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
-        if (spawn_enemies && (last_spawn == 0 || age_timer.getElapsedTime().asSeconds() >= last_spawn + spawn_interval))
+        if (spawn_enemies && (last_spawn == 0 || region_age >= last_spawn + spawn_interval))
         {
             spawnEnemy();
         }
@@ -116,7 +122,7 @@ void Region::spawnEnemy()
     //enemy.Data.position = sf::Vector2f{900, 0};
 
     Enemies.push_back(enemy);
-    last_spawn = age_timer.getElapsedTime().asSeconds();
+    last_spawn = region_age;
     spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;
     if (spawn_interval < MINIMUM_SPAWN_INTERVAL)
     {

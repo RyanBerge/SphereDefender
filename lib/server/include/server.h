@@ -64,6 +64,7 @@ private:
     void startPlayerAction(Player& player);
     void useItem(Player& player);
     void swapItem(Player& player);
+    void consoleInteract(Player& player);
     void changeRegion(Player& player);
 
     void broadcastStates();
