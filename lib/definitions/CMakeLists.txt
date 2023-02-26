@@ -2,6 +2,7 @@ set(TargetName definitions)
 find_package(nlohmann_json 3.2.0 REQUIRED PATHS ${PROJECT_SOURCE_DIR}/externals/Json/install)
 
 set(Sources
+    src/debug_overrides.cpp
     src/entity_definitions.cpp
     src/region_definitions.cpp
 )

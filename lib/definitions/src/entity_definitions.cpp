@@ -7,6 +7,7 @@
  *
  *************************************************************************************************/
 #include "entity_definitions.h"
+#include "debug_overrides.h"
 
 namespace definitions {
 namespace {
@@ -102,6 +103,12 @@ PlayerDefinition::PlayerDefinition()
 {
     radius = 18;
     speed = 100;
+#ifndef NDEBUG
+    if (debug::PlayerMovementSpeed.override)
+    {
+        speed = debug::PlayerMovementSpeed.value;
+    }
+#endif
 }
 
 PlayerDefinition PlayerDefinition::Get()
