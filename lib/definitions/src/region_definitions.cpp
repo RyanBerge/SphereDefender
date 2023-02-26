@@ -21,7 +21,7 @@ namespace definitions
     #define REGION_LEYLINE 1
     #define REGION_NEUTRAL 2
     #define REGION_SECRET 9
-    uint16_t STARTING_REGION = REGION_LEYLINE;
+    uint16_t STARTING_REGION = REGION_TOWN;
 
 namespace {
 
@@ -120,6 +120,14 @@ sf::FloatRect ConvoyDefinition::GetBounds()
     return sf::FloatRect(Position.x - origin.x, Position.y - origin.y, Width, Height);
 }
 
+sf::FloatRect ConvoyDefinition::GetInteriorBounds()
+{
+    sf::Vector2f relative_position{Position.x - origin.x, Position.y - origin.y};
+    sf::FloatRect adjusted_interior(interior.left + relative_position.x, interior.top + relative_position.y, interior.width, interior.height);
+
+    return adjusted_interior;
+}
+
 std::vector<sf::FloatRect> ConvoyDefinition::GetCollisions()
 {
     sf::Vector2f relative_position{Position.x - origin.x, Position.y - origin.y};
@@ -154,13 +162,13 @@ void ConvoyDefinition::load(Orientation orientation)
     }
 
     std::ifstream file(path);
-    nlohmann::json j;
-    file >> j;
+    nlohmann::json json;
+    file >> json;
 
     Width = 0;
     Height = 0;
 
-    for (auto& object : j["collisions"])
+    for (auto& object : json["collisions"])
     {
         sf::FloatRect rect;
 
@@ -182,8 +190,13 @@ void ConvoyDefinition::load(Orientation orientation)
         collisions.push_back(rect);
     }
 
-    origin.x = j["frames"][0]["origin"][0];
-    origin.y = j["frames"][0]["origin"][1];
+    interior.left = json["interior"]["location"][0];
+    interior.top = json["interior"]["location"][1];
+    interior.width = json["interior"]["size"][0];
+    interior.height = json["interior"]["size"][1];
+
+    origin.x = json["frames"][0]["origin"][0];
+    origin.y = json["frames"][0]["origin"][1];
 }
 
 RegionDefinition GetRegionDefinition(RegionType region)

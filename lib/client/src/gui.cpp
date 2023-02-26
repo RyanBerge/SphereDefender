@@ -94,6 +94,12 @@ Gui::Gui()
 
     interaction_marker.LoadAnimationData("gui/interaction_marker.json");
 
+    gather_text.setFont(*font);
+    gather_text.setCharacterSize(25);
+    gather_text.setFillColor(sf::Color::White);
+    gather_text.setOutlineColor(sf::Color::Black);
+    gather_text.setOutlineThickness(1);
+
     menu.LoadAnimationData("gui/menu.json");
     bounds = menu.GetSprite().getGlobalBounds();
     menu.SetPosition(sf::Vector2f{window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.125f});
@@ -177,6 +183,11 @@ void Gui::Draw()
         if (stash.Active)
         {
             stash.Draw();
+        }
+
+        if (gathering)
+        {
+            resources::GetWindow().draw(gather_text);
         }
 
         if (InMenus)
@@ -315,6 +326,27 @@ void Gui::EscapePressed()
     }
 }
 
+void Gui::DisplayGatherPlayers(uint16_t player_id, bool start)
+{
+    gathering = start;
+
+    if (gathering)
+    {
+        sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
+        gather_text.setString(GameManager::GetInstance().Game.GetPlayerName(player_id) + " is calling for everyone to gather at the convoy!");
+        sf::FloatRect bounds = gather_text.getGlobalBounds();
+        gather_text.setPosition(sf::Vector2f{window_resolution.x / 2 - bounds.width / 2, window_resolution.y * 0.15f - bounds.height / 2});
+    }
+}
+
+void Gui::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
+{
+    if (overmap.IsActive())
+    {
+        overmap.DisplayVote(player_id, vote, confirmed);
+    }
+}
+
 void Gui::DisplayMenu()
 {
     InMenus = true;
@@ -334,9 +366,17 @@ void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list
     InDialog = true;
 }
 
-void Gui::DisplayOvermap()
+void Gui::SetOvermapDisplay(bool display)
 {
-    overmap.SetActive(true, battery_bar.getScale().x * 1000);
+    if (display)
+    {
+        overmap.SetActive(true, battery_bar.getScale().x * 1000);
+        gathering = false;
+    }
+    else
+    {
+        overmap.SetActive(false);
+    }
 }
 
 void Gui::DisplayStash()

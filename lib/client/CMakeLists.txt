@@ -19,12 +19,13 @@ set(Sources
     src/main.cpp
     src/overmap.cpp
     src/player.cpp
+    src/region_map.cpp
     src/resources.cpp
     src/settings.cpp
     src/spritesheet.cpp
     src/stash.cpp
     src/textbox.cpp
-    src/region_map.cpp
+    src/toggle_button.cpp
 )
 
 add_executable(${TargetName} ${Sources})

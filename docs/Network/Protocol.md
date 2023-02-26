@@ -43,6 +43,10 @@
 * Sent when a player swaps an item from the stash
 * `[itemindex:1]`
 
+#### `ClientMessage::CastVote`
+* Sent when a player casts a vote for something
+* `[voteindex:1]`
+
 #### `ClientMessage::Console`
 * Sent when a player opens or closes the console
 * `[activate:1]`
@@ -124,3 +128,11 @@
 #### `ServerMessage::UpdateStash`
 * Broadcasted when the stash changes
 * `[itemtype:1][itemtype:1][...]`
+
+#### `ServerMessage::GatherPlayers`
+* Broadcasted when a player activates the console
+* `[playerid:2][start/stop:1]`
+
+#### `ClientMessage::CastVote`
+* Broadcasted when a player casts a vote for something
+* `[playerid:2][voteindex:1]`

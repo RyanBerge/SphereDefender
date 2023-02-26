@@ -32,7 +32,7 @@ public:
     void SetEnabled(bool new_enabled);
     void DisplayMenu();
     void DisplayDialog(std::string source, std::vector<std::string> dialog_list);
-    void DisplayOvermap();
+    void SetOvermapDisplay(bool display);
     void DisplayStash();
     void UpdateHealth(uint8_t value);
     void UpdateBatteryBar(float battery_level);
@@ -43,6 +43,8 @@ public:
     bool Available();
     bool DisableActions();
     void EscapePressed();
+    void DisplayGatherPlayers(uint16_t player_id, bool start);
+    void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
 
     sf::View GuiView;
     bool InMenus = false;
@@ -77,6 +79,8 @@ private:
     sf::RectangleShape death_tint;
     sf::Text death_text;
     Spritesheet interaction_marker;
+    sf::Text gather_text;
+    bool gathering = false;
 
     Spritesheet menu;
     CursorButton resume_button;

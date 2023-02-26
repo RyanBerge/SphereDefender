@@ -37,6 +37,7 @@ public:
     void CenterOrigin();
     void SetTiling(bool tiled);
     void SetVisible(bool visible);
+    bool IsVisible();
 
 private:
     struct Frame

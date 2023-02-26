@@ -193,6 +193,11 @@ void Spritesheet::SetVisible(bool visible)
     is_visible = visible;
 }
 
+bool Spritesheet::IsVisible()
+{
+    return is_visible;
+}
+
 bool Spritesheet::loadTexture(std::string filename)
 {
     texture = resources::AllocTexture(filename);

@@ -350,6 +350,30 @@ bool ClientMessage::SwapItem(sf::TcpSocket& socket, uint8_t item_index)
     return true;
 }
 
+bool ClientMessage::CastVote(sf::TcpSocket& socket, uint8_t vote, bool confirm)
+{
+    Code code = ClientMessage::Code::CastVote;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(vote) + sizeof(confirm);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &vote, sizeof(vote));
+    offset += sizeof(vote);
+    std::memcpy(buffer + offset, &confirm, sizeof(confirm));
+    offset += sizeof(confirm);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::Console(sf::TcpSocket& socket, bool activate)
 {
     Code code = ClientMessage::Code::Console;
@@ -372,27 +396,27 @@ bool ClientMessage::Console(sf::TcpSocket& socket, bool activate)
     return true;
 }
 
-bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, uint16_t region_id)
-{
-    Code code = ClientMessage::Code::ChangeRegion;
-
-    constexpr size_t buffer_size = sizeof(code) + sizeof(region_id);
-    uint8_t buffer[buffer_size];
-
-    int offset = 0;
-    std::memcpy(buffer, &code, sizeof(code));
-    offset += sizeof(code);
-    std::memcpy(buffer + offset, &region_id, sizeof(region_id));
-    offset += sizeof(region_id);
-
-    if (!writeBuffer(socket, buffer, buffer_size))
-    {
-        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
-        return false;
-    }
-
-    return true;
-}
+//bool ClientMessage::ChangeRegion(sf::TcpSocket& socket, uint16_t region_id)
+//{
+//    Code code = ClientMessage::Code::ChangeRegion;
+//
+//    constexpr size_t buffer_size = sizeof(code) + sizeof(region_id);
+//    uint8_t buffer[buffer_size];
+//
+//    int offset = 0;
+//    std::memcpy(buffer, &code, sizeof(code));
+//    offset += sizeof(code);
+//    std::memcpy(buffer + offset, &region_id, sizeof(region_id));
+//    offset += sizeof(region_id);
+//
+//    if (!writeBuffer(socket, buffer, buffer_size))
+//    {
+//        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+//        return false;
+//    }
+//
+//    return true;
+//}
 
 bool ClientMessage::DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name)
 {
@@ -507,6 +531,28 @@ bool ClientMessage::DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_inde
     return true;
 }
 
+bool ClientMessage::DecodeCastVote(sf::TcpSocket& socket, uint8_t& out_vote, bool& out_confirm)
+{
+    uint8_t vote;
+    bool confirm;
+
+    if (!read(socket, &vote, sizeof(vote)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &confirm, sizeof(confirm)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    out_vote = vote;
+    out_confirm = confirm;
+    return true;
+}
+
 bool ClientMessage::DecodeConsole(sf::TcpSocket& socket, bool& out_activate)
 {
     bool activate;
@@ -521,19 +567,19 @@ bool ClientMessage::DecodeConsole(sf::TcpSocket& socket, bool& out_activate)
     return true;
 }
 
-bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id)
-{
-    uint16_t region_id;
-
-    if (!read(socket, &region_id, sizeof(region_id)))
-    {
-        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
-        return false;
-    }
-
-    out_region_id = region_id;
-    return true;
-}
+//bool ClientMessage::DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id)
+//{
+//    uint16_t region_id;
+//
+//    if (!read(socket, &region_id, sizeof(region_id)))
+//    {
+//        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+//        return false;
+//    }
+//
+//    out_region_id = region_id;
+//    return true;
+//}
 
 // ====================================================== Server Message ======================================================
 
@@ -1045,6 +1091,56 @@ bool ServerMessage::UpdateStash(sf::TcpSocket& socket, std::array<definitions::I
     return true;
 }
 
+bool ServerMessage::GatherPlayers(sf::TcpSocket& socket, uint16_t player_id, bool start)
+{
+    Code code = ServerMessage::Code::GatherPlayers;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(start);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &start, sizeof(start));
+    offset += sizeof(start);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServerMessage::CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm)
+{
+    Code code = ServerMessage::Code::CastVote;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(vote) + sizeof(confirm);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &vote, sizeof(vote));
+    offset += sizeof(vote);
+    std::memcpy(buffer + offset, &confirm, sizeof(confirm));
+    offset += sizeof(confirm);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -1467,6 +1563,58 @@ bool ServerMessage::DecodeUpdateStash(sf::TcpSocket& socket, std::array<definiti
     }
 
     out_items = items;
+    return true;
+}
+
+bool ServerMessage::DecodeGatherPlayers(sf::TcpSocket& socket, uint16_t& out_player_id, bool& out_start)
+{
+    uint16_t player_id;
+    bool start;
+
+    if (!read(socket, &player_id, sizeof(player_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &start, sizeof(start)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    out_player_id = player_id;
+    out_start = start;
+    return true;
+}
+
+bool ServerMessage::DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm)
+{
+    uint16_t player_id;
+    uint8_t vote;
+    bool confirm;
+
+    if (!read(socket, &player_id, sizeof(player_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &vote, sizeof(vote)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &confirm, sizeof(confirm)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region id." << endl;
+        return false;
+    }
+
+    out_player_id = player_id;
+    out_vote = vote;
+    out_confirm = confirm;
     return true;
 }
 

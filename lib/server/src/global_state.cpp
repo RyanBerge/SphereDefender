@@ -13,5 +13,7 @@ namespace server::global
 
 std::vector<Player> PlayerList;
 bool Paused = false;
+bool GatheringPlayers = false;
+bool RegionSelect = false;
 
 } // namespace server

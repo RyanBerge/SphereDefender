@@ -32,6 +32,13 @@ public:
         Dead
     };
 
+    struct Vote
+    {
+        bool voted;
+        bool confirmed;
+        uint8_t vote;
+    };
+
     Player();
 
     void Update(sf::Time elapsed, Region& region);
@@ -49,6 +56,7 @@ public:
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;
     network::PlayerData Data;
+    Player::Vote Vote;
 
     bool Attacking = false;
 

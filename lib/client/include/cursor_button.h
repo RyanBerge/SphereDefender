@@ -27,33 +27,33 @@ public:
     CursorButton();
     CursorButton(std::string filepath);
 
-    void Update(sf::Time elapsed);
-    void Draw();
+    virtual void Update(sf::Time elapsed);
+    virtual void Draw();
 
-    void LoadAnimationData(std::string filepath);
-    void SetAnimation(std::string animation_name);
+    virtual void LoadAnimationData(std::string filepath);
+    virtual void SetAnimation(std::string animation_name);
 
-    void SetEnabled(bool enable);
+    virtual void SetEnabled(bool enable);
 
-    void UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event);
-    void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);
+    virtual void UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event);
+    virtual void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);
 
-    sf::Sprite& GetSprite();
-    void SetPosition(float x, float y);
+    virtual sf::Sprite& GetSprite();
+    virtual void SetPosition(float x, float y);
 
-    void RegisterLeftMouseDown(std::function<void(void)> f);
-    void RegisterLeftMouseUp(std::function<void(void)> f);
+    virtual void RegisterLeftMouseDown(std::function<void(void)> f);
+    virtual void RegisterLeftMouseUp(std::function<void(void)> f);
 
-    void RegisterCursorEnter(std::function<void(void)> f);
-    void RegisterCursorExit(std::function<void(void)> f);
+    virtual void RegisterCursorEnter(std::function<void(void)> f);
+    virtual void RegisterCursorExit(std::function<void(void)> f);
 
 protected:
     Spritesheet spritesheet;
 
-    void onLeftMouseDown(bool in_bounds);
-    void onLeftMouseUp(bool in_bounds);
-    void onHoverEnter();
-    void onHoverExit();
+    virtual void onLeftMouseDown(bool in_bounds);
+    virtual void onLeftMouseUp(bool in_bounds);
+    virtual void onHoverEnter();
+    virtual void onHoverExit();
 
     bool enabled = true;
     bool mouse_hover = false;

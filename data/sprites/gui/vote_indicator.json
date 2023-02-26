@@ -1,0 +1,33 @@
+{
+  "filename": "VoteIndicator.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 7, 10 ],
+      "origin": [ 0, 0 ]
+    },
+    {
+      "index": 1,
+      "location": [ 7, 0 ],
+      "size": [ 7, 10 ],
+      "origin": [ 0, 0 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Unconfirmed",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Unconfirmed"
+    },
+    {
+      "name": "Confirmed",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Confirmed"
+    }
+  ]
+}

@@ -142,7 +142,7 @@ void Game::Load(network::PlayerData local, std::vector<network::PlayerData> othe
 
 void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players)
 {
-    std::cout << "Async load started..." << std::endl;
+    cout << "Async load started..." << endl;
 
     event_id_map[sf::Event::EventType::MouseMoved] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseMoved, std::bind(&Game::onMouseMove, this, std::placeholders::_1));
     event_id_map[sf::Event::EventType::MouseButtonPressed] = EventHandler::GetInstance().RegisterCallback(sf::Event::EventType::MouseButtonPressed, std::bind(&Game::onMouseDown, this, std::placeholders::_1));
@@ -162,24 +162,23 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     enemies.clear();
 
     local_player = Player();
+    local_player.Load(local);
+    for (auto& player : other_players)
+    {
+        avatars[player.id] = Avatar(sf::Color(180, 115, 150), player);
+    }
 
     region_map = RegionMap();
     region_map.Load(definitions::GetZone().regions[definitions::STARTING_REGION].type);
     gui = Gui();
     gui.Load();
-    local_player.Load(local);
-
-    for (auto& player : other_players)
-    {
-        avatars[player.id] = Avatar(sf::Color(180, 115, 150), player);
-    }
 
     resources::GetWorldView() = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 
     sf::sleep(sf::seconds(1));
 
     loaded = true;
-    std::cout << "Async load finished." << std::endl;
+    cout << "Async load finished." << endl;
 
     ClientMessage::LoadingComplete(resources::GetServerSocket());
 }
@@ -206,6 +205,28 @@ void Game::Start(sf::Vector2f spawn_position)
 int Game::GetPlayerCount()
 {
     return avatars.size() + 1;
+}
+
+std::vector<uint16_t> Game::GetPlayerIds()
+{
+    std::vector<uint16_t> ids;
+    ids.push_back(local_player.Avatar.Data.id);
+    for (auto& [id, avatar] : avatars)
+    {
+        ids.push_back(id);
+    }
+
+    return ids;
+}
+
+std::string Game::GetPlayerName(uint16_t player_id)
+{
+    if (player_id == local_player.Avatar.Data.id)
+    {
+        return local_player.Avatar.Data.name;
+    }
+
+    return avatars[player_id].Data.name;
 }
 
 void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
@@ -257,13 +278,13 @@ void Game::SetPaused(bool paused)
     // TODO: Maybe shouldn't tie opening the gui directly to the pause request?
     if (paused)
     {
-        gui.DisplayOvermap();
+        gui.SetOvermapDisplay(true);
         local_player.DisableActions();
     }
     else
     {
         local_player.EnableActions();
-        // TODO: GUI?
+        gui.SetOvermapDisplay(false);
     }
 
     IsPaused = paused;
@@ -326,6 +347,16 @@ void Game::UpdateStash(std::array<definitions::ItemType, 24> items)
     gui.UpdateStash(items);
 }
 
+void Game::DisplayGatherPlayers(uint16_t player_id, bool start)
+{
+    gui.DisplayGatherPlayers(player_id, start);
+}
+
+void Game::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
+{
+    gui.DisplayVote(player_id, vote, confirmed);
+}
+
 void Game::updateScroll(sf::Time elapsed)
 {
     sf::Vector2f mouse_coords = resources::GetWindow().mapPixelToCoords(sf::Mouse::getPosition() - resources::GetWindow().getPosition(), gui.GuiView);
@@ -366,6 +397,7 @@ void Game::handleLeavingRegion()
         case LeavingRegionState::Start:
         {
             overlay_opacity = 0;
+            leaving_region_state = LeavingRegionState::Moving;
             [[fallthrough]];
         }
         case LeavingRegionState::Moving:

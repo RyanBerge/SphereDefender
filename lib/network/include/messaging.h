@@ -62,8 +62,9 @@ public:
         StartAction,
         UseItem,
         SwapItem,
+        CastVote,
         Console,
-        ChangeRegion,
+//        ChangeRegion,
 
         LeaveGame,
 
@@ -82,8 +83,9 @@ public:
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
     static bool UseItem(sf::TcpSocket& socket);
     static bool SwapItem(sf::TcpSocket& socket, uint8_t item_index);
+    static bool CastVote(sf::TcpSocket& socket, uint8_t vote, bool confirm);
     static bool Console(sf::TcpSocket& socket, bool activate);
-    static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
+//    static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
 
     static bool DecodeInitLobby(sf::TcpSocket& socket, std::string& out_name);
     static bool DecodeJoinLobby(sf::TcpSocket& socket, std::string& out_name);
@@ -91,8 +93,9 @@ public:
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
     static bool DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_index);
+    static bool DecodeCastVote(sf::TcpSocket& socket, uint8_t& out_vote, bool& out_confirm);
     static bool DecodeConsole(sf::TcpSocket& socket, bool& out_activate);
-    static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
+//    static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
 };
 
 class ServerMessage
@@ -123,6 +126,8 @@ public:
         ProjectileUpdate,
         ChangeRegion,
         UpdateStash,
+        GatherPlayers,
+        CastVote,
 
         Error = 0xFF
     };
@@ -147,6 +152,8 @@ public:
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
     static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
     static bool UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items);
+    static bool GatherPlayers(sf::TcpSocket& socket, uint16_t player_id, bool start);
+    static bool CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -164,6 +171,8 @@ public:
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
     static bool DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items);
+    static bool DecodeGatherPlayers(sf::TcpSocket& socket, uint16_t& out_player_id, bool& out_start);
+    static bool DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm);
 };
 
 } // network

@@ -98,6 +98,16 @@ void Server::update()
             }
         }
 
+        if (global::RegionSelect)
+        {
+            checkVotes(VotingType::RegionSelect);
+        }
+
+        if (global::GatheringPlayers)
+        {
+            gatherPlayers();
+        }
+
         static float broadcast_delta = 0;
         broadcast_delta += elapsed.asSeconds();
 
@@ -211,14 +221,14 @@ void Server::checkMessages(Player& player)
             swapItem(player);
         }
         break;
+        case ClientMessage::Code::CastVote:
+        {
+            castVote(player);
+        }
+        break;
         case ClientMessage::Code::Console:
         {
             consoleInteract(player);
-        }
-        break;
-        case ClientMessage::Code::ChangeRegion:
-        {
-            changeRegion(player);
         }
         break;
         default:
@@ -264,6 +274,123 @@ void Server::startGame()
     }
 
     game_state = GameState::Game;
+}
+
+void Server::gatherPlayers()
+{
+    bool gathered = true;
+    for (auto& player : PlayerList)
+    {
+        if (!util::Intersects(player.GetBounds(), region.Convoy.GetInteriorBounds()))
+        {
+            gathered = false;
+            break;
+        }
+    }
+
+    if (gathered)
+    {
+        global::GatheringPlayers = false;
+        global::Paused = true;
+        global::RegionSelect = true;
+        resetVotes();
+
+        for (auto& p : PlayerList)
+        {
+            ServerMessage::SetPaused(*p.Socket, true);
+        }
+    }
+}
+
+void Server::resetVotes()
+{
+    for (auto& player : PlayerList)
+    {
+        player.Vote.voted = false;
+        player.Vote.confirmed = false;
+        player.Vote.vote = 0;
+    }
+}
+
+void Server::checkVotes(VotingType voting_type)
+{
+    bool all_confirmed = true;
+    for (auto& player : PlayerList)
+    {
+        if (!player.Vote.voted || !player.Vote.confirmed)
+        {
+            all_confirmed = false;
+            break;
+        }
+    }
+
+    if (!all_confirmed)
+    {
+        return;
+    }
+
+    std::map<uint8_t, int> vote_map;
+
+    for (auto& player : PlayerList)
+    {
+        if (vote_map.find(player.Vote.vote) == vote_map.end())
+        {
+            vote_map[player.Vote.vote] = 1;
+        }
+        else
+        {
+            vote_map[player.Vote.vote] += 1;
+        }
+    }
+
+    int winner = -1;
+    int winning_count = 0;
+    bool tie = true;
+    for (auto& [vote, count] : vote_map)
+    {
+        if (count == winning_count)
+        {
+            tie = true;
+        }
+        else if (count > winning_count)
+        {
+            winner = vote;
+            winning_count = count;
+            tie = false;
+        }
+    }
+
+    if (tie || winner == -1)
+    {
+        return;
+    }
+
+    switch (voting_type)
+    {
+        case VotingType::RegionSelect:
+        {
+            global::RegionSelect = false;
+            global::Paused = false;
+            next_region = winner;
+
+            for (auto& p : PlayerList)
+            {
+                p.Status = Player::PlayerStatus::Loading;
+                ServerMessage::SetPaused(*p.Socket, false);
+                ServerMessage::ChangeRegion(*p.Socket, winner);
+            }
+        }
+        break;
+        case VotingType::MenuEvent:
+        {
+            // TODO: don't forget to unpause
+        }
+        break;
+        default:
+        {
+            cerr << "Invalid voting type\n";
+        }
+    }
 }
 
 void Server::initLobby(Player& player)
@@ -598,6 +725,32 @@ void Server::swapItem(Player& player)
     }
 }
 
+void Server::castVote(Player& player)
+{
+    uint8_t vote;
+    bool confirm;
+    if (!ClientMessage::DecodeCastVote(*player.Socket, vote, confirm))
+    {
+        player.Socket->disconnect();
+        player.Status = Player::PlayerStatus::Disconnected;
+    }
+
+    if (!global::RegionSelect /* TODO: Add check for menu events here */)
+    {
+        cerr << "A vote was casting during a non-voting period\n";
+        return;
+    }
+
+    player.Vote.voted = true;
+    player.Vote.vote = vote;
+    player.Vote.confirmed = confirm;
+
+    for (auto& p : PlayerList)
+    {
+        ServerMessage::CastVote(*p.Socket, player.Data.id, vote, confirm);
+    }
+}
+
 void Server::consoleInteract(Player& player)
 {
     bool activate;
@@ -607,30 +760,20 @@ void Server::consoleInteract(Player& player)
         player.Status = Player::PlayerStatus::Disconnected;
     }
 
-    // TODO: Activating the console should not pause right away
-    global::Paused = activate;
+    global::GatheringPlayers = activate;
 
     for (auto& p : PlayerList)
     {
-        ServerMessage::SetPaused(*p.Socket, global::Paused);
-    }
-}
-
-void Server::changeRegion(Player& player)
-{
-    uint16_t region_id;
-    if (!ClientMessage::DecodeChangeRegion(*player.Socket, region_id))
-    {
-        player.Socket->disconnect();
-        player.Status = Player::PlayerStatus::Disconnected;
+        ServerMessage::GatherPlayers(*p.Socket, player.Data.id, global::GatheringPlayers);
     }
 
-    next_region = region_id;
-
-    for (auto& p : PlayerList)
+    if (!activate)
     {
-        p.Status = Player::PlayerStatus::Loading;
-        ServerMessage::ChangeRegion(*p.Socket, region_id);
+        global::Paused = false;
+        for (auto& p : PlayerList)
+        {
+            ServerMessage::SetPaused(*p.Socket, false);
+        }
     }
 }
 

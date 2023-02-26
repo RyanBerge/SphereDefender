@@ -30,6 +30,12 @@ public:
         Game
     };
 
+    enum class VotingType : uint8_t
+    {
+        RegionSelect,
+        MenuEvent
+    };
+
     Server();
     void Start();
 
@@ -51,6 +57,9 @@ private:
     void checkMessages(Player& player);
 
     void startGame();
+    void gatherPlayers();
+    void resetVotes();
+    void checkVotes(VotingType voting_type);
 
     uint16_t getPlayerUid();
 
@@ -64,8 +73,9 @@ private:
     void startPlayerAction(Player& player);
     void useItem(Player& player);
     void swapItem(Player& player);
+    void castVote(Player& player);
     void consoleInteract(Player& player);
-    void changeRegion(Player& player);
+//    void changeRegion(Player& player);
 
     void broadcastStates();
 };

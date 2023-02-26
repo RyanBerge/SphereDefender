@@ -12,6 +12,7 @@
 #include "resources.h"
 #include "messaging.h"
 #include "game_math.h"
+#include "game_manager.h"
 #include <iostream>
 
 using std::cout, std::endl;
@@ -40,6 +41,22 @@ void Overmap::Load()
     information.setFillColor(sf::Color::White);
 
     definitions::Zone zone = definitions::GetZone();
+
+    cancel_button.LoadAnimationData("gui/overmap_cancel.json");
+    cancel_button.SetPosition(frame_bounds.left + frame_bounds.width * 0.85f - cancel_button.GetSprite().getGlobalBounds().width, frame_bounds.top + frame_bounds.height * 0.9f);
+    cancel_button.RegisterLeftMouseUp([this](void){ ClientMessage::Console(resources::GetServerSocket(), false); });
+
+    confirm_button.LoadAnimationData("gui/overmap_confirm.json");
+    confirm_button.SetPosition(frame_bounds.left + frame_bounds.width - confirm_button.GetSprite().getGlobalBounds().width - frame.getOutlineThickness() * 2, frame_bounds.top + frame_bounds.height * 0.9f);
+    confirm_button.RegisterOnToggle([this](bool toggled){ castVote(toggled); });
+    confirm_button.SetEnabled(false);
+
+    for (auto& id : GameManager::GetInstance().Game.GetPlayerIds())
+    {
+        vote_indicators[id].indicator = Spritesheet("gui/vote_indicator.json");
+        vote_indicators[id].indicator.SetVisible(false);
+        vote_indicators[id].vote = -1;
+    }
 
     for (auto& region : zone.regions)
     {
@@ -119,6 +136,14 @@ void Overmap::Update(sf::Time elapsed)
         {
             node.button.Update(elapsed);
         }
+
+        for (auto& [id, vote] : vote_indicators)
+        {
+            vote.indicator.Update(elapsed);
+        }
+
+        cancel_button.Update(elapsed);
+        confirm_button.Update(elapsed);
     }
 }
 
@@ -139,6 +164,14 @@ void Overmap::Draw()
             node.button.Draw();
         }
 
+        for (auto& [id, vote] : vote_indicators)
+        {
+            vote.indicator.Draw();
+        }
+
+        cancel_button.Draw();
+        confirm_button.Draw();
+
         marker.Draw();
         resources::GetWindow().draw(information);
     }
@@ -153,7 +186,13 @@ void Overmap::SetActive(bool is_active, float battery_level)
     // TODO: There will eventually be ways to look at the overmap without interacting with the console
     if (!is_active)
     {
-        ClientMessage::Console(resources::GetServerSocket(), false);
+        confirm_button.SetEnabled(false);
+        confirm_button.SetToggled(false);
+        for (auto& [id, vote_indicator] : vote_indicators)
+        {
+            vote_indicator.vote = -1;
+            vote_indicator.indicator.SetVisible(false);
+        }
     }
 }
 
@@ -183,12 +222,52 @@ uint16_t Overmap::GetRegion()
     return current_region;
 }
 
+void Overmap::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
+{
+    auto& vote_indicator = vote_indicators[player_id];
+
+    if (confirmed)
+    {
+        vote_indicator.indicator.SetAnimation("Confirmed");
+    }
+    else
+    {
+        vote_indicator.indicator.SetAnimation("Unconfirmed");
+    }
+
+    sf::FloatRect node_bounds;
+    float offset = 0;
+    for (auto& [id, other_indicator] : vote_indicators)
+    {
+        if (player_id != id && other_indicator.indicator.IsVisible() && other_indicator.vote == vote)
+        {
+            offset += other_indicator.indicator.GetSprite().getGlobalBounds().width * 1.2;
+        }
+    }
+
+    for (auto& node : region_nodes)
+    {
+        if (node.definition.id == vote)
+        {
+            node_bounds = node.button.GetSprite().getGlobalBounds();
+            break;
+        }
+    }
+
+    vote_indicator.indicator.SetPosition(node_bounds.left + offset, node_bounds.top + (node_bounds.height * 1.2));
+    vote_indicator.indicator.SetVisible(true);
+    vote_indicator.vote = vote;
+}
+
 void Overmap::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
     for (auto& node : region_nodes)
     {
         node.button.UpdateMousePosition(event);
     }
+
+    cancel_button.UpdateMousePosition(event);
+    confirm_button.UpdateMousePosition(event);
 }
 
 void Overmap::OnMouseDown(sf::Event::MouseButtonEvent event)
@@ -197,6 +276,9 @@ void Overmap::OnMouseDown(sf::Event::MouseButtonEvent event)
     {
         node.button.UpdateMouseState(event, CursorButton::State::Down);
     }
+
+    cancel_button.UpdateMouseState(event, CursorButton::State::Down);
+    confirm_button.UpdateMouseState(event, CursorButton::State::Down);
 }
 
 void Overmap::OnMouseUp(sf::Event::MouseButtonEvent event)
@@ -205,6 +287,9 @@ void Overmap::OnMouseUp(sf::Event::MouseButtonEvent event)
     {
         node.button.UpdateMouseState(event, CursorButton::State::Up);
     }
+
+    cancel_button.UpdateMouseState(event, CursorButton::State::Up);
+    confirm_button.UpdateMouseState(event, CursorButton::State::Up);
 }
 
 void Overmap::onClickNode(uint16_t region_id)
@@ -219,7 +304,9 @@ void Overmap::onClickNode(uint16_t region_id)
         else
         {
             onHoverNodeExit();
-            ClientMessage::ChangeRegion(resources::GetServerSocket(), region_id);
+            current_vote = region_id;
+            confirm_button.SetToggled(false);
+            castVote(confirm_button.GetToggled());
         }
     }
     else
@@ -290,6 +377,12 @@ void Overmap::onHoverNodeExit()
         link.highlight.setFillColor(sf::Color::Transparent);
         link.highlight.setScale(1, 1);
     }
+}
+
+void Overmap::castVote(bool toggled)
+{
+    ClientMessage::CastVote(resources::GetServerSocket(), current_vote, toggled);
+    confirm_button.SetEnabled(true);
 }
 
 } // namespace client

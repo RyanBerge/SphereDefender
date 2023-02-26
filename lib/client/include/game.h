@@ -33,6 +33,8 @@ public:
     void Start(sf::Vector2f spawn_position);
 
     int GetPlayerCount();
+    std::vector<uint16_t> GetPlayerIds();
+    std::string GetPlayerName(uint16_t player_id);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
@@ -45,6 +47,8 @@ public:
     void ChangeRegion(uint16_t region_id);
     void EnterRegion(sf::Vector2f spawn_position);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
+    void DisplayGatherPlayers(uint16_t player_id, bool start);
+    void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
 
     RegionMap region_map;
     bool IsPaused = false;

@@ -13,4 +13,6 @@ namespace server::global
 {
     extern std::vector<Player> PlayerList;
     extern bool Paused;
+    extern bool GatheringPlayers;
+    extern bool RegionSelect;
 } // namespace server::global

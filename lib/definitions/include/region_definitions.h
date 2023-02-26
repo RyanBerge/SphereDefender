@@ -29,6 +29,7 @@ public:
     ConvoyDefinition(Orientation orientation);
 
     sf::FloatRect GetBounds();
+    sf::FloatRect GetInteriorBounds();
     std::vector<sf::FloatRect> GetCollisions();
 
     sf::Vector2f Position;
@@ -39,6 +40,7 @@ public:
 
 private:
     sf::Vector2f origin;
+    sf::FloatRect interior;
 
     void load(Orientation orientation);
 };

@@ -7,7 +7,6 @@
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
-#include <SFML/Window/Event.hpp>
 #include <SFML/Network/IpAddress.hpp>
 #include <functional>
 #include <iostream>
@@ -465,6 +464,42 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::GatherPlayers:
+            {
+                uint16_t player_id;
+                bool start;
+                if (ServerMessage::DecodeGatherPlayers(resources::GetServerSocket(), player_id, start))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.DisplayGatherPlayers(player_id, start);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
+            case ServerMessage::Code::CastVote:
+            {
+                uint16_t player_id;
+                uint8_t vote;
+                bool confirm;
+                if (ServerMessage::DecodeCastVote(resources::GetServerSocket(), player_id, vote, confirm))
+                {
+                    if (State == GameState::Game)
+                    {
+                        //cout << GameManager::GetInstance().Game.GetPlayerName(player_id) << " voted for option " << (int)vote << "\n";
+                        Game.DisplayVote(player_id, vote, confirm);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
             default:
             {
                 cerr << "Unrecognized code: " << static_cast<int>(code) << endl;
@@ -478,7 +513,7 @@ void GameManager::checkMessages()
             break;
         }
     }
-    while (code != ServerMessage::Code::None);
+    while (code != ServerMessage::Code::None && server_connected);
 }
 
 void GameManager::handleDisconnected()
@@ -536,13 +571,11 @@ void GameManager::onResizeWindow(sf::Event event)
 
     if (current_ratio > desired_ratio)
     {
-        // cout << "window is too wide" << endl;
         viewport.width = desired_ratio / current_ratio;
         viewport.left = (1 - viewport.width) / 2;
     }
     else if (current_ratio < desired_ratio)
     {
-        // cout << "window is too tall" << endl;
         viewport.height = current_ratio / desired_ratio;
         viewport.top = (1 - viewport.height) / 2;
     }
