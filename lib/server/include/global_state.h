@@ -15,4 +15,5 @@ namespace server::global
     extern bool Paused;
     extern bool GatheringPlayers;
     extern bool RegionSelect;
+    extern bool MenuEvent;
 } // namespace server::global

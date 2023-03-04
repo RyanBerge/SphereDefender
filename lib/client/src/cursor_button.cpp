@@ -11,7 +11,7 @@
 #include "cursor_button.h"
 #include "resources.h"
 
-using std::cout, std::endl;
+using std::cout, std::cerr, std::endl;
 
 namespace client {
 
@@ -19,28 +19,73 @@ CursorButton::CursorButton() { }
 
 CursorButton::CursorButton(std::string filepath)
 {
+    button_type = ButtonType::Sprite;
     LoadAnimationData(filepath);
+}
+
+CursorButton::CursorButton(sf::Text text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled) :
+                           button_text{text}, animation_up{up}, animation_hover{hover}, animation_down{down}, animation_disabled{disabled}
+{
+    button_type = ButtonType::Text;
 }
 
 void CursorButton::Update(sf::Time elapsed)
 {
-    spritesheet.Update(elapsed);
+    if (button_type == ButtonType::Sprite)
+    {
+        spritesheet.Update(elapsed);
+    }
 }
 
 void CursorButton::Draw()
 {
-    spritesheet.Draw();
+    switch (button_type)
+    {
+        case ButtonType::Sprite:
+        {
+            spritesheet.Draw();
+        }
+        break;
+        case ButtonType::Text:
+        {
+            resources::GetWindow().draw(button_text);
+        }
+        break;
+    }
 }
 
 void CursorButton::LoadAnimationData(std::string filepath)
 {
+    button_type = ButtonType::Sprite;
     spritesheet.LoadAnimationData(filepath);
     spritesheet.SetAnimation("Up");
 }
 
 void CursorButton::SetAnimation(std::string animation_name)
 {
-    spritesheet.SetAnimation(animation_name);
+    if (button_type == ButtonType::Sprite)
+    {
+        spritesheet.SetAnimation(animation_name);
+    }
+    else
+    {
+        if (animation_name == "Up")
+        {
+            button_text.setFillColor(animation_up);
+        }
+        else if (animation_name == "Hover")
+        {
+            button_text.setFillColor(animation_hover);
+        }
+        else if (animation_name == "Down")
+        {
+            button_text.setFillColor(animation_down);
+        }
+        else if (animation_name == "Disabled")
+        {
+            button_text.setFillColor(animation_disabled);
+        }
+    }
 }
 
 void CursorButton::SetEnabled(bool enable)
@@ -61,14 +106,60 @@ sf::Sprite& CursorButton::GetSprite()
     return spritesheet.GetSprite();
 }
 
+sf::Transformable& CursorButton::GetTransform()
+{
+    switch (button_type)
+    {
+        case ButtonType::Sprite:
+        {
+            return spritesheet.GetSprite();
+        }
+        break;
+        case ButtonType::Text:
+        {
+            return button_text;
+        }
+        break;
+        default:
+        {
+            cerr << "Button has no button type." << endl;
+            return spritesheet.GetSprite();
+        }
+        break;
+    }
+}
+
+sf::FloatRect CursorButton::GetGlobalBounds()
+{
+    switch (button_type)
+    {
+        case ButtonType::Sprite:
+        {
+            return spritesheet.GetSprite().getGlobalBounds();
+        }
+        break;
+        case ButtonType::Text:
+        {
+            return button_text.getGlobalBounds();
+        }
+        break;
+        default:
+        {
+            cerr << "Button has no button type." << endl;
+            return spritesheet.GetSprite().getGlobalBounds();
+        }
+        break;
+    }
+}
+
 void CursorButton::SetPosition(float x, float y)
 {
-    spritesheet.SetPosition(x, y);
+    GetTransform().setPosition(x, y);
 }
 
 void CursorButton::UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event)
 {
-    sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
+    sf::FloatRect bounds = GetGlobalBounds();
     sf::Vector2f mouse_position = resources::GetWindow().mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
     bool in_bounds = mouse_position.x >= bounds.left &&
@@ -91,7 +182,7 @@ void CursorButton::UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, Sta
     // TODO: Support right-clicks
     if (mouse_event.button == sf::Mouse::Button::Left)
     {
-        sf::FloatRect bounds = spritesheet.GetSprite().getGlobalBounds();
+        sf::FloatRect bounds = GetGlobalBounds();
         sf::Vector2f mouse_position = resources::GetWindow().mapPixelToCoords(sf::Vector2i{mouse_event.x, mouse_event.y});
 
         bool in_bounds = mouse_position.x >= bounds.left &&
@@ -138,7 +229,7 @@ void CursorButton::onLeftMouseDown(bool in_bounds)
     {
         if (in_bounds)
         {
-            spritesheet.SetAnimation("Down");
+            SetAnimation("Down");
             for (auto& callback : leftMouseDownCallbacks)
             {
                 callback();
@@ -153,7 +244,7 @@ void CursorButton::onLeftMouseUp(bool in_bounds)
     {
         if (in_bounds)
         {
-            spritesheet.SetAnimation("Hover");
+            SetAnimation("Hover");
             for (auto& callback : leftMouseUpCallbacks)
             {
                 callback();
@@ -161,7 +252,7 @@ void CursorButton::onLeftMouseUp(bool in_bounds)
         }
         else
         {
-            spritesheet.SetAnimation("Up");
+            SetAnimation("Up");
         }
     }
 }
@@ -170,7 +261,7 @@ void CursorButton::onHoverEnter()
 {
     if (enabled)
     {
-        spritesheet.SetAnimation("Hover");
+        SetAnimation("Hover");
     }
 
     mouse_hover = true;
@@ -185,7 +276,7 @@ void CursorButton::onHoverExit()
 {
     if (enabled)
     {
-        spritesheet.SetAnimation("Up");
+        SetAnimation("Up");
     }
 
     mouse_hover = false;

@@ -15,8 +15,9 @@
 #include <iostream>
 
 using network::ClientMessage, network::ServerMessage;
+using server::global::PlayerList;
 
-using std::cout, std::endl;
+using std::cout, std::cerr, std::endl;
 
 namespace {
     constexpr int BASE_SPAWN_INTERVAL = 4;
@@ -52,6 +53,17 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
     spawn_interval = BASE_SPAWN_INTERVAL;
 
     last_spawn = 0;
+
+    if (region_name == definitions::RegionType::MenuEvent)
+    {
+        global::Paused = true;
+        global::MenuEvent = true;
+        current_event = definitions::GetNextMenuEvent();
+        for (auto& p : PlayerList)
+        {
+            ServerMessage::SetMenuEvent(*p.Socket, current_event.event_id);
+        }
+    }
 }
 
 void Region::Update(sf::Time elapsed)
@@ -106,6 +118,40 @@ void Region::Update(sf::Time elapsed)
 void Region::Cull()
 {
     Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
+}
+
+void Region::AdvanceMenuEvent(uint16_t winner)
+{
+    if (winner > current_event.pages[current_event.current_page].options.size())
+    {
+        cerr << "Menu event tried to advance to an option that does not exist." << endl;
+        return;
+    }
+
+    uint16_t winner_value = current_event.pages[current_event.current_page].options[winner].value;
+    bool finish = current_event.pages[current_event.current_page].options[winner].finishing_option;
+
+    if (winner_value > current_event.pages.size() && !finish)
+    {
+        cerr << "Winning vote does not link to a valid page." << endl;
+        return;
+    }
+
+    for (auto& player : PlayerList)
+    {
+        ServerMessage::AdvanceMenuEvent(*player.Socket, winner_value, finish);
+    }
+
+    if (!finish)
+    {
+        current_event.current_page = winner_value;
+    }
+    else
+    {
+        global::Paused = false;
+        global::MenuEvent = false;
+        // TODO: Any possible finishing actions
+    }
 }
 
 void Region::spawnEnemy()

@@ -14,15 +14,118 @@
 #include "game_math.h"
 #include <iostream>
 #include <string>
+#include <set>
 
 using std::cout, std::cerr, std::endl;
+using network::ClientMessage;
 
 namespace client {
 namespace {
     constexpr int INTERACTION_DISTANCE = 75;
 }
 
-Gui::Gui()
+Gui::Gui() { }
+
+void Gui::Draw()
+{
+    if (enabled)
+    {
+        sf::View old_view = resources::GetWindow().getView();
+
+        resources::GetWorldView().setViewport(old_view.getViewport());
+        resources::GetWindow().setView(resources::GetWorldView());
+
+        if (!overmap.IsActive())
+        {
+            interaction_marker.Draw();
+        }
+
+        GuiView.setViewport(resources::GetWorldView().getViewport());
+        resources::GetWindow().setView(GuiView);
+
+        ui_frame.Draw();
+        menu_button.Draw();
+
+        if (!InDialog)
+        {
+            resources::GetWindow().draw(healthbar);
+            healthbar_frame.Draw();
+            inventory_item.Draw();
+        }
+
+        resources::GetWindow().draw(battery_bar);
+        resources::GetWindow().draw(battery_bar_frame);
+
+        if (Health == 0)
+        {
+            resources::GetWindow().draw(death_tint);
+            resources::GetWindow().draw(death_text);
+        }
+
+        if (InDialog)
+        {
+            resources::GetWindow().draw(dialog_frame);
+            for (auto& text : dialog_text)
+            {
+                resources::GetWindow().draw(text);
+            }
+            resources::GetWindow().draw(dialog_source_text);
+            resources::GetWindow().draw(dialog_prompt_text);
+        }
+
+        if (overmap.IsActive())
+        {
+            overmap.Draw();
+            for (auto& [id, vote] : vote_indicators)
+            {
+                vote.indicator.Draw();
+            }
+        }
+
+        if (stash.Active)
+        {
+            stash.Draw();
+        }
+
+        if (in_event)
+        {
+            resources::GetWindow().draw(event_background);
+            event_prompt.Draw();
+            for (auto& option : event_options)
+            {
+                option.Draw();
+            }
+
+            for (auto& [id, vote] : vote_indicators)
+            {
+                vote.indicator.Draw();
+            }
+
+            if (event_options.size() > 0)
+            {
+                event_vote_confirm_button.Draw();
+            }
+        }
+
+        if (gathering)
+        {
+            resources::GetWindow().draw(gather_text);
+        }
+
+        if (InMenus)
+        {
+            menu.Draw();
+            resume_button.Draw();
+            save_button.Draw();
+            settings_button.Draw();
+            exit_button.Draw();
+        }
+
+        resources::GetWindow().setView(old_view);
+    }
+}
+
+void Gui::Load()
 {
     sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
     font = resources::FontManager::GetFont("Vera");
@@ -125,86 +228,28 @@ Gui::Gui()
     exit_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.8 - bounds.height / 2);
     exit_button.RegisterLeftMouseUp(std::bind(&Gui::exitGame, this));
 
-    GuiView = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
-}
+    event_background.setFillColor(sf::Color{130, 150, 255, 255});
+    event_background.setSize(sf::Vector2f{window_resolution.x * 0.8f, window_resolution.y * 0.8f});
+    event_background.setOrigin(sf::Vector2f{event_background.getSize().x / 2, event_background.getSize().y / 2});
+    event_background.setPosition(sf::Vector2f{window_resolution.x / 2, window_resolution.y /2});
 
-void Gui::Draw()
-{
-    if (enabled)
+    for (auto& id : GameManager::GetInstance().Game.GetPlayerIds())
     {
-        sf::View old_view = resources::GetWindow().getView();
-
-        resources::GetWorldView().setViewport(old_view.getViewport());
-        resources::GetWindow().setView(resources::GetWorldView());
-
-        if (!overmap.IsActive())
-        {
-            interaction_marker.Draw();
-        }
-
-        GuiView.setViewport(resources::GetWorldView().getViewport());
-        resources::GetWindow().setView(GuiView);
-
-        ui_frame.Draw();
-        menu_button.Draw();
-
-        if (!InDialog)
-        {
-            resources::GetWindow().draw(healthbar);
-            healthbar_frame.Draw();
-            inventory_item.Draw();
-        }
-
-        resources::GetWindow().draw(battery_bar);
-        resources::GetWindow().draw(battery_bar_frame);
-
-        if (Health == 0)
-        {
-            resources::GetWindow().draw(death_tint);
-            resources::GetWindow().draw(death_text);
-        }
-
-        if (InDialog)
-        {
-            resources::GetWindow().draw(dialog_frame);
-            for (auto& text : dialog_text)
-            {
-                resources::GetWindow().draw(text);
-            }
-            resources::GetWindow().draw(dialog_source_text);
-            resources::GetWindow().draw(dialog_prompt_text);
-        }
-
-        if (overmap.IsActive())
-        {
-            overmap.Draw();
-        }
-
-        if (stash.Active)
-        {
-            stash.Draw();
-        }
-
-        if (gathering)
-        {
-            resources::GetWindow().draw(gather_text);
-        }
-
-        if (InMenus)
-        {
-            menu.Draw();
-            resume_button.Draw();
-            save_button.Draw();
-            settings_button.Draw();
-            exit_button.Draw();
-        }
-
-        resources::GetWindow().setView(old_view);
+        vote_indicators[id].indicator = Spritesheet("gui/vote_indicator.json");
+        vote_indicators[id].indicator.SetVisible(false);
+        vote_indicators[id].vote = -1;
     }
-}
 
-void Gui::Load()
-{
+    sf::FloatRect background_bounds = event_background.getGlobalBounds();
+    event_vote_confirm_button.LoadAnimationData("gui/overmap_confirm.json");
+    float x = background_bounds.left + background_bounds.width - (event_vote_confirm_button.GetGlobalBounds().width * 1.2f);
+    float y = background_bounds.top + background_bounds.height - (event_vote_confirm_button.GetGlobalBounds().height * 1.2f);
+    event_vote_confirm_button.SetPosition(x, y);
+    event_vote_confirm_button.RegisterOnToggle(std::bind(&Gui::onConfirmClick, this, std::placeholders::_1));
+    event_vote_confirm_button.SetEnabled(false);
+
+    GuiView = sf::View(sf::FloatRect(0, 0, window_resolution.x, window_resolution.y));
+
     InMenus = false;
     InDialog = false;
     UpdateHealth(100);
@@ -341,9 +386,84 @@ void Gui::DisplayGatherPlayers(uint16_t player_id, bool start)
 
 void Gui::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
 {
+    sf::Vector2f base_vote_position;
+    if (in_event)
+    {
+        for (unsigned i = 0; i < event_options.size(); ++i)
+        {
+            if (vote == i)
+            {
+                base_vote_position.x = event_options[i].GetGlobalBounds().left + event_options[i].GetGlobalBounds().width + 25;
+                base_vote_position.y = event_options[i].GetGlobalBounds().top;
+                break;
+            }
+        }
+    }
     if (overmap.IsActive())
     {
-        overmap.DisplayVote(player_id, vote, confirmed);
+        base_vote_position = overmap.GetBaseVoteIndicatorPosition(vote);
+    }
+
+    auto& vote_indicator = vote_indicators[player_id];
+
+    if (confirmed)
+    {
+        vote_indicator.indicator.SetAnimation("Confirmed");
+    }
+    else
+    {
+        vote_indicator.indicator.SetAnimation("Unconfirmed");
+    }
+
+    float offset = 0;
+    for (auto& [id, other_indicator] : vote_indicators)
+    {
+        if (player_id != id && other_indicator.indicator.IsVisible() && other_indicator.vote == vote)
+        {
+            offset += other_indicator.indicator.GetSprite().getGlobalBounds().width * 1.2f;
+        }
+    }
+
+    vote_indicator.indicator.SetPosition(base_vote_position.x + offset, base_vote_position.y);
+    vote_indicator.indicator.SetVisible(true);
+    vote_indicator.vote = vote;
+
+    std::set<uint16_t> checked;
+    // Re-adjust other indicators
+    for (auto& [id, indicator] : vote_indicators)
+    {
+        offset = 0;
+        if (!indicator.indicator.IsVisible())
+        {
+            continue;
+        }
+
+        checked.insert(id);
+
+        for (uint8_t i = 0; i < event_options.size(); ++i)
+        {
+            if (indicator.vote == i)
+            {
+                base_vote_position.x = event_options[i].GetGlobalBounds().left + event_options[i].GetGlobalBounds().width + 25;
+                base_vote_position.y = event_options[i].GetGlobalBounds().top;
+                break;
+            }
+        }
+
+        for (auto& [other_id, other_indicator] : vote_indicators)
+        {
+            if (checked.contains(other_id))
+            {
+                continue;
+            }
+
+            if (other_indicator.indicator.IsVisible() && indicator.vote == other_indicator.vote)
+            {
+                offset += other_indicator.indicator.GetSprite().getGlobalBounds().width * 1.2f;
+            }
+        }
+
+        indicator.indicator.SetPosition(base_vote_position.x + offset, base_vote_position.y);
     }
 }
 
@@ -366,8 +486,67 @@ void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list
     InDialog = true;
 }
 
+void Gui::DisplayMenuEvent(definitions::MenuEvent event, uint16_t page_id)
+{
+    current_event = event;
+    in_event = true;
+    event_vote_confirm_button.SetEnabled(false);
+    current_vote = -1;
+    event_options.clear();
+
+    for (auto& [id, vote_indicator] : vote_indicators)
+    {
+        vote_indicator.vote = -1;
+        vote_indicator.indicator.SetVisible(false);
+    }
+
+    sf::FloatRect background_bounds = event_background.getGlobalBounds();
+    sf::FloatRect prompt_bounds = sf::FloatRect{background_bounds.left + 20, background_bounds.top + 20, background_bounds.width - 40, background_bounds.height * 0.6f};
+    event_prompt.Initialize(current_event.pages[page_id].prompt, prompt_bounds);
+
+    for (unsigned i = 0; i < current_event.pages[page_id].options.size(); ++i)
+    {
+        sf::Text option_text = event_prompt.DisplayText;
+        option_text.setString(current_event.pages[page_id].options[i].text);
+        event_options.push_back(CursorButton(option_text, sf::Color::White, sf::Color::Yellow, sf::Color::Cyan, sf::Color::Black));
+        event_options[i].RegisterLeftMouseUp(std::bind(&Gui::onMenuOptionClick, this, i));
+    }
+
+    if (event_options.size() == 0)
+    {
+        cerr << "Menu event has no selectable options to progress." << endl;
+        return;
+    }
+
+    event_options[0].GetTransform().setPosition(prompt_bounds.left, prompt_bounds.top + event_prompt.DisplayText.getGlobalBounds().height + 100);
+    for (unsigned i = 1; i < event_options.size(); ++i)
+    {
+        event_options[i].GetTransform().setPosition(event_options[0].GetTransform().getPosition().x, event_options[0].GetTransform().getPosition().y + 50 * i);
+    }
+}
+
+void Gui::AdvanceMenuEvent(uint16_t advance_value, bool finish)
+{
+    if (!finish)
+    {
+        DisplayMenuEvent(current_event, advance_value);
+    }
+    else
+    {
+        // End event actions (if any)
+        in_event = false;
+        GameManager::GetInstance().Game.SetPlayerActionsEnabled(true);
+    }
+}
+
 void Gui::SetOvermapDisplay(bool display)
 {
+    for (auto& [id, vote_indicator] : vote_indicators)
+    {
+        vote_indicator.vote = -1;
+        vote_indicator.indicator.SetVisible(false);
+    }
+
     if (display)
     {
         overmap.SetActive(true, battery_bar.getScale().x * 1000);
@@ -376,6 +555,7 @@ void Gui::SetOvermapDisplay(bool display)
     else
     {
         overmap.SetActive(false);
+        // TODO: There will eventually be ways to look at the overmap without interacting with the console
     }
 }
 
@@ -443,6 +623,22 @@ void Gui::advanceDialog()
     }
 }
 
+void Gui::onConfirmClick(bool confirmed)
+{
+    if (confirmed)
+    {
+        ClientMessage::CastVote(resources::GetServerSocket(), current_vote, true);
+    }
+}
+
+void Gui::onMenuOptionClick(int option)
+{
+    current_vote = option;
+    event_vote_confirm_button.SetEnabled(true);
+    event_vote_confirm_button.SetToggled(false);
+    network::ClientMessage::CastVote(resources::GetServerSocket(), option, false);
+}
+
 void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
     if (enabled)
@@ -458,6 +654,15 @@ void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
         else if (overmap.IsActive())
         {
             overmap.OnMouseMove(event);
+        }
+        else if (in_event)
+        {
+            for (auto& option : event_options)
+            {
+                option.UpdateMousePosition(event);
+            }
+
+            event_vote_confirm_button.UpdateMousePosition(event);
         }
     }
 }
@@ -478,12 +683,20 @@ void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
         {
             overmap.OnMouseDown(event);
         }
+        else if (in_event)
+        {
+            for (auto& option : event_options)
+            {
+                option.UpdateMouseState(event, CursorButton::State::Down);
+            }
+
+            event_vote_confirm_button.UpdateMouseState(event, CursorButton::State::Down);
+        }
         else if (stash.Active)
         {
             stash.OnMouseDown(event);
         }
-
-        if (InDialog && !InMenus && event.button == sf::Mouse::Left)
+        else if (InDialog && !InMenus && event.button == sf::Mouse::Left)
         {
             advanceDialog();
         }
@@ -505,6 +718,15 @@ void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
         else if (overmap.IsActive())
         {
             overmap.OnMouseUp(event);
+        }
+        else if (in_event)
+        {
+            for (auto& option : event_options)
+            {
+                option.UpdateMouseState(event, CursorButton::State::Up);
+            }
+
+            event_vote_confirm_button.UpdateMouseState(event, CursorButton::State::Up);
         }
     }
 }

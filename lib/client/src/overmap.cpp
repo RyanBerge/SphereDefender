@@ -51,13 +51,6 @@ void Overmap::Load()
     confirm_button.RegisterOnToggle([this](bool toggled){ castVote(toggled); });
     confirm_button.SetEnabled(false);
 
-    for (auto& id : GameManager::GetInstance().Game.GetPlayerIds())
-    {
-        vote_indicators[id].indicator = Spritesheet("gui/vote_indicator.json");
-        vote_indicators[id].indicator.SetVisible(false);
-        vote_indicators[id].vote = -1;
-    }
-
     for (auto& region : zone.regions)
     {
         Node node;
@@ -75,6 +68,11 @@ void Overmap::Load()
             case definitions::RegionType::Leyline:
             {
                 node.button.LoadAnimationData("gui/leyline_overmap_node.json");
+            }
+            break;
+            case definitions::RegionType::MenuEvent:
+            {
+                node.button.LoadAnimationData("gui/neutral_overmap_node.json");
             }
             break;
             case definitions::RegionType::Neutral:
@@ -137,11 +135,6 @@ void Overmap::Update(sf::Time elapsed)
             node.button.Update(elapsed);
         }
 
-        for (auto& [id, vote] : vote_indicators)
-        {
-            vote.indicator.Update(elapsed);
-        }
-
         cancel_button.Update(elapsed);
         confirm_button.Update(elapsed);
     }
@@ -164,11 +157,6 @@ void Overmap::Draw()
             node.button.Draw();
         }
 
-        for (auto& [id, vote] : vote_indicators)
-        {
-            vote.indicator.Draw();
-        }
-
         cancel_button.Draw();
         confirm_button.Draw();
 
@@ -183,16 +171,10 @@ void Overmap::SetActive(bool is_active, float battery_level)
     battery = battery_level;
     information.setString("");
 
-    // TODO: There will eventually be ways to look at the overmap without interacting with the console
-    if (!is_active)
+    if (!active)
     {
         confirm_button.SetEnabled(false);
         confirm_button.SetToggled(false);
-        for (auto& [id, vote_indicator] : vote_indicators)
-        {
-            vote_indicator.vote = -1;
-            vote_indicator.indicator.SetVisible(false);
-        }
     }
 }
 
@@ -222,41 +204,19 @@ uint16_t Overmap::GetRegion()
     return current_region;
 }
 
-void Overmap::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
+sf::Vector2f Overmap::GetBaseVoteIndicatorPosition(uint8_t vote)
 {
-    auto& vote_indicator = vote_indicators[player_id];
-
-    if (confirmed)
-    {
-        vote_indicator.indicator.SetAnimation("Confirmed");
-    }
-    else
-    {
-        vote_indicator.indicator.SetAnimation("Unconfirmed");
-    }
-
     sf::FloatRect node_bounds;
-    float offset = 0;
-    for (auto& [id, other_indicator] : vote_indicators)
-    {
-        if (player_id != id && other_indicator.indicator.IsVisible() && other_indicator.vote == vote)
-        {
-            offset += other_indicator.indicator.GetSprite().getGlobalBounds().width * 1.2;
-        }
-    }
-
     for (auto& node : region_nodes)
     {
         if (node.definition.id == vote)
         {
-            node_bounds = node.button.GetSprite().getGlobalBounds();
+            node_bounds = node.button.GetGlobalBounds();
             break;
         }
     }
 
-    vote_indicator.indicator.SetPosition(node_bounds.left + offset, node_bounds.top + (node_bounds.height * 1.2));
-    vote_indicator.indicator.SetVisible(true);
-    vote_indicator.vote = vote;
+    return sf::Vector2f{node_bounds.left, node_bounds.top + (node_bounds.height * 1.2f)};
 }
 
 void Overmap::OnMouseMove(sf::Event::MouseMoveEvent event)

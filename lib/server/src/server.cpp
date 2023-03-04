@@ -42,8 +42,6 @@ void Server::Start()
     {
         update();
     }
-
-    //while(true);
 }
 
 uint16_t Server::getPlayerUid()
@@ -101,6 +99,10 @@ void Server::update()
         if (global::RegionSelect)
         {
             checkVotes(VotingType::RegionSelect);
+        }
+        else if (global::MenuEvent)
+        {
+            checkVotes(VotingType::MenuEvent);
         }
 
         if (global::GatheringPlayers)
@@ -297,7 +299,7 @@ void Server::gatherPlayers()
 
         for (auto& p : PlayerList)
         {
-            ServerMessage::SetPaused(*p.Socket, true);
+            ServerMessage::SetGuiPause(*p.Socket, true, network::GuiType::Overmap);
         }
     }
 }
@@ -360,7 +362,7 @@ void Server::checkVotes(VotingType voting_type)
         }
     }
 
-    if (tie || winner == -1)
+    if (tie || winner < 0)
     {
         return;
     }
@@ -376,14 +378,15 @@ void Server::checkVotes(VotingType voting_type)
             for (auto& p : PlayerList)
             {
                 p.Status = Player::PlayerStatus::Loading;
-                ServerMessage::SetPaused(*p.Socket, false);
+                ServerMessage::SetGuiPause(*p.Socket, false, network::GuiType::Overmap);
                 ServerMessage::ChangeRegion(*p.Socket, winner);
             }
         }
         break;
         case VotingType::MenuEvent:
         {
-            // TODO: don't forget to unpause
+            resetVotes();
+            region.AdvanceMenuEvent(static_cast<uint16_t>(winner));
         }
         break;
         default:
@@ -735,7 +738,7 @@ void Server::castVote(Player& player)
         player.Status = Player::PlayerStatus::Disconnected;
     }
 
-    if (!global::RegionSelect /* TODO: Add check for menu events here */)
+    if (!(global::RegionSelect || global::MenuEvent) /* TODO: Add check for menu events here */)
     {
         cerr << "A vote was casting during a non-voting period\n";
         return;
@@ -772,7 +775,7 @@ void Server::consoleInteract(Player& player)
         global::Paused = false;
         for (auto& p : PlayerList)
         {
-            ServerMessage::SetPaused(*p.Socket, false);
+            ServerMessage::SetGuiPause(*p.Socket, false, network::GuiType::Overmap);
         }
     }
 }

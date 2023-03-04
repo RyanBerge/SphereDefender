@@ -30,8 +30,7 @@ public:
     void SetPosition(sf::Vector2f position);
     sf::Vector2f GetPosition();
 
-    void DisableActions();
-    void EnableActions();
+    void SetActionsEnabled(bool enabled);
     bool ActionsDisabled();
 
     void OnMouseMove(sf::Event::MouseMoveEvent event);

@@ -32,7 +32,7 @@ public:
     bool IsActive();
     void SetRegion(uint16_t region_id);
     uint16_t GetRegion();
-    void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
+    sf::Vector2f GetBaseVoteIndicatorPosition(uint8_t vote);
 
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
@@ -53,12 +53,6 @@ private:
         sf::RectangleShape highlight;
     };
 
-    struct VoteIndicator
-    {
-        int8_t vote;
-        Spritesheet indicator;
-    };
-
     ToggleButton confirm_button;
     CursorButton cancel_button;
 
@@ -76,7 +70,6 @@ private:
     std::vector<util::DjikstraNode> node_graph;
 
     uint16_t current_vote;
-    std::map<uint16_t, VoteIndicator> vote_indicators;
 
     void onClickNode(uint16_t region_id);
     void onHoverNodeEnter(uint16_t node_id);

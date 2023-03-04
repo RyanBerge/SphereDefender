@@ -15,5 +15,6 @@ std::vector<Player> PlayerList;
 bool Paused = false;
 bool GatheringPlayers = false;
 bool RegionSelect = false;
+bool MenuEvent = false;
 
 } // namespace server

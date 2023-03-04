@@ -67,16 +67,18 @@ sf::Vector2f Player::GetPosition()
     return Avatar.GetPosition();
 }
 
-void Player::DisableActions()
+void Player::SetActionsEnabled(bool enabled)
 {
-    actions_disabled = true;
-    ClientMessage::PlayerStateChange(resources::GetServerSocket(), sf::Vector2i{0, 0});
-}
-
-void Player::EnableActions()
-{
-    actions_disabled = false;
-    updateMovement();
+    if (enabled)
+    {
+        actions_disabled = false;
+        updateMovement();
+    }
+    else
+    {
+        actions_disabled = true;
+        ClientMessage::PlayerStateChange(resources::GetServerSocket(), sf::Vector2i{0, 0});
+    }
 }
 
 bool Player::ActionsDisabled()

@@ -26,6 +26,7 @@ public:
 
     void Update(sf::Time elapsed);
     void Cull();
+    void AdvanceMenuEvent(uint16_t winner);
 
     definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;
@@ -41,6 +42,7 @@ private:
     float battery_charge_rate = 0; // Units-per-second
     bool spawn_enemies = false;
     bool charging = false;
+    definitions::MenuEvent current_event;
 
     void spawnEnemy();
     void handleProjectiles(sf::Time elapsed);

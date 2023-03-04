@@ -13,6 +13,8 @@
 #include "overmap.h"
 #include "stash.h"
 #include "entity_definitions.h"
+#include "region_definitions.h"
+#include "wrappable_text.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -45,6 +47,8 @@ public:
     void EscapePressed();
     void DisplayGatherPlayers(uint16_t player_id, bool start);
     void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
+    void DisplayMenuEvent(definitions::MenuEvent event, uint16_t page_id);
+    void AdvanceMenuEvent(uint16_t advance_value, bool finish);
 
     sf::View GuiView;
     bool InMenus = false;
@@ -57,9 +61,17 @@ public:
     void OnTextEntered(sf::Event::TextEvent event);
 
 private:
+    struct VoteIndicator
+    {
+        int8_t vote;
+        Spritesheet indicator;
+    };
+
     void exitGame();
     void setDialogText(std::string source, std::string dialog);
     void advanceDialog();
+    void onConfirmClick(bool confirmed);
+    void onMenuOptionClick(int option);
 
     bool enabled = true;
 
@@ -94,6 +106,15 @@ private:
     sf::Text dialog_source_text;
     sf::Text dialog_prompt_text;
     unsigned current_dialog = 0;
+
+    bool in_event = false;
+    definitions::MenuEvent current_event;
+    sf::RectangleShape event_background;
+    WrappableText event_prompt;
+    std::vector<CursorButton> event_options;
+    std::map<uint16_t, VoteIndicator> vote_indicators;
+    uint8_t current_vote = -1;
+    ToggleButton event_vote_confirm_button;
 };
 
 } // client

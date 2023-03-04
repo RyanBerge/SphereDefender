@@ -369,14 +369,15 @@ void GameManager::checkMessages()
                 }
             }
             break;
-            case ServerMessage::Code::SetPaused:
+            case ServerMessage::Code::SetGuiPause:
             {
                 bool paused;
-                if (ServerMessage::DecodeSetPaused(resources::GetServerSocket(), paused))
+                network::GuiType gui_type;
+                if (ServerMessage::DecodeSetGuiPause(resources::GetServerSocket(), paused, gui_type))
                 {
                     if (State == GameState::Game)
                     {
-                        Game.SetPaused(paused);
+                        Game.SetPaused(paused, gui_type);
                     }
                 }
             }
@@ -490,8 +491,40 @@ void GameManager::checkMessages()
                 {
                     if (State == GameState::Game)
                     {
-                        //cout << GameManager::GetInstance().Game.GetPlayerName(player_id) << " voted for option " << (int)vote << "\n";
                         Game.DisplayVote(player_id, vote, confirm);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
+            case ServerMessage::Code::SetMenuEvent:
+            {
+                uint16_t event_id;
+                if (ServerMessage::DecodeSetMenuEvent(resources::GetServerSocket(), event_id))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.SetMenuEvent(event_id);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
+            case ServerMessage::Code::AdvanceMenuEvent:
+            {
+                uint16_t advance_value;
+                bool finish;
+                if (ServerMessage::DecodeAdvanceMenuEvent(resources::GetServerSocket(), advance_value, finish))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.AdvanceMenuEvent(advance_value, finish);
                     }
                     else
                     {

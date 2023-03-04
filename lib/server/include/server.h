@@ -51,6 +51,7 @@ private:
     uint16_t current_region;
     uint16_t next_region;
     std::array<definitions::ItemType, 24> item_stash;
+    definitions::MenuEvent current_event;
 
     void update();
     void listen();
@@ -60,6 +61,7 @@ private:
     void gatherPlayers();
     void resetVotes();
     void checkVotes(VotingType voting_type);
+    void advanceMenuEvent(uint16_t winner);
 
     uint16_t getPlayerUid();
 
@@ -75,7 +77,6 @@ private:
     void swapItem(Player& player);
     void castVote(Player& player);
     void consoleInteract(Player& player);
-//    void changeRegion(Player& player);
 
     void broadcastStates();
 };

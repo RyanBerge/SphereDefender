@@ -39,13 +39,16 @@ public:
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);
-    void SetPaused(bool paused);
+    void SetPaused(bool paused, network::GuiType gui_type);
+    void SetPlayerActionsEnabled(bool enable);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
     void ChangeItem(definitions::ItemType item);
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(uint16_t region_id);
     void EnterRegion(sf::Vector2f spawn_position);
+    void SetMenuEvent(uint16_t event_id);
+    void AdvanceMenuEvent(uint16_t advance_value, bool finish);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
     void DisplayGatherPlayers(uint16_t player_id, bool start);
     void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);

@@ -1,0 +1,58 @@
+{
+  "events": [
+    {
+      "id": 0,
+      "name": "Test Event",
+      "pages": [
+        {
+          "index": 0,
+          "prompt": "You have reached an event.  With a long textbox.  To test wraparound.  Lots of wraparound.  More wrapparound.  A lot more. Even more more. Just don't stop wrapping.  So much wrapping.  LOL.  Select an option...",
+          "options": [
+            {
+              "text": "Option 1...",
+              "finishing_option": false,
+              "value": 1
+            },
+            {
+              "text": "Option 2...",
+              "finishing_option": false,
+              "value": 2
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "prompt": "Test page 1",
+          "options": [
+            {
+              "text": "Option 1...",
+              "finishing_option": true,
+              "value": 1
+            },
+            {
+              "text": "Option 2...",
+              "finishing_option": true,
+              "value": 2
+            },
+            {
+              "text": "Return to beginning",
+              "finishing_option": false,
+              "value": 0
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "prompt": "Test page 2",
+          "options": [
+            {
+              "text": "Contiue...",
+              "finishing_option": true,
+              "value": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@ set(Sources
     src/stash.cpp
     src/textbox.cpp
     src/toggle_button.cpp
+    src/wrappable_text.cpp
 )
 
 add_executable(${TargetName} ${Sources})

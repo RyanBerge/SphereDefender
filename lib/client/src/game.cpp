@@ -38,7 +38,7 @@ void Game::Update(sf::Time elapsed)
     {
         if (local_player.ActionsDisabled() && !gui.DisableActions() && !inCutscene())
         {
-            local_player.EnableActions();
+            local_player.SetActionsEnabled(true);
         }
 
         local_player.Update(elapsed);
@@ -273,21 +273,29 @@ void Game::UpdateBattery(float battery_level)
     gui.UpdateBatteryBar(battery_level);
 }
 
-void Game::SetPaused(bool paused)
+void Game::SetPaused(bool paused, network::GuiType gui_type)
 {
-    // TODO: Maybe shouldn't tie opening the gui directly to the pause request?
-    if (paused)
+    switch (gui_type)
     {
-        gui.SetOvermapDisplay(true);
-        local_player.DisableActions();
-    }
-    else
-    {
-        local_player.EnableActions();
-        gui.SetOvermapDisplay(false);
+        case network::GuiType::Overmap:
+        {
+            gui.SetOvermapDisplay(paused);
+        }
+        break;
+        case network::GuiType::MenuEvent:
+        {
+            //gui.DisplayMenuEvent(definitions::GetRegionDefinition(region_map.RegionType).events[0]);
+        }
+        break;
     }
 
+    local_player.SetActionsEnabled(!paused);
     IsPaused = paused;
+}
+
+void Game::SetPlayerActionsEnabled(bool enable)
+{
+    local_player.SetActionsEnabled(enable);
 }
 
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
@@ -325,7 +333,7 @@ void Game::ChangeRegion(uint16_t region_id)
 {
     gui.SetEnabled(false);
     target_zoom = 1.2;
-    local_player.DisableActions();
+    local_player.SetActionsEnabled(false);
     region_map.LeaveRegion();
 
     next_region = region_id;
@@ -340,6 +348,23 @@ void Game::EnterRegion(sf::Vector2f spawn_position)
     entering_region = true;
     entering_region_state = EnteringRegionState::Start;
     local_player.SetPosition(spawn_position);
+}
+
+void Game::SetMenuEvent(uint16_t event_id)
+{
+    if (region_map.RegionType != definitions::RegionType::MenuEvent)
+    {
+        cerr << "Server tried to set event id for a region with no event." << endl;
+        return;
+    }
+
+    gui.DisplayMenuEvent(definitions::GetMenuEventById(event_id), 0);
+    SetPlayerActionsEnabled(false);
+}
+
+void Game::AdvanceMenuEvent(uint16_t advance_value, bool finish)
+{
+    gui.AdvanceMenuEvent(advance_value, finish);
 }
 
 void Game::UpdateStash(std::array<definitions::ItemType, 24> items)
@@ -476,9 +501,13 @@ void Game::handleEnteringRegion()
             if (region_map.GetConvoyPosition().y == definitions::GetRegionDefinition(region_map.RegionType).convoy.Position.y)
             {
                 gui.SetEnabled(true);
-                local_player.EnableActions();
                 target_zoom = 1;
                 entering_region = false;
+
+                if (region_map.RegionType != definitions::RegionType::MenuEvent)
+                {
+                    local_player.SetActionsEnabled(true);
+                }
             }
         }
         break;
@@ -550,19 +579,19 @@ void Game::onKeyPressed(sf::Event event)
                 case RegionMap::InteractionType::NpcDialog:
                 {
                     gui.DisplayDialog(interaction.npc_name, interaction.dialog);
-                    local_player.DisableActions();
+                    local_player.SetActionsEnabled(false);
                 }
                 break;
                 case RegionMap::InteractionType::ConvoyConsole:
                 {
                     ClientMessage::Console(resources::GetServerSocket(), true);
-                    local_player.DisableActions();
+                    local_player.SetActionsEnabled(false);
                 }
                 break;
                 case RegionMap::InteractionType::ConvoyStash:
                 {
                     gui.DisplayStash();
-                    local_player.DisableActions();
+                    local_player.SetActionsEnabled(false);
                 }
                 break;
             }

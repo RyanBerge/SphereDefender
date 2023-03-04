@@ -19,7 +19,7 @@ namespace definitions
 {
     #define REGION_TOWN 0
     #define REGION_LEYLINE 1
-    #define REGION_NEUTRAL 2
+    #define REGION_EVENT 2
     #define REGION_SECRET 9
     uint16_t STARTING_REGION = REGION_TOWN;
 
@@ -101,6 +101,15 @@ public:
 
         region.npcs.push_back(prophet);
         Regions[RegionType::Secret] = region;
+
+        region = RegionDefinition{};
+
+        region.background_file = "backgrounds/sand.json";
+        region.leyline = false;
+        region.convoy = ConvoyDefinition(Orientation::North);
+        region.convoy.Position = sf::Vector2f{0, 0};
+
+        Regions[RegionType::MenuEvent] = region;
     }
 
     std::map<RegionType, RegionDefinition> Regions;
@@ -205,6 +214,95 @@ RegionDefinition GetRegionDefinition(RegionType region)
     return initializer.Regions[region];
 }
 
+class MenuEventInitializer
+{
+public:
+    MenuEventInitializer()
+    {
+        std::filesystem::path path = std::filesystem::path("../data/definitions/menu_events.json");
+        if (!std::filesystem::exists(path))
+        {
+            cerr << "Could not open definition file: " << path << endl;
+            return;
+        }
+
+        std::ifstream file(path);
+        nlohmann::json json;
+        file >> json;
+
+        for (auto& j_event : json["events"])
+        {
+            MenuEvent event;
+            event.event_id = j_event["id"];
+            event.current_page = 0;
+            event.name = j_event["name"];
+
+            for (auto& j_page : j_event["pages"])
+            {
+                MenuEventPage page;
+                page.page_index = j_page["index"];
+                page.prompt = j_page["prompt"];
+
+                for (auto& j_option : j_page["options"])
+                {
+                    MenuEventOption option;
+                    option.parent = page.page_index;
+                    option.text = j_option["text"];
+                    option.finishing_option = j_option["finishing_option"];
+                    option.value = j_option["value"];
+
+                    page.options.push_back(option);
+                }
+
+                event.pages.push_back(page);
+            }
+
+            events.push_back(event);
+        }
+    }
+
+    MenuEvent Next()
+    {
+        static int next = 0;
+        MenuEvent next_event = events[next];
+        next = (next + 1) % events.size();
+        return next_event;
+    }
+
+    MenuEvent GetEventById(uint16_t id)
+    {
+        for (auto& event : events)
+        {
+            if (event.event_id == id)
+            {
+                return event;
+            }
+        }
+
+        cerr << "Could not find event with id: " << id << endl;
+        return MenuEvent{};
+    }
+
+private:
+    std::vector<MenuEvent> events;
+};
+
+MenuEventInitializer& getMenuEventInitializer()
+{
+    static MenuEventInitializer initializer;
+    return initializer;
+}
+
+MenuEvent GetNextMenuEvent()
+{
+    return getMenuEventInitializer().Next();
+}
+
+MenuEvent GetMenuEventById(uint16_t id)
+{
+    return getMenuEventInitializer().GetEventById(id);
+}
+
 Zone GetZone()
 {
     //uint16_t id_counter = 0;
@@ -225,7 +323,7 @@ Zone GetZone()
 
     node = Zone::RegionNode{};
     node.id = 2;
-    node.type = RegionType::Neutral;
+    node.type = RegionType::MenuEvent;
     node.overmap_position = sf::Vector2f{190, 800};
     zone.regions.push_back(node);
 

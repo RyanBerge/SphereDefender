@@ -45,6 +45,29 @@ private:
     void load(Orientation orientation);
 };
 
+struct MenuEventOption
+{
+    uint16_t parent;
+    std::string text;
+    bool finishing_option;
+    uint16_t value;
+};
+
+struct MenuEventPage
+{
+    uint16_t page_index;
+    std::string prompt;
+    std::vector<MenuEventOption> options;
+};
+
+struct MenuEvent
+{
+    uint16_t event_id;
+    std::string name;
+    uint16_t current_page;
+    std::vector<MenuEventPage> pages;
+};
+
 enum class ObstacleType
 {
     SmallRock, LargeRock
@@ -66,7 +89,7 @@ struct Npc
 
 enum class RegionType
 {
-    Town, Leyline, Neutral, Secret
+    Town, Leyline, Neutral, Secret, MenuEvent
 };
 
 struct RegionDefinition
@@ -76,6 +99,7 @@ struct RegionDefinition
     ConvoyDefinition convoy;
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
+    std::vector<MenuEvent> events;
 };
 
 struct Zone
@@ -101,6 +125,8 @@ struct Zone
 extern uint16_t STARTING_REGION;
 
 RegionDefinition GetRegionDefinition(RegionType region);
+MenuEvent GetNextMenuEvent();
+MenuEvent GetMenuEventById(uint16_t id);
 Zone GetZone();
 
 } // namespace definitions

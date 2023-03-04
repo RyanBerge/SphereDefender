@@ -10,6 +10,7 @@
 #pragma once
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <functional>
 #include "spritesheet.h"
 
@@ -26,6 +27,7 @@ public:
 
     CursorButton();
     CursorButton(std::string filepath);
+    CursorButton(sf::Text text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled);
 
     virtual void Update(sf::Time elapsed);
     virtual void Draw();
@@ -39,7 +41,9 @@ public:
     virtual void UpdateMouseState(sf::Event::MouseButtonEvent mouse_event, State state);
 
     virtual sf::Sprite& GetSprite();
+    virtual sf::Transformable& GetTransform();
     virtual void SetPosition(float x, float y);
+    virtual sf::FloatRect GetGlobalBounds();
 
     virtual void RegisterLeftMouseDown(std::function<void(void)> f);
     virtual void RegisterLeftMouseUp(std::function<void(void)> f);
@@ -48,7 +52,19 @@ public:
     virtual void RegisterCursorExit(std::function<void(void)> f);
 
 protected:
+    enum class ButtonType
+    {
+        Sprite, Text
+    };
+
+    ButtonType button_type;
+
     Spritesheet spritesheet;
+    sf::Text button_text;
+    sf::Color animation_up;
+    sf::Color animation_hover;
+    sf::Color animation_down;
+    sf::Color animation_disabled;
 
     virtual void onLeftMouseDown(bool in_bounds);
     virtual void onLeftMouseUp(bool in_bounds);

@@ -786,10 +786,10 @@ bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_p
     return true;
 }
 
-bool ServerMessage::SetPaused(sf::TcpSocket& socket, bool paused)
+bool ServerMessage::SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type)
 {
-    Code code = Code::SetPaused;
-    constexpr size_t buffer_size = sizeof(code) + sizeof(paused);
+    Code code = Code::SetGuiPause;
+    constexpr size_t buffer_size = sizeof(code) + sizeof(paused) + sizeof(gui_type);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
@@ -797,6 +797,8 @@ bool ServerMessage::SetPaused(sf::TcpSocket& socket, bool paused)
     offset += sizeof(code);
     std::memcpy(buffer + offset, &paused, sizeof(paused));
     offset += sizeof(paused);
+    std::memcpy(buffer + offset, &gui_type, sizeof(gui_type));
+    offset += sizeof(gui_type);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -1141,6 +1143,52 @@ bool ServerMessage::CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t 
     return true;
 }
 
+bool ServerMessage::SetMenuEvent(sf::TcpSocket& socket, uint16_t event_id)
+{
+    Code code = ServerMessage::Code::SetMenuEvent;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(event_id);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &event_id, sizeof(event_id));
+    offset += sizeof(event_id);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServerMessage::AdvanceMenuEvent(sf::TcpSocket& socket, uint16_t page_id, bool finish)
+{
+    Code code = ServerMessage::Code::AdvanceMenuEvent;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(page_id) + sizeof(finish);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &page_id, sizeof(page_id));
+    offset += sizeof(page_id);
+    std::memcpy(buffer + offset, &finish, sizeof(finish));
+    offset += sizeof(finish);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -1283,17 +1331,25 @@ bool ServerMessage::DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& 
     return true;
 }
 
-bool ServerMessage::DecodeSetPaused(sf::TcpSocket& socket, bool& out_paused)
+bool ServerMessage::DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type)
 {
     bool paused;
+    GuiType gui_type;
 
     if (!read(socket, &paused, sizeof(paused)))
     {
-        cerr << "Network: " << __func__ << " failed to read battery level value." << endl;
+        cerr << "Network: " << __func__ << " failed to read paused value." << endl;
+        return false;
+    }
+
+    if (!read(socket, &gui_type, sizeof(gui_type)))
+    {
+        cerr << "Network: " << __func__ << " failed to read gui type." << endl;
         return false;
     }
 
     out_paused = paused;
+    out_gui_type = gui_type;
     return true;
 }
 
@@ -1615,6 +1671,42 @@ bool ServerMessage::DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_i
     out_player_id = player_id;
     out_vote = vote;
     out_confirm = confirm;
+    return true;
+}
+
+bool ServerMessage::DecodeSetMenuEvent(sf::TcpSocket& socket, uint16_t& out_event_id)
+{
+    uint16_t event_id;
+
+    if (!read(socket, &event_id, sizeof(event_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read an event id." << endl;
+        return false;
+    }
+
+    out_event_id = event_id;
+    return true;
+}
+
+bool ServerMessage::DecodeAdvanceMenuEvent(sf::TcpSocket& socket, uint16_t& out_page_id, bool& out_finish)
+{
+    uint16_t page_id;
+    bool finish;
+
+    if (!read(socket, &page_id, sizeof(page_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read an event id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &finish, sizeof(finish)))
+    {
+        cerr << "Network: " << __func__ << " failed to read an event id." << endl;
+        return false;
+    }
+
+    out_page_id = page_id;
+    out_finish = finish;
     return true;
 }
 
