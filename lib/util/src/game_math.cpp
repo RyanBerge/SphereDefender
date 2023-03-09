@@ -10,6 +10,7 @@
 #include "game_math.h"
 #include <iostream>
 #include <random>
+#include <ctime>
 
 using std::cout, std::endl;
 
@@ -279,13 +280,13 @@ namespace {
 
 int GetRandomInt(int min, int max)
 {
-    std::uniform_int_distribution<> distribution(min, max);
+    std::uniform_int_distribution<int> distribution(min, max);
     return distribution(random_generator);
 }
 
 float GetRandomFloat(float min, float max)
 {
-    std::uniform_real_distribution<> distribution(min, max);
+    std::uniform_real_distribution<float> distribution(min, max);
     return distribution(random_generator);
 }
 

@@ -9,6 +9,7 @@
  *************************************************************************************************/
 #pragma once
 
+#include <atomic>
 #include "cursor_button.h"
 #include "overmap.h"
 #include "stash.h"
@@ -28,8 +29,9 @@ public:
 
     void Draw();
 
-    void Load();
+    void Load(definitions::Zone zone);
     void Unload();
+    bool IsLoaded();
 
     void SetEnabled(bool new_enabled);
     void DisplayMenu();
@@ -73,6 +75,7 @@ private:
     void onConfirmClick(bool confirmed);
     void onMenuOptionClick(int option);
 
+    std::atomic_bool is_loaded = false;
     bool enabled = true;
 
     Spritesheet ui_frame;

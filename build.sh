@@ -105,6 +105,9 @@ build() {
 
     if [ ${ARCHITECTURE} == Win32 ]; then
         cp externals/sfml/install/bin/*.dll bin/
+        cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll bin/
+        cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll bin/
+        cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll bin/
     elif [ ${ARCHITECTURE} == Linux ]; then
         cp externals/sfml/install/lib/*.so* bin/
     fi

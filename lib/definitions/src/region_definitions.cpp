@@ -303,151 +303,151 @@ MenuEvent GetMenuEventById(uint16_t id)
     return getMenuEventInitializer().GetEventById(id);
 }
 
-Zone GetZone()
-{
-    //uint16_t id_counter = 0;
-
-    Zone zone;
-
-    Zone::RegionNode node;
-    node.id = 0;
-    node.type = RegionType::Town;
-    node.overmap_position = sf::Vector2f{100, 900};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 1;
-    node.type = RegionType::Leyline;
-    node.overmap_position = sf::Vector2f{120, 700};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 2;
-    node.type = RegionType::MenuEvent;
-    node.overmap_position = sf::Vector2f{190, 800};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 3;
-    node.type = RegionType::Leyline;
-    node.overmap_position = sf::Vector2f{280, 760};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 4;
-    node.type = RegionType::Neutral;
-    node.overmap_position = sf::Vector2f{350, 500};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 5;
-    node.type = RegionType::Leyline;
-    node.overmap_position = sf::Vector2f{170, 450};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 6;
-    node.type = RegionType::Neutral;
-    node.overmap_position = sf::Vector2f{320, 820};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 7;
-    node.type = RegionType::Neutral;
-    node.overmap_position = sf::Vector2f{400, 730};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 8;
-    node.type = RegionType::Leyline;
-    node.overmap_position = sf::Vector2f{420, 600};
-    zone.regions.push_back(node);
-
-    node = Zone::RegionNode{};
-    node.id = 9;
-    node.type = RegionType::Secret;
-    node.overmap_position = sf::Vector2f{650, 500};
-    zone.regions.push_back(node);
-
-    Zone::Link link;
-    link.start = 0;
-    link.finish = 1;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 0;
-    link.finish = 2;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 1;
-    link.finish = 2;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 2;
-    link.finish = 3;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 3;
-    link.finish = 4;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 2;
-    link.finish = 4;
-    link.distance = 400;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 1;
-    link.finish = 5;
-    link.distance = 550;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 4;
-    link.finish = 5;
-    link.distance = 200;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 3;
-    link.finish = 6;
-    link.distance = 75;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 6;
-    link.finish = 7;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 7;
-    link.finish = 8;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 4;
-    link.finish = 8;
-    link.distance = 250;
-    zone.links.push_back(link);
-
-    link = Zone::Link{};
-    link.start = 8;
-    link.finish = 9;
-    link.distance = 800;
-    zone.links.push_back(link);
-
-    return zone;
-}
+//Zone GetZone()
+//{
+//    //uint16_t id_counter = 0;
+//
+//    Zone zone;
+//
+//    Zone::RegionNode node;
+//    node.id = 0;
+//    node.type = RegionType::Town;
+//    node.overmap_position = sf::Vector2f{100, 900};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 1;
+//    node.type = RegionType::Leyline;
+//    node.overmap_position = sf::Vector2f{120, 700};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 2;
+//    node.type = RegionType::MenuEvent;
+//    node.overmap_position = sf::Vector2f{190, 800};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 3;
+//    node.type = RegionType::Leyline;
+//    node.overmap_position = sf::Vector2f{280, 760};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 4;
+//    node.type = RegionType::Neutral;
+//    node.overmap_position = sf::Vector2f{350, 500};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 5;
+//    node.type = RegionType::Leyline;
+//    node.overmap_position = sf::Vector2f{170, 450};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 6;
+//    node.type = RegionType::Neutral;
+//    node.overmap_position = sf::Vector2f{320, 820};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 7;
+//    node.type = RegionType::Neutral;
+//    node.overmap_position = sf::Vector2f{400, 730};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 8;
+//    node.type = RegionType::Leyline;
+//    node.overmap_position = sf::Vector2f{420, 600};
+//    zone.regions.push_back(node);
+//
+//    node = Zone::RegionNode{};
+//    node.id = 9;
+//    node.type = RegionType::Secret;
+//    node.overmap_position = sf::Vector2f{650, 500};
+//    zone.regions.push_back(node);
+//
+//    Zone::Link link;
+//    link.start = 0;
+//    link.finish = 1;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 0;
+//    link.finish = 2;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 1;
+//    link.finish = 2;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 2;
+//    link.finish = 3;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 3;
+//    link.finish = 4;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 2;
+//    link.finish = 4;
+//    link.distance = 400;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 1;
+//    link.finish = 5;
+//    link.distance = 550;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 4;
+//    link.finish = 5;
+//    link.distance = 200;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 3;
+//    link.finish = 6;
+//    link.distance = 75;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 6;
+//    link.finish = 7;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 7;
+//    link.finish = 8;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 4;
+//    link.finish = 8;
+//    link.distance = 250;
+//    zone.links.push_back(link);
+//
+//    link = Zone::Link{};
+//    link.start = 8;
+//    link.finish = 9;
+//    link.distance = 800;
+//    zone.links.push_back(link);
+//
+//    return zone;
+//}
 
 } // definitions

@@ -87,7 +87,7 @@ struct Npc
     sf::Vector2f position;
 };
 
-enum class RegionType
+enum class RegionType : uint8_t
 {
     Town, Leyline, Neutral, Secret, MenuEvent
 };
@@ -108,7 +108,7 @@ struct Zone
     {
         uint16_t id;
         RegionType type;
-        sf::Vector2f overmap_position;
+        sf::Vector2f coordinates;
     };
 
     struct Link
@@ -117,6 +117,9 @@ struct Zone
         uint16_t finish;
         double distance;
     };
+
+    static constexpr int ZONE_WIDTH = 1800;
+    static constexpr int ZONE_HEIGHT = 1000;
 
     std::vector<RegionNode> regions;
     std::vector<Link> links;
@@ -127,6 +130,5 @@ extern uint16_t STARTING_REGION;
 RegionDefinition GetRegionDefinition(RegionType region);
 MenuEvent GetNextMenuEvent();
 MenuEvent GetMenuEventById(uint16_t id);
-Zone GetZone();
 
 } // namespace definitions

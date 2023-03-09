@@ -136,6 +136,7 @@ void Game::Draw()
 void Game::Load(network::PlayerData local, std::vector<network::PlayerData> other_players)
 {
     loaded = false;
+    zone_loaded = false;
     std::thread loading_thread(&Game::asyncLoad, this, local, other_players);
     loading_thread.detach();
 }
@@ -168,10 +169,16 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
         avatars[player.id] = Avatar(sf::Color(180, 115, 150), player);
     }
 
+    std::unique_lock<std::mutex> lock(loading_mutex);
+    zone_loaded_condition.wait(lock, [this](){ return isZoneLoaded(); });
+
+    // In-place reconstruction to avoid deleted assignment operator
+    gui.~Gui();
+    new(&gui)Gui();
+    gui.Load(current_zone);
+
     region_map = RegionMap();
-    region_map.Load(definitions::GetZone().regions[definitions::STARTING_REGION].type);
-    gui = Gui();
-    gui.Load();
+    region_map.Load(current_zone.regions[definitions::STARTING_REGION].type);
 
     resources::GetWorldView() = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 
@@ -181,6 +188,11 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     cout << "Async load finished." << endl;
 
     ClientMessage::LoadingComplete(resources::GetServerSocket());
+}
+
+bool Game::isZoneLoaded()
+{
+    return zone_loaded;
 }
 
 void Game::Unload()
@@ -227,6 +239,13 @@ std::string Game::GetPlayerName(uint16_t player_id)
     }
 
     return avatars[player_id].Data.name;
+}
+
+void Game::SetZone(definitions::Zone zone)
+{
+    current_zone = zone;
+    zone_loaded = true;
+    zone_loaded_condition.notify_all();
 }
 
 void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
@@ -449,8 +468,7 @@ void Game::handleLeavingRegion()
         {
             region_map = RegionMap();
 
-            auto zone = definitions::GetZone();
-            for (auto& node : zone.regions)
+            for (auto& node : current_zone.regions)
             {
                 if (node.id == next_region)
                 {

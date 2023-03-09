@@ -24,7 +24,7 @@ class Overmap
 public:
     Overmap();
 
-    void Load();
+    void Load(definitions::Zone zone);
     void Update(sf::Time elapsed);
     void Draw();
 
@@ -53,6 +53,9 @@ private:
         sf::RectangleShape highlight;
     };
 
+    void castVote(bool toggled);
+    Node getNodeById(uint16_t id);
+
     ToggleButton confirm_button;
     CursorButton cancel_button;
 
@@ -74,7 +77,6 @@ private:
     void onClickNode(uint16_t region_id);
     void onHoverNodeEnter(uint16_t node_id);
     void onHoverNodeExit();
-    void castVote(bool toggled);
 };
 
 } // namespace client

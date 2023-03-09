@@ -11,6 +11,8 @@
 #include <cstring>
 #include <iostream>
 #include <cmath>
+#include <set>
+#include <ctime>
 #include "messaging.h"
 #include "game_math.h"
 #include "util.h"
@@ -30,7 +32,11 @@ namespace {
 Server::Server()
 {
     listener.setBlocking(false);
-    listener.listen(49879); // TODO: Make server settings and load from a file
+    sf::Socket::Status status = listener.listen(49179); // TODO: Make server settings and load from a file
+    if (status != sf::Socket::Status::Done)
+    {
+        std::cerr << "Tcp Listener failed to initialize." << std::endl;
+    }
 }
 
 void Server::Start()
@@ -132,7 +138,7 @@ void Server::listen()
     }
     else if (status != sf::Socket::Status::Done)
     {
-        cerr << "Tcp Listener threw an error" << endl;
+        cerr << "Tcp Listener threw an error: " << status << endl;
         return;
     }
 
@@ -254,9 +260,8 @@ void Server::startGame()
         PlayerList[i].Data.position = spawn_position;
     }
 
-    zone = definitions::GetZone();
     current_region = definitions::STARTING_REGION;
-    region = Region(zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
+    region = Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -276,6 +281,186 @@ void Server::startGame()
     }
 
     game_state = GameState::Game;
+}
+
+definitions::Zone Server::generateZone()
+{
+    // Zone boundaries are an abstract 1200x600 units that are then scaled to fit in the GUI overmap
+    // Abstract zone coordinates start bottom-left at (0, 0) and progress up and right
+
+    definitions::Zone new_zone;
+
+    sf::Vector2f node_count{definitions::Zone::ZONE_WIDTH / 200, definitions::Zone::ZONE_HEIGHT / 200};
+
+    int num_deleted_nodes = util::GetRandomInt(std::ceil(node_count.x * node_count.y * 0.25f), std::floor(node_count.x * node_count.y * 0.4f));
+    std::vector<int> full_node_set;
+    for (int i = 1; i < node_count.x * node_count.y - 1; ++i)
+    {
+        full_node_set.push_back(i);
+    }
+    std::set<int> deleted_node_set;
+
+    srand(std::time(nullptr));
+    std::random_shuffle(full_node_set.begin(), full_node_set.end());
+    for (int i = 0; i < num_deleted_nodes; ++i)
+    {
+        deleted_node_set.insert(full_node_set[i]);
+    }
+
+    uint16_t node_id = 0;
+    for (float x = 0; x < node_count.x; ++x)
+    {
+        for (float y = 0; y < node_count.y; y++)
+        {
+            bool first_node = (x == 0 && y == 0);
+            bool last_node = (x == node_count.x - 1 && y == node_count.y - 1);
+            definitions::Zone::RegionNode node{};
+            node.id = node_id++;
+            if (!first_node && !last_node && deleted_node_set.contains(node.id))
+            {
+                deleted_node_set.extract(node.id);
+                continue;
+            }
+
+            if (util::GetRandomFloat(0, 1) > 0.5)
+            {
+                node.type = definitions::RegionType::Neutral;
+            }
+            else
+            {
+                node.type = definitions::RegionType::MenuEvent;
+            }
+
+            if (x == 0 && y == 0)
+            {
+                node.type = definitions::RegionType::Town;
+            }
+
+            sf::Vector2f offsets{util::GetRandomFloat(20, 180), util::GetRandomFloat(40, 160)};
+            node.coordinates = sf::Vector2f{x * 200 + offsets.x, y * 200 + offsets.y};
+
+            new_zone.regions.push_back(node);
+        }
+    }
+
+    int num_leylines = util::GetRandomInt(std::floor((node_count.x * node_count.y) / 10), std::ceil((node_count.x * node_count.y) / 10));
+    unsigned interval = new_zone.regions.size() / (num_leylines + 1.0f);
+
+    for (int i = 0; i < num_leylines; ++i)
+    {
+        int offset = util::GetRandomInt(-1, 1);
+        unsigned leyline_index = interval * (i + 1) + offset;
+
+        cout << leyline_index << endl;
+
+        while (leyline_index < new_zone.regions.size() && new_zone.regions[leyline_index].type == definitions::RegionType::Leyline)
+        {
+            ++leyline_index;
+        }
+
+        if (leyline_index >= new_zone.regions.size())
+        {
+            continue;
+        }
+
+        new_zone.regions[leyline_index].type = definitions::RegionType::Leyline;
+    }
+
+    for (int x = 0; x < node_count.x; ++x)
+    {
+        for (int y = 0; y < node_count.y; ++y)
+        {
+            node_id = y + x * node_count.y;
+            if (!getNodeById(new_zone, node_id).has_value())
+            {
+                continue;
+            }
+
+            for (int target_x = x + 1; target_x < node_count.x; ++target_x)
+            {
+                int target_y = y;
+                uint16_t target_id = target_y + target_x * node_count.y;
+
+                if (addLink(new_zone, node_id, target_id))
+                {
+                    break;
+                }
+
+                if (target_y - 1 >= 0)
+                {
+                    target_id = (target_y - 1) + target_x * node_count.y;
+                    addLink(new_zone, node_id, target_id);
+                }
+
+                if (target_y + 1 < node_count.y)
+                {
+                    target_id = (target_y + 1) + target_x * node_count.y;
+                    addLink(new_zone, node_id, target_id);
+                }
+            }
+
+            for (int target_y = y + 1; target_y < node_count.y; ++target_y)
+            {
+                int target_x = x;
+                uint16_t target_id = target_y + target_x * node_count.y;
+
+                if (addLink(new_zone, node_id, target_id))
+                {
+                    break;
+                }
+
+                if (target_x - 1 >= 0)
+                {
+                    target_id = target_y + (target_x - 1) * node_count.y;
+                    addLink(new_zone, node_id, target_id);
+                }
+
+                if (target_x + 1 < node_count.y)
+                {
+                    target_id = target_y + (target_x + 1) * node_count.y;
+                    addLink(new_zone, node_id, target_id);
+                }
+            }
+        }
+    }
+
+    return new_zone;
+}
+
+std::optional<definitions::Zone::RegionNode> Server::getNodeById(definitions::Zone& new_zone, uint16_t node_id)
+{
+    for (unsigned i = std::min(node_id, static_cast<uint16_t>(new_zone.regions.size() - 1)); new_zone.regions[i].id >= i; --i)
+    {
+        if (new_zone.regions[i].id == node_id)
+        {
+            return new_zone.regions[i];
+        }
+    }
+
+    return std::nullopt;
+}
+
+bool Server::addLink(definitions::Zone& zone, uint16_t start, uint16_t finish)
+{
+    if (finish < start)
+    {
+        return false;
+    }
+
+    if (!getNodeById(zone, finish).has_value())
+    {
+        return false;
+    }
+
+    definitions::Zone::Link link;
+    link.start = start;
+    link.finish = finish;
+    definitions::Zone::RegionNode start_node = getNodeById(zone, link.start).value();
+    definitions::Zone::RegionNode finish_node = getNodeById(zone, link.finish).value();
+    link.distance = util::Distance(start_node.coordinates, finish_node.coordinates) / 4;
+    zone.links.push_back(link);
+
+    return true;
 }
 
 void Server::gatherPlayers()
@@ -534,12 +719,16 @@ void Server::startLoading(Player& player)
     cout << player.Data.name << " started the game!" << endl;
     game_state = GameState::Loading;
 
+    current_zone = generateZone();
+
     for (auto& p : PlayerList)
     {
         if (p.Data.id != owner)
         {
             ServerMessage::StartGame(*p.Socket);
         }
+
+        ServerMessage::SetZone(*p.Socket, current_zone);
     }
 }
 
@@ -577,7 +766,7 @@ void Server::loadingComplete(Player& player)
         }
 
         double battery_cost = 0;
-        for (auto& link : zone.links)
+        for (auto& link : current_zone.links)
         {
             if ((link.start == current_region && link.finish == next_region) ||
                 (link.finish == current_region && link.start == next_region))
@@ -600,7 +789,7 @@ void Server::loadingComplete(Player& player)
 
         current_region = next_region;
 
-        for (auto& node : zone.regions)
+        for (auto& node : current_zone.regions)
         {
             if (node.id == current_region)
             {

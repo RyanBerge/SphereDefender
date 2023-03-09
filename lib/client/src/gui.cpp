@@ -125,7 +125,7 @@ void Gui::Draw()
     }
 }
 
-void Gui::Load()
+void Gui::Load(definitions::Zone zone)
 {
     sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
     font = resources::FontManager::GetFont("Vera");
@@ -253,13 +253,20 @@ void Gui::Load()
     InMenus = false;
     InDialog = false;
     UpdateHealth(100);
-    overmap.Load();
+    overmap.Load(zone);
     overmap.SetRegion(definitions::STARTING_REGION);
+
+    is_loaded = true;
 }
 
 void Gui::Unload()
 {
 
+}
+
+bool Gui::IsLoaded()
+{
+    return is_loaded;
 }
 
 void Gui::SetEnabled(bool new_enabled)

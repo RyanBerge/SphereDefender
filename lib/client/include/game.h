@@ -12,6 +12,8 @@
 #include <SFML/System/Time.hpp>
 #include <atomic>
 #include <map>
+#include <mutex>
+#include <condition_variable>
 #include "region_map.h"
 #include "gui.h"
 #include "player.h"
@@ -35,6 +37,7 @@ public:
     int GetPlayerCount();
     std::vector<uint16_t> GetPlayerIds();
     std::string GetPlayerName(uint16_t player_id);
+    void SetZone(definitions::Zone zone);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
@@ -65,8 +68,12 @@ private:
     sf::RectangleShape black_overlay;
 
     std::atomic_bool loaded = false;
+    std::mutex loading_mutex;
+    std::condition_variable zone_loaded_condition;
     bool menu_open = false;
 
+    definitions::Zone current_zone;
+    std::atomic_bool zone_loaded = false;
     bool leaving_region = false;
     bool entering_region = false;
     uint16_t next_region;
@@ -77,6 +84,7 @@ private:
     float zoom_speed;
 
     void asyncLoad(network::PlayerData local, std::vector<network::PlayerData> other_players);
+    bool isZoneLoaded();
     void updateScroll(sf::Time elapsed);
 
     enum class LeavingRegionState

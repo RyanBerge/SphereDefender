@@ -11,6 +11,7 @@
 
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/System/Clock.hpp>
+#include <optional>
 #include "entity_data.h"
 #include "player.h"
 #include "region.h"
@@ -46,7 +47,7 @@ private:
     uint16_t owner = 0;
     GameState game_state = GameState::Uninitialized;
     sf::Clock clock;
-    definitions::Zone zone;
+    definitions::Zone current_zone;
     Region region;
     uint16_t current_region;
     uint16_t next_region;
@@ -58,10 +59,12 @@ private:
     void checkMessages(Player& player);
 
     void startGame();
+    definitions::Zone generateZone();
+    std::optional<definitions::Zone::RegionNode> getNodeById(definitions::Zone& zone, uint16_t node_id);
+    bool addLink(definitions::Zone& zone, uint16_t start, uint16_t finish);
     void gatherPlayers();
     void resetVotes();
     void checkVotes(VotingType voting_type);
-    void advanceMenuEvent(uint16_t winner);
 
     uint16_t getPlayerUid();
 

@@ -786,6 +786,49 @@ bool ServerMessage::AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_p
     return true;
 }
 
+bool ServerMessage::SetZone(sf::TcpSocket& socket, definitions::Zone zone)
+{
+    Code code = Code::SetZone;
+
+    uint16_t num_regions = zone.regions.size();
+    uint16_t num_links = zone.links.size();
+
+    size_t buffer_size = sizeof(code);
+    buffer_size += sizeof(num_regions) + (sizeof(definitions::Zone::RegionNode) * zone.regions.size());
+    buffer_size += sizeof(num_links) + (sizeof(definitions::Zone::Link) * zone.links.size());
+
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+
+    std::memcpy(buffer + offset, &num_regions, sizeof(num_regions));
+    offset += sizeof(num_regions);
+    for (auto& region : zone.regions)
+    {
+        std::memcpy(buffer + offset, &region, sizeof(region));
+        offset += sizeof(region);
+    }
+
+    std::memcpy(buffer + offset, &num_links, sizeof(num_links));
+    offset += sizeof(num_links);
+    for (auto& link : zone.links)
+    {
+        std::memcpy(buffer + offset, &link, sizeof(link));
+        offset += sizeof(link);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
 bool ServerMessage::SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type)
 {
     Code code = Code::SetGuiPause;
@@ -1328,6 +1371,54 @@ bool ServerMessage::DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& 
     out_spawn_position.x = x;
     out_spawn_position.y = y;
 
+    return true;
+}
+
+bool ServerMessage::DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone)
+{
+    definitions::Zone zone;
+    uint16_t regions_size;
+    uint16_t links_size;
+
+    if (!read(socket, &regions_size, sizeof(regions_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a region size." << endl;
+        return false;
+    }
+
+    for (uint16_t i = 0; i < regions_size; ++i)
+    {
+        definitions::Zone::RegionNode region;
+
+        if (!read(socket, &region, sizeof(region)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a region." << endl;
+            return false;
+        }
+
+        zone.regions.push_back(region);
+    }
+
+    if (!read(socket, &links_size, sizeof(links_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a links size." << endl;
+        return false;
+    }
+
+    for (uint16_t i = 0; i < links_size; ++i)
+    {
+        definitions::Zone::Link link;
+
+        if (!read(socket, &link, sizeof(link)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a link." << endl;
+            return false;
+        }
+
+        zone.links.push_back(link);
+    }
+
+    out_zone = zone;
     return true;
 }
 

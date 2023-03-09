@@ -11,7 +11,7 @@
 #include "game_math.h"
 #include <iostream>
 
-using std::cout, std::endl;
+using std::cout, std::cerr, std::endl;
 
 namespace util {
 namespace {
@@ -206,6 +206,12 @@ std::vector<uint16_t> GetPath(std::vector<DjikstraNode> nodes, uint16_t start, u
 
     while (current != start)
     {
+        if (nodes[current].visited)
+        {
+            cerr << "No possible path from node " << start << " to node " << finish << endl;
+            return std::vector<uint16_t>();
+        }
+
         nodes[current].visited = true;
 
         for (auto& [index, cost] : nodes[current].connections)

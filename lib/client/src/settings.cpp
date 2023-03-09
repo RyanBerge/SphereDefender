@@ -24,7 +24,7 @@ Settings::Settings()
     Bindings.Interact = sf::Keyboard::Key::E;
     Bindings.Item = sf::Keyboard::Key::LShift;
 
-    ServerSettings.ServerPort = 49879;
+    ServerSettings.ServerPort = 49179;
     DefaultServerIp = "127.0.0.1";
 
     //WindowResolution = sf::Vector2f{1600, 900} * 0.5f;

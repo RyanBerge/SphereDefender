@@ -369,6 +369,18 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::SetZone:
+            {
+                definitions::Zone zone;
+                if (ServerMessage::DecodeSetZone(resources::GetServerSocket(), zone))
+                {
+                    if (State == GameState::MainMenu && MainMenu.CurrentMenu == MainMenu::MenuType::LoadingScreen)
+                    {
+                        Game.SetZone(zone);
+                    }
+                }
+            }
+            break;
             case ServerMessage::Code::SetGuiPause:
             {
                 bool paused;

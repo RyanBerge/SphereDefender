@@ -11,6 +11,7 @@
 #include <SFML/Network/TcpSocket.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <string>
+#include <array>
 #include "entity_data.h"
 #include "region_definitions.h"
 
@@ -116,7 +117,7 @@ public:
         StartGame,
         AllPlayersLoaded,
 
-        RegionInfo,
+        SetZone,
 
         SetGuiPause,
         PlayerStartAction,
@@ -146,6 +147,7 @@ public:
     static bool OwnerLeft(sf::TcpSocket& socket);
     static bool StartGame(sf::TcpSocket& socket);
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
+    static bool SetZone(sf::TcpSocket& socket, definitions::Zone zone);
     static bool SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
@@ -167,6 +169,7 @@ public:
     static bool DecodePlayersInLobby(sf::TcpSocket& socket, uint16_t& out_id, std::vector<PlayerData>& out_players);
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties);
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
+    static bool DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone);
     static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
