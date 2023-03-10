@@ -1,0 +1,27 @@
+{
+  "type": "neutral",
+  "name": "",
+  "id": 0,
+  "background": "sand",
+  "convoy": {
+    "orientation": "north",
+    "position": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "obstacles": [ ],
+  "npcs": [
+    {
+      "name": "David",
+      "sprite": "old_man",
+      "dialog": [
+        "There's nothing here. Come back another day."
+      ],
+      "position": {
+        "x": 400,
+        "y": 0
+      }
+    }
+  ]
+}

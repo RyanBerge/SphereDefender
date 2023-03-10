@@ -94,6 +94,8 @@ enum class RegionType : uint8_t
 
 struct RegionDefinition
 {
+    std::string name;
+    uint16_t id;
     bool leyline;
     std::string background_file;
     ConvoyDefinition convoy;

@@ -9,13 +9,13 @@
     },
     {
       "index": 1,
-      "location": [ 22, 38 ],
+      "location": [ 23, 38 ],
       "size": [ 22, 19 ],
       "origin": [ 11, 10 ]
     },
     {
       "index": 2,
-      "location": [ 44, 38 ],
+      "location": [ 46, 38 ],
       "size": [ 22, 19 ],
       "origin": [ 11, 10 ]
     }

@@ -8,6 +8,7 @@
  *
  *************************************************************************************************/
 #include <SFML/Network/IpAddress.hpp>
+#include "SFML/System/Sleep.hpp"
 #include <functional>
 #include <iostream>
 #include "game_manager.h"
@@ -15,6 +16,7 @@
 #include "messaging.h"
 #include "settings.h"
 #include "resources.h"
+#include "debug_overrides.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -35,9 +37,12 @@ void GameManager::Start()
     event_handler.RegisterCallback(sf::Event::EventType::Resized, std::bind(&GameManager::onResizeWindow, this, std::placeholders::_1));
     event_handler.RegisterCallback(sf::Event::EventType::Closed, std::bind(&GameManager::onCloseWindow, this, std::placeholders::_1));
 
-    Settings::GetInstance();
+    Settings settings = Settings::GetInstance();
+    sf::ContextSettings render_context_settings;
+    render_context_settings.antialiasingLevel = settings.AntiAliasing;
+
     sf::Vector2u window_size{1280, 720};
-    resources::GetWindow().create(sf::VideoMode(window_size.x, window_size.y), "Sphere Defender");
+    resources::GetWindow().create(sf::VideoMode(window_size.x, window_size.y), "Sphere Defender",sf::Style::Default, render_context_settings);
 
     sf::Event resize_event;
     resize_event.size.width = window_size.x;
@@ -48,6 +53,18 @@ void GameManager::Start()
     sf::Clock clock;
 
     running = true;
+
+#ifndef NDEBUG
+    if (debug::StartInGame.override && debug::StartInGame.value)
+    {
+        resources::GetWindow().clear(sf::Color::Black);
+        resources::GetWindow().display();
+        MainMenu.Lobby.Create("Ryan");
+        MainMenu.CurrentMenu = MainMenu::MenuType::Lobby;
+        checkMessages();
+        MainMenu.Lobby.StartGame();
+    }
+#endif
 
     while (running && resources::GetWindow().isOpen())
     {
@@ -222,6 +239,7 @@ void GameManager::checkMessages()
                     else
                     {
                         cerr << "PlayerId message received when client wasn't in a lobby." << endl;
+                        cerr << (int)State << ", " << (int)MainMenu.CurrentMenu << endl;
                     }
                 }
             }

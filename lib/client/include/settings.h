@@ -47,6 +47,7 @@ public:
     int32_t ScrollSpeed;
     int MaxZoomFactor;
     int MinZoomFactor;
+    float AntiAliasing;
 
 private:
     sf::View settings_view;

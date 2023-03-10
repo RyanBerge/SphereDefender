@@ -31,7 +31,6 @@ public:
 
     static GameManager& GetInstance();
 
-    // TODO: Should this just be a map of menus instead of a state enum?
     GameState State = GameState::MainMenu;
 
     client::Game Game;

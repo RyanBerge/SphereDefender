@@ -77,45 +77,52 @@ void Spritesheet::LoadAnimationData(std::string filename)
         return;
     }
 
-    std::ifstream file(path);
-    nlohmann::json j;
-    file >> j;
-
-    animation_data.frames = std::vector<Frame>(j["frames"].size());
-    loadTexture(j["filename"]);
-
-    for (auto& object : j["frames"])
+    try
     {
-        Frame frame;
+        std::ifstream file(path);
+        nlohmann::json j;
+        file >> j;
 
-        sf::IntRect rect;
-        rect.left = object["location"][0];
-        rect.top = object["location"][1];
-        rect.width = object["size"][0];
-        rect.height = object["size"][1];
+        animation_data.frames = std::vector<Frame>(j["frames"].size());
+        loadTexture(j["filename"]);
 
-        sf::Vector2f origin;
-        origin.x = object["origin"][0];
-        origin.y = object["origin"][1];
+        for (auto& object : j["frames"])
+        {
+            Frame frame;
 
-        frame.bounds = rect;
-        frame.origin = origin;
-        animation_data.frames[object["index"]] = frame;
+            sf::IntRect rect;
+            rect.left = object["location"][0];
+            rect.top = object["location"][1];
+            rect.width = object["size"][0];
+            rect.height = object["size"][1];
+
+            sf::Vector2f origin;
+            origin.x = object["origin"][0];
+            origin.y = object["origin"][1];
+
+            frame.bounds = rect;
+            frame.origin = origin;
+            animation_data.frames[object["index"]] = frame;
+        }
+
+        for (auto& object : j["animations"])
+        {
+            Animation animation;
+            animation.name = object["name"];
+            animation.start = object["start_frame"];
+            animation.end = object["end_frame"];
+            animation.speed = object["animation_speed"];
+            animation.next = object["next_animation"];
+
+            animation_data.animations[animation.name] = animation;
+        }
+
+        SetAnimation(animation_data.animations.begin()->first);
     }
-
-    for (auto& object : j["animations"])
+    catch(const std::exception& e)
     {
-        Animation animation;
-        animation.name = object["name"];
-        animation.start = object["start_frame"];
-        animation.end = object["end_frame"];
-        animation.speed = object["animation_speed"];
-        animation.next = object["next_animation"];
-
-        animation_data.animations[animation.name] = animation;
+        cerr << "Failed to parse animation data file: " << path << endl;
     }
-
-    SetAnimation(animation_data.animations.begin()->first);
 }
 
 void Spritesheet::SetShadow(bool shadows_on)
@@ -205,6 +212,8 @@ bool Spritesheet::loadTexture(std::string filename)
     {
         return false;
     }
+
+    //texture->setSmooth(true);
 
     sprite.setTexture(*texture);
     return true;

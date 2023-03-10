@@ -35,6 +35,8 @@ Settings::Settings()
     MaxZoomFactor = 10; // 10 increments of +0.1%
     MinZoomFactor = -5; // 5 increments of -0.1%
 
+    AntiAliasing = 8.0f;
+
     settings_view = sf::View(sf::FloatRect(0, 0, WindowResolution.x, WindowResolution.y));
 }
 

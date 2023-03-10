@@ -1,0 +1,15 @@
+{
+  "type": "event",
+  "name": "",
+  "id": 0,
+  "background": "sand",
+  "convoy": {
+    "orientation": "north",
+    "position": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "obstacles": [ ],
+  "npcs": [ ]
+}

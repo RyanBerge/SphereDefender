@@ -25,89 +25,115 @@ class RegionInitializer
 public:
     RegionInitializer()
     {
-        RegionDefinition region{};
-
-        region.background_file = "backgrounds/cracked_mud.json";
-        region.leyline = true;
-        region.convoy = ConvoyDefinition(Orientation::North);
-        region.convoy.Position = sf::Vector2f{-500, 0};
-
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(200, 25, 50, 150)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(100, -100, 50, 150)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(0, 75, 50, 150)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-125, -300, 100, 250)});
-
-        Regions[RegionType::Leyline] = region;
-
-        region = RegionDefinition{};
-
-        region.background_file = "backgrounds/sand.json";
-        region.leyline = false;
-        region.convoy = ConvoyDefinition(Orientation::North);
-        region.convoy.Position = sf::Vector2f{-500, -200};
-
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-2000, 200, 4000, 600)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(-1500, -1200, 800, 1400)});
-        region.obstacles.push_back(Obstacle{ObstacleType::LargeRock, sf::FloatRect(500, -1200, 800, 1400)});
-
-        Npc old_man;
-        old_man.name = "Old Man";
-        old_man.sprite_file = "entities/old_man.json";
-        old_man.dialog.push_back("You've come to try one final time? You know my answer has not changed.");
-        old_man.dialog.push_back("There is nothing for us out there. Only a fool could believe the Shining City exists. Only a fool could believe they could reach it.");
-        old_man.dialog.push_back("They will come for you, you know. In numbers unending. Every time you recharge, they will feel it.");
-        old_man.dialog.push_back("Here, we will fade quietly from this world that we have stolen. It is what we deserve. Out there... I have no pity for you.");
-        old_man.dialog.push_back("Go. And never return.");
-        old_man.position = sf::Vector2f{200, -150};
-
-        region.npcs.push_back(old_man);
-
-        Regions[RegionType::Town] = region;
-
-        region = RegionDefinition{};
-
-        region.background_file = "backgrounds/sand.json";
-        region.leyline = false;
-        region.convoy = ConvoyDefinition(Orientation::North);
-        region.convoy.Position = sf::Vector2f{0, 0};
-
-        Npc david;
-        david.name = "David";
-        david.sprite_file = "entities/old_man.json";
-        david.dialog.push_back("There's nothing here. Come back another day.");
-        david.position = sf::Vector2f{400, 0};
-
-        region.npcs.push_back(david);
-        Regions[RegionType::Neutral] = region;
-
-        region = RegionDefinition{};
-
-        region.background_file = "backgrounds/cracked_mud.json";
-        region.leyline = false;
-        region.convoy = ConvoyDefinition(Orientation::North);
-        region.convoy.Position = sf::Vector2f{0, 0};
-
-        Npc prophet;
-        prophet.name = "The Prophet";
-        prophet.sprite_file = "entities/old_man.json";
-        prophet.dialog.push_back("How did you get here? What are you doing here?");
-        prophet.dialog.push_back("You shouldn't have come.");
-        prophet.position = sf::Vector2f{400, 0};
-
-        region.npcs.push_back(prophet);
-        Regions[RegionType::Secret] = region;
-
-        region = RegionDefinition{};
-
-        region.background_file = "backgrounds/sand.json";
-        region.leyline = false;
-        region.convoy = ConvoyDefinition(Orientation::North);
-        region.convoy.Position = sf::Vector2f{0, 0};
-
-        Regions[RegionType::MenuEvent] = region;
+        LoadRegions();
     }
 
-    std::map<RegionType, RegionDefinition> Regions;
+    void LoadRegions()
+    {
+        std::filesystem::path path("../data/definitions/regions");
+        if (!std::filesystem::exists(path))
+        {
+            cerr << "Error loading regions: could not open directorty: " << path << endl;
+            return;
+        }
+
+        for (const auto& region_file : std::filesystem::directory_iterator(path))
+        {
+            if (!region_file.is_regular_file())
+            {
+                continue;
+            }
+
+            try
+            {
+                std::ifstream file(region_file.path());
+                nlohmann::json json;
+                file >> json;
+
+                RegionDefinition region;
+                region.name = json["name"];
+                region.background_file = "backgrounds/" + static_cast<std::string>(json["background"]) + ".json";
+
+                if (json["convoy"]["orientation"] == "north")
+                {
+                    region.convoy = ConvoyDefinition(definitions::Orientation::North);
+                }
+                else if (json["convoy"]["orientation"] == "south")
+                {
+                    region.convoy = ConvoyDefinition(definitions::Orientation::South);
+                }
+                else if (json["convoy"]["orientation"] == "east")
+                {
+                    region.convoy = ConvoyDefinition(definitions::Orientation::East);
+                }
+                else if (json["convoy"]["orientation"] == "west")
+                {
+                    region.convoy = ConvoyDefinition(definitions::Orientation::West);
+                }
+
+                region.convoy.Position = sf::Vector2f(json["convoy"]["position"]["x"], json["convoy"]["position"]["y"]);
+
+                for (auto& j_obstacle : json["obstacles"])
+                {
+                    ObstacleType type;
+                    if (j_obstacle["type"] == "large_rock")
+                    {
+                        type = ObstacleType::LargeRock;
+                    }
+
+                    sf::FloatRect bounds{j_obstacle["bounds"]["x"], j_obstacle["bounds"]["y"], j_obstacle["bounds"]["width"], j_obstacle["bounds"]["height"]};
+                    region.obstacles.push_back(Obstacle{type, bounds});
+                }
+
+                for (auto& j_npc : json["npcs"])
+                {
+                    Npc npc;
+                    npc.name = j_npc["name"];
+                    npc.sprite_file = "entities/" + static_cast<std::string>(j_npc["sprite"]) + ".json";
+                    for (auto& j_dialog : j_npc["dialog"])
+                    {
+                        npc.dialog.push_back(j_dialog);
+                    }
+                    npc.position = sf::Vector2f{j_npc["position"]["x"], j_npc["position"]["y"]};
+
+                    region.npcs.push_back(npc);
+                }
+
+                std::string type = json["type"];
+                if (type == "town")
+                {
+                    region.leyline = false;
+                    Regions[RegionType::Town][json["id"]] = region;
+                }
+                else if (type == "leyline")
+                {
+                    region.leyline = true;
+                    Regions[RegionType::Leyline][json["id"]] = region;
+                }
+                else if (type == "event")
+                {
+                    region.leyline = false;
+                    Regions[RegionType::MenuEvent][json["id"]] = region;
+                }
+                else if (type == "neutral")
+                {
+                    region.leyline = false;
+                    Regions[RegionType::Neutral][json["id"]] = region;
+                }
+                else if (type == "secret")
+                {
+                    region.leyline = false;
+                    Regions[RegionType::Secret][json["id"]] = region;
+                }
+            }
+            catch (const std::exception& e)
+            {
+                cerr << "Region failed to parse file: " << region_file.path() << endl;
+            }
+        }
+    }
+
+    std::map<RegionType, std::map<uint16_t, RegionDefinition>> Regions;
 };
 
 }
@@ -165,48 +191,57 @@ void ConvoyDefinition::load(Orientation orientation)
         return;
     }
 
-    std::ifstream file(path);
-    nlohmann::json json;
-    file >> json;
-
-    Width = 0;
-    Height = 0;
-
-    for (auto& object : json["collisions"])
+    try
     {
-        sf::FloatRect rect;
+        std::ifstream file(path);
+        nlohmann::json json;
+        file >> json;
 
-        rect.left = object["location"][0];
-        rect.top = object["location"][1];
-        rect.width = object["size"][0];
-        rect.height = object["size"][1];
+        Width = 0;
+        Height = 0;
 
-        if (rect.left + rect.width > Width)
+        for (auto& object : json["collisions"])
         {
-            Width = rect.left + rect.width;
+            sf::FloatRect rect;
+
+            rect.left = object["location"][0];
+            rect.top = object["location"][1];
+            rect.width = object["size"][0];
+            rect.height = object["size"][1];
+
+            if (rect.left + rect.width > Width)
+            {
+                Width = rect.left + rect.width;
+            }
+
+            if (rect.top + rect.height > Height)
+            {
+                Height = rect.top + rect.height;
+            }
+
+            collisions.push_back(rect);
         }
 
-        if (rect.top + rect.height > Height)
-        {
-            Height = rect.top + rect.height;
-        }
+        interior.left = json["interior"]["location"][0];
+        interior.top = json["interior"]["location"][1];
+        interior.width = json["interior"]["size"][0];
+        interior.height = json["interior"]["size"][1];
 
-        collisions.push_back(rect);
+        origin.x = json["frames"][0]["origin"][0];
+        origin.y = json["frames"][0]["origin"][1];
     }
-
-    interior.left = json["interior"]["location"][0];
-    interior.top = json["interior"]["location"][1];
-    interior.width = json["interior"]["size"][0];
-    interior.height = json["interior"]["size"][1];
-
-    origin.x = json["frames"][0]["origin"][0];
-    origin.y = json["frames"][0]["origin"][1];
+    catch(const std::exception& e)
+    {
+        cerr << "Failed to parse convoy definition file: " << path << endl;
+    }
 }
 
 RegionDefinition GetRegionDefinition(RegionType region)
 {
     static RegionInitializer initializer;
-    return initializer.Regions[region];
+    assert(initializer.Regions.find(region) != initializer.Regions.end());
+    assert(initializer.Regions[region].find(0) != initializer.Regions[region].end());
+    return initializer.Regions[region][0];
 }
 
 class MenuEventInitializer
@@ -221,38 +256,45 @@ public:
             return;
         }
 
-        std::ifstream file(path);
-        nlohmann::json json;
-        file >> json;
-
-        for (auto& j_event : json["events"])
+        try
         {
-            MenuEvent event;
-            event.event_id = j_event["id"];
-            event.current_page = 0;
-            event.name = j_event["name"];
+            std::ifstream file(path);
+            nlohmann::json json;
+            file >> json;
 
-            for (auto& j_page : j_event["pages"])
+            for (auto& j_event : json["events"])
             {
-                MenuEventPage page;
-                page.page_index = j_page["index"];
-                page.prompt = j_page["prompt"];
+                MenuEvent event;
+                event.event_id = j_event["id"];
+                event.current_page = 0;
+                event.name = j_event["name"];
 
-                for (auto& j_option : j_page["options"])
+                for (auto& j_page : j_event["pages"])
                 {
-                    MenuEventOption option;
-                    option.parent = page.page_index;
-                    option.text = j_option["text"];
-                    option.finishing_option = j_option["finishing_option"];
-                    option.value = j_option["value"];
+                    MenuEventPage page;
+                    page.page_index = j_page["index"];
+                    page.prompt = j_page["prompt"];
 
-                    page.options.push_back(option);
+                    for (auto& j_option : j_page["options"])
+                    {
+                        MenuEventOption option;
+                        option.parent = page.page_index;
+                        option.text = j_option["text"];
+                        option.finishing_option = j_option["finishing_option"];
+                        option.value = j_option["value"];
+
+                        page.options.push_back(option);
+                    }
+
+                    event.pages.push_back(page);
                 }
 
-                event.pages.push_back(page);
+                events.push_back(event);
             }
-
-            events.push_back(event);
+        }
+        catch(const std::exception& e)
+        {
+            cerr << "Failed to parse menu event file: " << path << endl;
         }
     }
 
@@ -297,152 +339,5 @@ MenuEvent GetMenuEventById(uint16_t id)
 {
     return getMenuEventInitializer().GetEventById(id);
 }
-
-//Zone GetZone()
-//{
-//    //uint16_t id_counter = 0;
-//
-//    Zone zone;
-//
-//    Zone::RegionNode node;
-//    node.id = 0;
-//    node.type = RegionType::Town;
-//    node.overmap_position = sf::Vector2f{100, 900};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 1;
-//    node.type = RegionType::Leyline;
-//    node.overmap_position = sf::Vector2f{120, 700};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 2;
-//    node.type = RegionType::MenuEvent;
-//    node.overmap_position = sf::Vector2f{190, 800};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 3;
-//    node.type = RegionType::Leyline;
-//    node.overmap_position = sf::Vector2f{280, 760};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 4;
-//    node.type = RegionType::Neutral;
-//    node.overmap_position = sf::Vector2f{350, 500};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 5;
-//    node.type = RegionType::Leyline;
-//    node.overmap_position = sf::Vector2f{170, 450};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 6;
-//    node.type = RegionType::Neutral;
-//    node.overmap_position = sf::Vector2f{320, 820};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 7;
-//    node.type = RegionType::Neutral;
-//    node.overmap_position = sf::Vector2f{400, 730};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 8;
-//    node.type = RegionType::Leyline;
-//    node.overmap_position = sf::Vector2f{420, 600};
-//    zone.regions.push_back(node);
-//
-//    node = Zone::RegionNode{};
-//    node.id = 9;
-//    node.type = RegionType::Secret;
-//    node.overmap_position = sf::Vector2f{650, 500};
-//    zone.regions.push_back(node);
-//
-//    Zone::Link link;
-//    link.start = 0;
-//    link.finish = 1;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 0;
-//    link.finish = 2;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 1;
-//    link.finish = 2;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 2;
-//    link.finish = 3;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 3;
-//    link.finish = 4;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 2;
-//    link.finish = 4;
-//    link.distance = 400;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 1;
-//    link.finish = 5;
-//    link.distance = 550;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 4;
-//    link.finish = 5;
-//    link.distance = 200;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 3;
-//    link.finish = 6;
-//    link.distance = 75;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 6;
-//    link.finish = 7;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 7;
-//    link.finish = 8;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 4;
-//    link.finish = 8;
-//    link.distance = 250;
-//    zone.links.push_back(link);
-//
-//    link = Zone::Link{};
-//    link.start = 8;
-//    link.finish = 9;
-//    link.distance = 800;
-//    zone.links.push_back(link);
-//
-//    return zone;
-//}
 
 } // definitions

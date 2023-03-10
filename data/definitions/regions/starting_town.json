@@ -1,0 +1,59 @@
+{
+  "type": "town",
+  "name": "Starting Town",
+  "id": 0,
+  "background": "sand",
+  "convoy": {
+    "orientation": "north",
+    "position": {
+      "x": -500,
+      "y": -200
+    }
+  },
+  "obstacles": [
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": -2000,
+        "y": 200,
+        "width": 4000,
+        "height": 600
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": -1500,
+        "y": -1200,
+        "width": 800,
+        "height": 1400
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 500,
+        "y": -1200,
+        "width": 800,
+        "height": 1400
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Old Man",
+      "sprite": "old_man",
+      "dialog": [
+        "You've come to try one final time? You know my answer has not changed.",
+        "There is nothing for us out there. Only a fool could believe the Shining City exists. Only a fool could believe they could reach it.",
+        "They will come for you, you know. In numbers unending. Every time you recharge, they will feel it.",
+        "Here, we will fade quietly from this world that we have stolen. It is what we deserve. Out there... I have no pity for you.",
+        "Go. And never return."
+      ],
+      "position": {
+        "x": 200,
+        "y": -150
+      }
+    }
+  ]
+}

@@ -377,6 +377,7 @@ definitions::Zone Server::generateZone()
     return new_zone;
 }
 
+#ifndef NDEBUG
 definitions::Zone Server::createTestZone()
 {
     definitions::Zone new_zone;
@@ -394,14 +395,25 @@ definitions::Zone Server::createTestZone()
 
             switch (node.id)
             {
+                case 0:
+                {
+                    node.type = definitions::RegionType::Town;
+                }
+                break;
                 case 10:
                 {
                     node.type = definitions::RegionType::MenuEvent;
                 }
                 break;
+                case 1: [[fallthrough]];
                 case 11:
                 {
                     node.type = definitions::RegionType::Leyline;
+                }
+                break;
+                case 29:
+                {
+                    node.type = definitions::RegionType::Secret;
                 }
                 break;
                 default:
@@ -419,6 +431,7 @@ definitions::Zone Server::createTestZone()
 
     return new_zone;
 }
+#endif
 
 std::optional<definitions::Zone::RegionNode> Server::getNodeById(definitions::Zone& new_zone, uint16_t node_id)
 {
