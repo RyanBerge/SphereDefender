@@ -53,6 +53,50 @@
           ]
         }
       ]
+    },
+    {
+      "id": 1,
+      "name": "Damage Event",
+      "pages": [
+        {
+          "index": 0,
+          "prompt": "The sun is scorching overhead.  There's a small pond nearby, but it doesn't look like it's being used by any of the local animals.",
+          "options": [
+            {
+              "text": "Drink some water from the pond",
+              "finishing_option": false,
+              "value": 1
+            },
+            {
+              "text": "Rest near the pond without drinking",
+              "finishing_option": false,
+              "value": 2
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "prompt": "The water is cool and refreshing.",
+          "options": [
+            {
+              "text": "Continue...",
+              "finishing_option": true,
+              "value": 0
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "prompt": "The sun is unrelenting.  You feel woozy with the early onsets of heatstroke.",
+          "options": [
+            {
+              "text": "Continue...",
+              "finishing_option": true,
+              "value": 1
+            }
+          ]
+        }
+      ]
     }
   ]
 }

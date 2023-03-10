@@ -8,6 +8,7 @@
  *************************************************************************************************/
 #include "game_manager.h"
 #include "settings.h"
+#include "debug_overrides.h"
 #include <fstream>
 #include <filesystem>
 #include <iostream>
@@ -25,6 +26,8 @@ int main()
         configfile.close();
         client::Settings::GetInstance().DefaultServerIp = ip;
     }
+
+    debug::LoadDebugConfig();
 
     client::GameManager::GetInstance().Start();
 }

@@ -17,6 +17,7 @@
 #include "game_math.h"
 #include "util.h"
 #include "global_state.h"
+#include "debug_overrides.h"
 
 using std::cout, std::cerr, std::endl;
 using network::ClientMessage, network::ServerMessage;
@@ -260,7 +261,7 @@ void Server::startGame()
         PlayerList[i].Data.position = spawn_position;
     }
 
-    current_region = definitions::STARTING_REGION;
+    current_region = debug::StartingRegion.value;
     region = Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
@@ -287,6 +288,13 @@ definitions::Zone Server::generateZone()
 {
     // Zone boundaries are an abstract 1200x600 units that are then scaled to fit in the GUI overmap
     // Abstract zone coordinates start bottom-left at (0, 0) and progress up and right
+
+#ifndef NDEBUG
+    if (debug::StaticMap.override && debug::StaticMap.value)
+    {
+        return createTestZone();
+    }
+#endif
 
     definitions::Zone new_zone;
 
@@ -351,8 +359,6 @@ definitions::Zone Server::generateZone()
         int offset = util::GetRandomInt(-1, 1);
         unsigned leyline_index = interval * (i + 1) + offset;
 
-        cout << leyline_index << endl;
-
         while (leyline_index < new_zone.regions.size() && new_zone.regions[leyline_index].type == definitions::RegionType::Leyline)
         {
             ++leyline_index;
@@ -366,63 +372,50 @@ definitions::Zone Server::generateZone()
         new_zone.regions[leyline_index].type = definitions::RegionType::Leyline;
     }
 
-    for (int x = 0; x < node_count.x; ++x)
+    generateLinksSimpleDiagonal(new_zone);
+
+    return new_zone;
+}
+
+definitions::Zone Server::createTestZone()
+{
+    definitions::Zone new_zone;
+    sf::Vector2f node_count{definitions::Zone::ZONE_WIDTH / 200, definitions::Zone::ZONE_HEIGHT / 200};
+
+    uint16_t node_id = 0;
+    for (float x = 0; x < node_count.x; ++x)
     {
-        for (int y = 0; y < node_count.y; ++y)
+        for (float y = 0; y < node_count.y; y++)
         {
-            node_id = y + x * node_count.y;
-            if (!getNodeById(new_zone, node_id).has_value())
+            definitions::Zone::RegionNode node{};
+
+            node.id = node_id++;
+            node.coordinates = sf::Vector2f{x * 200 + 100, y * 200 + 100};
+
+            switch (node.id)
             {
-                continue;
+                case 10:
+                {
+                    node.type = definitions::RegionType::MenuEvent;
+                }
+                break;
+                case 11:
+                {
+                    node.type = definitions::RegionType::Leyline;
+                }
+                break;
+                default:
+                {
+                    node.type = definitions::RegionType::Neutral;
+                }
+                break;
             }
 
-            for (int target_x = x + 1; target_x < node_count.x; ++target_x)
-            {
-                int target_y = y;
-                uint16_t target_id = target_y + target_x * node_count.y;
-
-                if (addLink(new_zone, node_id, target_id))
-                {
-                    break;
-                }
-
-                if (target_y - 1 >= 0)
-                {
-                    target_id = (target_y - 1) + target_x * node_count.y;
-                    addLink(new_zone, node_id, target_id);
-                }
-
-                if (target_y + 1 < node_count.y)
-                {
-                    target_id = (target_y + 1) + target_x * node_count.y;
-                    addLink(new_zone, node_id, target_id);
-                }
-            }
-
-            for (int target_y = y + 1; target_y < node_count.y; ++target_y)
-            {
-                int target_x = x;
-                uint16_t target_id = target_y + target_x * node_count.y;
-
-                if (addLink(new_zone, node_id, target_id))
-                {
-                    break;
-                }
-
-                if (target_x - 1 >= 0)
-                {
-                    target_id = target_y + (target_x - 1) * node_count.y;
-                    addLink(new_zone, node_id, target_id);
-                }
-
-                if (target_x + 1 < node_count.y)
-                {
-                    target_id = target_y + (target_x + 1) * node_count.y;
-                    addLink(new_zone, node_id, target_id);
-                }
-            }
+            new_zone.regions.push_back(node);
         }
     }
+
+    generateLinksSimpleDiagonal(new_zone);
 
     return new_zone;
 }
@@ -438,6 +431,69 @@ std::optional<definitions::Zone::RegionNode> Server::getNodeById(definitions::Zo
     }
 
     return std::nullopt;
+}
+
+void Server::generateLinksSimpleDiagonal(definitions::Zone& zone)
+{
+    sf::Vector2f node_count{definitions::Zone::ZONE_WIDTH / 200, definitions::Zone::ZONE_HEIGHT / 200};
+
+    for (int x = 0; x < node_count.x; ++x)
+    {
+        for (int y = 0; y < node_count.y; ++y)
+        {
+            uint16_t node_id = y + x * node_count.y;
+            if (!getNodeById(zone, node_id).has_value())
+            {
+                continue;
+            }
+
+            for (int target_x = x + 1; target_x < node_count.x; ++target_x)
+            {
+                int target_y = y;
+                uint16_t target_id = target_y + target_x * node_count.y;
+
+                if (addLink(zone, node_id, target_id))
+                {
+                    break;
+                }
+
+                if (target_y - 1 >= 0)
+                {
+                    target_id = (target_y - 1) + target_x * node_count.y;
+                    addLink(zone, node_id, target_id);
+                }
+
+                if (target_y + 1 < node_count.y)
+                {
+                    target_id = (target_y + 1) + target_x * node_count.y;
+                    addLink(zone, node_id, target_id);
+                }
+            }
+
+            for (int target_y = y + 1; target_y < node_count.y; ++target_y)
+            {
+                int target_x = x;
+                uint16_t target_id = target_y + target_x * node_count.y;
+
+                if (addLink(zone, node_id, target_id))
+                {
+                    break;
+                }
+
+                if (target_x - 1 >= 0)
+                {
+                    target_id = target_y + (target_x - 1) * node_count.y;
+                    addLink(zone, node_id, target_id);
+                }
+
+                if (target_x + 1 < node_count.y)
+                {
+                    target_id = target_y + (target_x + 1) * node_count.y;
+                    addLink(zone, node_id, target_id);
+                }
+            }
+        }
+    }
 }
 
 bool Server::addLink(definitions::Zone& zone, uint16_t start, uint16_t finish)
@@ -571,12 +627,64 @@ void Server::checkVotes(VotingType voting_type)
         case VotingType::MenuEvent:
         {
             resetVotes();
-            region.AdvanceMenuEvent(static_cast<uint16_t>(winner));
+            uint16_t event_id;
+            uint16_t event_action;
+            if (region.AdvanceMenuEvent(static_cast<uint16_t>(winner), event_id, event_action))
+            {
+                resolveMenuEvent(event_id, event_action);
+            }
         }
         break;
         default:
         {
             cerr << "Invalid voting type\n";
+        }
+    }
+}
+
+void Server::resolveMenuEvent(uint16_t event_id, uint16_t event_action)
+{
+    switch (static_cast<MenuEventId>(event_id))
+    {
+        case MenuEventId::DamageEvent:
+        {
+            switch (event_action)
+            {
+                case 0: // The water is cool and refreshing
+                {
+                    for (auto& player : PlayerList)
+                    {
+                        if (player.Data.health + 15 > 100)
+                        {
+                            player.Data.health = 100;
+                        }
+                        else
+                        {
+                            player.Data.health += 15;
+                        }
+                    }
+                }
+                break;
+                case 1: // The sun is hot
+                {
+                    for (auto& player : PlayerList)
+                    {
+                        if (player.Data.health - 15 < 0)
+                        {
+                            player.Data.health = 0;
+                        }
+                        else
+                        {
+                            player.Data.health -= 15;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        break;
+        default:
+        {
         }
     }
 }

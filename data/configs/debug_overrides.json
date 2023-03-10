@@ -2,5 +2,13 @@
   "player_movement_speed": {
     "override": true,
     "value": 500
+  },
+  "static_map": {
+    "override": true,
+    "value": true
+  },
+  "starting_region": {
+    "override": true,
+    "value": 10
   }
 }

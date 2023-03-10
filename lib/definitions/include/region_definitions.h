@@ -125,8 +125,6 @@ struct Zone
     std::vector<Link> links;
 };
 
-extern uint16_t STARTING_REGION;
-
 RegionDefinition GetRegionDefinition(RegionType region);
 MenuEvent GetNextMenuEvent();
 MenuEvent GetMenuEventById(uint16_t id);

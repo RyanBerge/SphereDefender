@@ -12,6 +12,7 @@
 #include "event_handler.h"
 #include "settings.h"
 #include "messaging.h"
+#include "debug_overrides.h"
 #include <thread>
 #include <iostream>
 #include <cmath>
@@ -178,7 +179,7 @@ void Game::asyncLoad(network::PlayerData local, std::vector<network::PlayerData>
     gui.Load(current_zone);
 
     region_map = RegionMap();
-    region_map.Load(current_zone.regions[definitions::STARTING_REGION].type);
+    region_map.Load(current_zone.regions[debug::StartingRegion.value].type);
 
     resources::GetWorldView() = sf::View(sf::FloatRect(0, 0, Settings::GetInstance().WindowResolution.x, Settings::GetInstance().WindowResolution.y));
 

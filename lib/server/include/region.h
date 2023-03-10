@@ -26,7 +26,7 @@ public:
 
     void Update(sf::Time elapsed);
     void Cull();
-    void AdvanceMenuEvent(uint16_t winner);
+    bool AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action);
 
     definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;

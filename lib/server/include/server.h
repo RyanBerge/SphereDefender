@@ -61,10 +61,24 @@ private:
     void startGame();
     definitions::Zone generateZone();
     std::optional<definitions::Zone::RegionNode> getNodeById(definitions::Zone& zone, uint16_t node_id);
+    void generateLinksSimpleDiagonal(definitions::Zone& zone);
     bool addLink(definitions::Zone& zone, uint16_t start, uint16_t finish);
+
+#ifndef NDEBUG
+    definitions::Zone createTestZone();
+#endif
+
     void gatherPlayers();
     void resetVotes();
     void checkVotes(VotingType voting_type);
+
+    enum class MenuEventId : uint16_t
+    {
+        TestEvent = 0,
+        DamageEvent = 1
+    };
+
+    void resolveMenuEvent(uint16_t event_id, uint16_t event_action);
 
     uint16_t getPlayerUid();
 

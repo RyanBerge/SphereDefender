@@ -120,12 +120,12 @@ void Region::Cull()
     Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
 }
 
-void Region::AdvanceMenuEvent(uint16_t winner)
+bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action)
 {
     if (winner > current_event.pages[current_event.current_page].options.size())
     {
         cerr << "Menu event tried to advance to an option that does not exist." << endl;
-        return;
+        return false;
     }
 
     uint16_t winner_value = current_event.pages[current_event.current_page].options[winner].value;
@@ -134,7 +134,7 @@ void Region::AdvanceMenuEvent(uint16_t winner)
     if (winner_value > current_event.pages.size() && !finish)
     {
         cerr << "Winning vote does not link to a valid page." << endl;
-        return;
+        return false;
     }
 
     for (auto& player : PlayerList)
@@ -150,8 +150,12 @@ void Region::AdvanceMenuEvent(uint16_t winner)
     {
         global::Paused = false;
         global::MenuEvent = false;
-        // TODO: Any possible finishing actions
+        out_event_id = current_event.event_id;
+        out_event_action = winner_value;
+        return true;
     }
+
+    return false;
 }
 
 void Region::spawnEnemy()

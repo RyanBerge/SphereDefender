@@ -19,5 +19,9 @@ struct DebugOverride
 };
 
 extern DebugOverride<int> PlayerMovementSpeed;
+extern DebugOverride<bool> StaticMap;
+extern DebugOverride<int> StartingRegion;
+
+void LoadDebugConfig();
 
 } // debug

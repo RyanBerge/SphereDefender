@@ -108,7 +108,7 @@ void Overmap::Load(definitions::Zone zone)
         sf::Vector2f start{getNodeById(link.definition.start).button.GetSprite().getPosition()};
         sf::Vector2f finish{getNodeById(link.definition.finish).button.GetSprite().getPosition()};
 
-        link.line = util::CreateLine(start, finish, sf::Color::Black, 4);
+        link.line = util::CreateLine(start, finish, sf::Color::Black, 1);
         link.highlight = util::CreateLine(start, finish, sf::Color::Transparent, 4);
 
         links.push_back(link);

@@ -12,6 +12,7 @@
 #include "resources.h"
 #include "game_manager.h"
 #include "game_math.h"
+#include "debug_overrides.h"
 #include <iostream>
 #include <string>
 #include <set>
@@ -254,7 +255,7 @@ void Gui::Load(definitions::Zone zone)
     InDialog = false;
     UpdateHealth(100);
     overmap.Load(zone);
-    overmap.SetRegion(definitions::STARTING_REGION);
+    overmap.SetRegion(debug::StartingRegion.value);
 
     is_loaded = true;
 }
@@ -358,7 +359,7 @@ void Gui::EscapePressed()
 {
     if (overmap.IsActive())
     {
-        overmap.SetActive(false);
+        ClientMessage::Console(resources::GetServerSocket(), false);
     }
     else if (stash.Active)
     {

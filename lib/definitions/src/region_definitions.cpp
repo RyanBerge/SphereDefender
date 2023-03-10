@@ -17,11 +17,6 @@ using std::cout, std::cerr, std::endl;
 
 namespace definitions
 {
-    #define REGION_TOWN 0
-    #define REGION_LEYLINE 1
-    #define REGION_EVENT 2
-    #define REGION_SECRET 9
-    uint16_t STARTING_REGION = REGION_TOWN;
 
 namespace {
 
@@ -263,7 +258,7 @@ public:
 
     MenuEvent Next()
     {
-        static int next = 0;
+        static int next = 1;
         MenuEvent next_event = events[next];
         next = (next + 1) % events.size();
         return next_event;
