@@ -13,6 +13,7 @@
 #include "global_state.h"
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 using network::ClientMessage, network::ServerMessage;
 using server::global::PlayerList;
@@ -120,6 +121,40 @@ void Region::Cull()
     Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
 }
 
+namespace {
+
+struct WinningLink
+{
+    uint16_t value;
+    bool finish;
+};
+
+WinningLink getWinnerValue(definitions::MenuEventOption option)
+{
+    float weight_sum = 0;
+    for (auto& link : option.links)
+    {
+        weight_sum += link.weight;
+    }
+
+    float roll = util::GetRandomFloat(0, weight_sum);
+
+    weight_sum = 0;
+    for (auto& link : option.links)
+    {
+        if (roll >= weight_sum && roll < weight_sum + link.weight)
+        {
+            return {link.value, link.finish};
+        }
+
+        weight_sum += link.weight;
+    }
+
+    throw (std::runtime_error("Winner link not found?"));
+}
+
+}
+
 bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action)
 {
     if (winner > current_event.pages[current_event.current_page].options.size())
@@ -128,10 +163,9 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
         return false;
     }
 
-    uint16_t winner_value = current_event.pages[current_event.current_page].options[winner].value;
-    bool finish = current_event.pages[current_event.current_page].options[winner].finishing_option;
+    WinningLink winning_link = getWinnerValue(current_event.pages[current_event.current_page].options[winner]);
 
-    if (winner_value > current_event.pages.size() && !finish)
+    if (winning_link.value > current_event.pages.size() && !winning_link.finish)
     {
         cerr << "Winning vote does not link to a valid page." << endl;
         return false;
@@ -139,19 +173,19 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
 
     for (auto& player : PlayerList)
     {
-        ServerMessage::AdvanceMenuEvent(*player.Socket, winner_value, finish);
+        ServerMessage::AdvanceMenuEvent(*player.Socket, winning_link.value, winning_link.finish);
     }
 
-    if (!finish)
+    if (!winning_link.finish)
     {
-        current_event.current_page = winner_value;
+        current_event.current_page = winning_link.value;
     }
     else
     {
         global::Paused = false;
         global::MenuEvent = false;
         out_event_id = current_event.event_id;
-        out_event_action = winner_value;
+        out_event_action = winning_link.value;
         return true;
     }
 

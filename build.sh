@@ -46,13 +46,13 @@ build() {
         exit
     fi
 
-    GENERATOR="MinGW Makefiles"
-    MAKE=mingw32-make.exe
+    GENERATOR="Ninja"
+    NINJA=ninja.exe
     CMAKE=cmake.exe
 
     if [ ${ARCHITECTURE} == Linux ]; then
-        GENERATOR="Unix Makefiles"
-        MAKE=make
+        GENERATOR="Ninja"
+        NINJA=ninja
         CMAKE=cmake
     fi
 
@@ -70,8 +70,8 @@ build() {
             -DCMAKE_BUILD_TYPE=${BUILD} \
             ../..
 
-        ${MAKE} --no-print-directory
-        ${MAKE} install --no-print-directory
+        ${NINJA}
+        ${NINJA} install
 
         popd
     fi
@@ -91,8 +91,8 @@ build() {
             -DJSON_BuildTests=OFF \
             ../..
 
-        ${MAKE} --no-print-directory
-        ${MAKE} install --no-print-directory
+        ${NINJA}
+        ${NINJA} install
 
         popd
     fi
@@ -100,7 +100,7 @@ build() {
     mkdir -p build
     pushd build
     ${CMAKE} -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../
-    ${MAKE} --no-print-directory
+    ${NINJA}
     popd
 
     if [ ${ARCHITECTURE} == Win32 ]; then

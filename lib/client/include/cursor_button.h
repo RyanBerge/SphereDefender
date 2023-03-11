@@ -10,9 +10,9 @@
 #pragma once
 
 #include <SFML/Window/Event.hpp>
-#include <SFML/Graphics/Text.hpp>
 #include <functional>
 #include "spritesheet.h"
+#include "wrappable_text.h"
 
 namespace client {
 
@@ -27,13 +27,14 @@ public:
 
     CursorButton();
     CursorButton(std::string filepath);
-    CursorButton(sf::Text text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled);
+    CursorButton(WrappableText text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled);
 
     virtual void Update(sf::Time elapsed);
     virtual void Draw();
 
     virtual void LoadAnimationData(std::string filepath);
     virtual void SetAnimation(std::string animation_name);
+    virtual void UpdateBoundaryConstraints(sf::FloatRect rect);
 
     virtual void SetEnabled(bool enable);
 
@@ -57,10 +58,10 @@ protected:
         Sprite, Text
     };
 
-    ButtonType button_type;
+    ButtonType button_type = ButtonType::Sprite;
 
     Spritesheet spritesheet;
-    sf::Text button_text;
+    WrappableText button_text;
     sf::Color animation_up;
     sf::Color animation_hover;
     sf::Color animation_down;

@@ -45,9 +45,18 @@ void Server::Start()
     running = true;
 
     clock.restart();
-    while (running)
+
+    try
     {
-        update();
+        while (running)
+        {
+            update();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Server threw an exception: " << e.what() << endl;
+        while(true); // loop so you can read the console
     }
 }
 

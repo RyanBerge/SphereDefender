@@ -514,8 +514,7 @@ void Gui::DisplayMenuEvent(definitions::MenuEvent event, uint16_t page_id)
 
     for (unsigned i = 0; i < current_event.pages[page_id].options.size(); ++i)
     {
-        sf::Text option_text = event_prompt.DisplayText;
-        option_text.setString(current_event.pages[page_id].options[i].text);
+        WrappableText option_text(current_event.pages[page_id].options[i].text, sf::FloatRect(0, 0, background_bounds.width, background_bounds.height));
         event_options.push_back(CursorButton(option_text, sf::Color::White, sf::Color::Yellow, sf::Color::Cyan, sf::Color::Black));
         event_options[i].RegisterLeftMouseUp(std::bind(&Gui::onMenuOptionClick, this, i));
     }
@@ -526,7 +525,12 @@ void Gui::DisplayMenuEvent(definitions::MenuEvent event, uint16_t page_id)
         return;
     }
 
-    event_options[0].GetTransform().setPosition(prompt_bounds.left, prompt_bounds.top + event_prompt.DisplayText.getGlobalBounds().height + 100);
+    for (auto& option : event_options)
+    {
+        option.UpdateBoundaryConstraints(prompt_bounds);
+    }
+
+    event_options[0].GetTransform().setPosition(prompt_bounds.left, prompt_bounds.top + event_prompt.DisplayText.getGlobalBounds().height + 50);
     for (unsigned i = 1; i < event_options.size(); ++i)
     {
         event_options[i].GetTransform().setPosition(event_options[0].GetTransform().getPosition().x, event_options[0].GetTransform().getPosition().y + 50 * i);

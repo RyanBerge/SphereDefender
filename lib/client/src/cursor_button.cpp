@@ -23,7 +23,7 @@ CursorButton::CursorButton(std::string filepath)
     LoadAnimationData(filepath);
 }
 
-CursorButton::CursorButton(sf::Text text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled) :
+CursorButton::CursorButton(WrappableText text, sf::Color up, sf::Color hover, sf::Color down, sf::Color disabled) :
                            button_text{text}, animation_up{up}, animation_hover{hover}, animation_down{down}, animation_disabled{disabled}
 {
     button_type = ButtonType::Text;
@@ -48,7 +48,7 @@ void CursorButton::Draw()
         break;
         case ButtonType::Text:
         {
-            resources::GetWindow().draw(button_text);
+            button_text.Draw();
         }
         break;
     }
@@ -71,20 +71,28 @@ void CursorButton::SetAnimation(std::string animation_name)
     {
         if (animation_name == "Up")
         {
-            button_text.setFillColor(animation_up);
+            button_text.DisplayText.setFillColor(animation_up);
         }
         else if (animation_name == "Hover")
         {
-            button_text.setFillColor(animation_hover);
+            button_text.DisplayText.setFillColor(animation_hover);
         }
         else if (animation_name == "Down")
         {
-            button_text.setFillColor(animation_down);
+            button_text.DisplayText.setFillColor(animation_down);
         }
         else if (animation_name == "Disabled")
         {
-            button_text.setFillColor(animation_disabled);
+            button_text.DisplayText.setFillColor(animation_disabled);
         }
+    }
+}
+
+void CursorButton::UpdateBoundaryConstraints(sf::FloatRect rect)
+{
+    if (button_type == ButtonType::Text)
+    {
+        button_text.SetBounds(rect);
     }
 }
 
@@ -117,7 +125,7 @@ sf::Transformable& CursorButton::GetTransform()
         break;
         case ButtonType::Text:
         {
-            return button_text;
+            return button_text.DisplayText;
         }
         break;
         default:
@@ -140,7 +148,7 @@ sf::FloatRect CursorButton::GetGlobalBounds()
         break;
         case ButtonType::Text:
         {
-            return button_text.getGlobalBounds();
+            return button_text.DisplayText.getGlobalBounds();
         }
         break;
         default:

@@ -280,8 +280,16 @@ public:
                         MenuEventOption option;
                         option.parent = page.page_index;
                         option.text = j_option["text"];
-                        option.finishing_option = j_option["finishing_option"];
-                        option.value = j_option["value"];
+
+                        for (auto& j_link : j_option["links"])
+                        {
+                            MenuEventLink link;
+                            link.finish = j_link["finish"];
+                            link.value = j_link["value"];
+                            link.weight = j_link["weight"];
+
+                            option.links.push_back(link);
+                        }
 
                         page.options.push_back(option);
                     }

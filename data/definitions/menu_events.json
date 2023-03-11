@@ -1,60 +1,6 @@
 {
   "events": [
     {
-      "id": 0,
-      "name": "Test Event",
-      "pages": [
-        {
-          "index": 0,
-          "prompt": "You have reached an event.  With a long textbox.  To test wraparound.  Lots of wraparound.  More wrapparound.  A lot more. Even more more. Just don't stop wrapping.  So much wrapping.  LOL.  Select an option...",
-          "options": [
-            {
-              "text": "Option 1...",
-              "finishing_option": false,
-              "value": 1
-            },
-            {
-              "text": "Option 2...",
-              "finishing_option": false,
-              "value": 2
-            }
-          ]
-        },
-        {
-          "index": 1,
-          "prompt": "Test page 1",
-          "options": [
-            {
-              "text": "Option 1...",
-              "finishing_option": true,
-              "value": 1
-            },
-            {
-              "text": "Option 2...",
-              "finishing_option": true,
-              "value": 2
-            },
-            {
-              "text": "Return to beginning",
-              "finishing_option": false,
-              "value": 0
-            }
-          ]
-        },
-        {
-          "index": 2,
-          "prompt": "Test page 2",
-          "options": [
-            {
-              "text": "Contiue...",
-              "finishing_option": true,
-              "value": 4
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": 1,
       "name": "Damage Event",
       "pages": [
@@ -64,13 +10,23 @@
           "options": [
             {
               "text": "Drink some water from the pond",
-              "finishing_option": false,
-              "value": 1
+              "links": [
+                {
+                  "finish": false,
+                  "value": 1,
+                  "weight": 1
+                }
+              ]
             },
             {
               "text": "Rest near the pond without drinking",
-              "finishing_option": false,
-              "value": 2
+              "links": [
+                {
+                  "finish": false,
+                  "value": 2,
+                  "weight": 1
+                }
+              ]
             }
           ]
         },
@@ -80,8 +36,13 @@
           "options": [
             {
               "text": "Continue...",
-              "finishing_option": true,
-              "value": 0
+              "links": [
+                {
+                  "finish": false,
+                  "value": 0,
+                  "weight": 1
+                }
+              ]
             }
           ]
         },
@@ -91,8 +52,145 @@
           "options": [
             {
               "text": "Continue...",
-              "finishing_option": true,
-              "value": 1
+              "links": [
+                {
+                  "finish": false,
+                  "value": 1,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Abandoned Camp",
+      "pages": [
+        {
+          "index": 0,
+          "prompt": "You come across an abandoned campsite.  There seems to have been a struggle; supplies are strewn all across, scuff marks and blood in the dirt, but you see no bodies.  There is a single set of footprints leading away to the east.",
+          "options": [
+            {
+              "text": "Search the camp for supplies.",
+              "links": [
+                {
+                  "finish": false,
+                  "value": 1,
+                  "weight": 2
+                },
+                {
+                  "finish": false,
+                  "value": 2,
+                  "weight": 1
+                }
+              ]
+            },
+            {
+              "text": "Follow the footprints.",
+              "links": [
+                {
+                  "finish": false,
+                  "value": 3,
+                  "weight": 1
+                },
+                {
+                  "finish": false,
+                  "value": 4,
+                  "weight": 1
+                }
+              ]
+            },
+            {
+              "text": "Didn't your mother teach you not to take stupid risks? Leave before whatever got them gets you.",
+              "links": [
+                {
+                  "finish": false,
+                  "value": 5,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "prompt": "Whoever ransacked the camp seems to have taken everything of value with them.  You don't find anything worth taking.",
+          "options": [
+            {
+              "text": "Return to the convoy.",
+              "links": [
+                {
+                  "finish": true,
+                  "value": 0,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "prompt": "You find a handful of [currency] and a medkit.",
+          "options": [
+            {
+              "text": "Take the supplies and leave.",
+              "links": [
+                {
+                  "finish": true,
+                  "value": 1,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "prompt": "The footprints lead on for about twenty minutes and mysteriously vanish...",
+          "options": [
+            {
+              "text": "Return to the convoy empty-handed.",
+              "links": [
+                {
+                  "finish": true,
+                  "value": 0,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "prompt": "You follow the footprints for some time, but they eventually lead to a half-eaten corpse.  Before you can leave, you are ambushed by demons!",
+          "options": [
+            {
+              "text": "Continue...",
+              "links": [
+                {
+                  "finish": true,
+                  "value": 2,
+                  "weight": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "prompt": "You quietly back away from the camp, returning to the convoy.",
+          "options": [
+            {
+              "text": "Continue...",
+              "links": [
+                {
+                  "finish": true,
+                  "value": 0,
+                  "weight": 1
+                }
+              ]
             }
           ]
         }

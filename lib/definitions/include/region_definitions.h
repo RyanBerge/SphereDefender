@@ -45,12 +45,18 @@ private:
     void load(Orientation orientation);
 };
 
+struct MenuEventLink
+{
+    bool finish;
+    uint16_t value;
+    float weight;
+};
+
 struct MenuEventOption
 {
     uint16_t parent;
     std::string text;
-    bool finishing_option;
-    uint16_t value;
+    std::vector<MenuEventLink> links;
 };
 
 struct MenuEventPage
