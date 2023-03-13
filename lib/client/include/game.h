@@ -37,6 +37,7 @@ public:
     int GetPlayerCount();
     std::vector<uint16_t> GetPlayerIds();
     std::string GetPlayerName(uint16_t player_id);
+
     void SetZone(definitions::Zone zone);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);

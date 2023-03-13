@@ -67,6 +67,11 @@ void Overmap::Load(definitions::Zone zone)
         node.button.RegisterCursorExit(std::bind(&Overmap::onHoverNodeExit, this));
         switch (region.type)
         {
+            case definitions::RegionType::StartingTown:
+            {
+                node.button.LoadAnimationData("gui/town_overmap_node.json");
+            }
+            break;
             case definitions::RegionType::Town:
             {
                 node.button.LoadAnimationData("gui/town_overmap_node.json");

@@ -12,6 +12,12 @@
       "location": [ 70, 0 ],
       "size": [ 70, 70 ],
       "origin": [ 35, 35 ]
+    },
+    {
+      "index": 2,
+      "location": [ 0, 70 ],
+      "size": [ 113, 48 ],
+      "origin": [ 0, 0 ]
     }
   ],
   "animations": [
@@ -28,6 +34,13 @@
       "end_frame": 1,
       "animation_speed": 0,
       "next_animation": "Medpack"
+    },
+    {
+      "name": "Currency",
+      "start_frame": 2,
+      "end_frame": 2,
+      "animation_speed": 0,
+      "next_animation": "Currency"
     }
   ]
 }

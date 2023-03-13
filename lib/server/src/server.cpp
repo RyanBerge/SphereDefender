@@ -339,18 +339,24 @@ definitions::Zone Server::generateZone()
                 continue;
             }
 
-            if (util::GetRandomFloat(0, 1) > 0.5)
+            float roll = util::GetRandomFloat(0, 100);
+
+            if (roll < 10)
             {
-                node.type = definitions::RegionType::Neutral;
+                node.type = definitions::RegionType::Town;
+            }
+            else if (roll < 40)
+            {
+                node.type = definitions::RegionType::MenuEvent;
             }
             else
             {
-                node.type = definitions::RegionType::MenuEvent;
+                node.type = definitions::RegionType::Neutral;
             }
 
             if (x == 0 && y == 0)
             {
-                node.type = definitions::RegionType::Town;
+                node.type = definitions::RegionType::StartingTown;
             }
 
             sf::Vector2f offsets{util::GetRandomFloat(20, 180), util::GetRandomFloat(40, 160)};
@@ -406,7 +412,7 @@ definitions::Zone Server::createTestZone()
             {
                 case 0:
                 {
-                    node.type = definitions::RegionType::Town;
+                    node.type = definitions::RegionType::StartingTown;
                 }
                 break;
                 case 10:
@@ -418,6 +424,11 @@ definitions::Zone Server::createTestZone()
                 case 11:
                 {
                     node.type = definitions::RegionType::Leyline;
+                }
+                break;
+                case 14:
+                {
+                    node.type = definitions::RegionType::Town;
                 }
                 break;
                 case 29:

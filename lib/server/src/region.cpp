@@ -34,6 +34,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 {
     definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
 
+    Bounds = definition.bounds;
     Convoy = definition.convoy;
 
     for (auto& obstacle : definition.obstacles)

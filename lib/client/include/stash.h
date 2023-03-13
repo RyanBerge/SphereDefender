@@ -12,6 +12,7 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
+#include <SFML/Graphics/Text.hpp>
 #include "spritesheet.h"
 #include "entity_definitions.h"
 #include <array>
@@ -37,6 +38,9 @@ public:
 
 private:
     std::array<std::array<Spritesheet, 6>, 4> items;
+    Spritesheet currency_frame;
+    int currency = 125;
+    sf::Text currency_text;
 };
 
 } // namespace client

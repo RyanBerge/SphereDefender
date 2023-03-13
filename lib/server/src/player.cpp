@@ -24,6 +24,24 @@ using network::ClientMessage, network::ServerMessage;
 namespace server {
 namespace {
     constexpr int MEDPACK_HEAL_VALUE = 60;
+
+    bool checkForCollisions(sf::FloatRect target, std::vector<sf::FloatRect>& obstacles, sf::FloatRect bounds)
+    {
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Intersects(target, obstacle))
+            {
+                return true;
+            }
+        }
+
+        if (!util::Intersects(target, bounds))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 Player::Player() : definition{definitions::PlayerDefinition::Get()} { }
@@ -38,28 +56,13 @@ void Player::Update(sf::Time elapsed, Region& region)
     projectile_timer += elapsed.asSeconds();
 
     sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
-    bool collision = false;
-    for (auto& obstacle : region.Obstacles)
-    {
-        if (util::Intersects(getBoundingBox(new_position), obstacle))
-        {
-            collision = true;
-            break;
-        }
-    }
+    bool collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
 
     if (collision)
     {
         collision = false;
         sf::Vector2f partial{new_position.x, Data.position.y};
-        for (auto& obstacle : region.Obstacles)
-        {
-            if (util::Intersects(getBoundingBox(partial), obstacle))
-            {
-                collision = true;
-                break;
-            }
-        }
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
 
         if (!collision)
         {
@@ -71,14 +74,7 @@ void Player::Update(sf::Time elapsed, Region& region)
     {
         collision = false;
         sf::Vector2f partial{Data.position.x, new_position.y};
-        for (auto& obstacle : region.Obstacles)
-        {
-            if (util::Intersects(getBoundingBox(partial), obstacle))
-            {
-                collision = true;
-                break;
-            }
-        }
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
 
         if (!collision)
         {

@@ -31,6 +31,9 @@ Stash::Stash()
         }
     }
 
+    currency_frame.LoadAnimationData("gui/inventory_item.json");
+    currency_frame.SetAnimation("Currency");
+
     sf::Vector2f window_resolution = Settings::GetInstance().WindowResolution;
     sf::FloatRect bounds = items[0][0].GetSprite().getGlobalBounds();
     sf::Vector2f position{window_resolution.x * 0.15f + bounds.width + 5, window_resolution.y * 0.88f - bounds.height * (items.size() - 1)};
@@ -40,9 +43,19 @@ Stash::Stash()
         for (unsigned column = 0; column < items[row].size(); ++column)
         {
             auto& item = items[row][column];
-            item.SetPosition(position.x + 70 * column, position.y + 70 * row);
+            item.SetPosition(position.x + bounds.width * column, position.y + bounds.height * row);
         }
     }
+
+    sf::FloatRect last_item = items[items.size() - 1][items[0].size() - 1].GetSprite().getGlobalBounds();
+    currency_frame.SetPosition(last_item.left + last_item.width * 1.5, last_item.top + last_item.height - currency_frame.GetSprite().getGlobalBounds().height);
+
+    currency_text.setFont(*resources::FontManager::GetFont("Vera"));
+    currency_text.setCharacterSize(20);
+    currency_text.setFillColor(sf::Color::Black);
+    currency_text.setString(std::to_string(currency));
+    sf::FloatRect frame_bounds = currency_frame.GetSprite().getGlobalBounds();
+    currency_text.setPosition(frame_bounds.left + frame_bounds.width * 0.4f, frame_bounds.top + frame_bounds.height / 2 - currency_text.getGlobalBounds().height + 1);
 }
 
 void Stash::Update(sf::Time elapsed)
@@ -67,6 +80,9 @@ void Stash::Draw()
                 item.Draw();
             }
         }
+
+        currency_frame.Draw();
+        resources::GetWindow().draw(currency_text);
     }
 }
 

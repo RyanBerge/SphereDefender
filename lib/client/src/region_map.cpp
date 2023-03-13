@@ -74,6 +74,7 @@ void RegionMap::InitializeRegion(definitions::RegionDefinition definition)
     background.SetTiling(true);
     background.SetPosition(-6000, -6000);
 
+    Bounds = definition.bounds;
     convoy = Convoy(definition.convoy);
 
     if (definition.leyline)

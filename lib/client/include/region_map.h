@@ -56,6 +56,7 @@ public:
     sf::Vector2f GetConvoyPosition();
 
     definitions::RegionType RegionType;
+    sf::FloatRect Bounds;
 
 private:
     Spritesheet background;

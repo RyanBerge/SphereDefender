@@ -136,6 +136,11 @@ sf::Vector2f Avatar::GetPosition()
     return Data.position;
 }
 
+sf::FloatRect Avatar::GetGlobalBounds()
+{
+    return sphere.getGlobalBounds();
+}
+
 void Avatar::StartAttack(uint16_t attack_angle)
 {
     starting_attack_angle = attack_angle;

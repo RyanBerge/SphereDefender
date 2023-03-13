@@ -28,6 +28,7 @@ public:
     void Cull();
     bool AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action);
 
+    sf::FloatRect Bounds;
     definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;
     std::vector<sf::FloatRect> Obstacles;

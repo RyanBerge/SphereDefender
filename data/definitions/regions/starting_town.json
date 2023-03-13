@@ -1,8 +1,14 @@
 {
-  "type": "town",
+  "type": "starting_town",
   "name": "Starting Town",
   "id": 0,
   "background": "sand",
+  "bounds": {
+    "x": -1000,
+    "y": -1000,
+    "width": 2000,
+    "height": 2000
+  },
   "convoy": {
     "orientation": "north",
     "position": {

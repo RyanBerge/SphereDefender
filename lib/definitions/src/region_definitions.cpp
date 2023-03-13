@@ -54,6 +54,11 @@ public:
                 region.name = json["name"];
                 region.background_file = "backgrounds/" + static_cast<std::string>(json["background"]) + ".json";
 
+                region.bounds.left = json["bounds"]["x"];
+                region.bounds.top = json["bounds"]["y"];
+                region.bounds.width = json["bounds"]["width"];
+                region.bounds.height = json["bounds"]["height"];
+
                 if (json["convoy"]["orientation"] == "north")
                 {
                     region.convoy = ConvoyDefinition(definitions::Orientation::North);
@@ -100,7 +105,12 @@ public:
                 }
 
                 std::string type = json["type"];
-                if (type == "town")
+                if (type == "starting_town")
+                {
+                    region.leyline = false;
+                    Regions[RegionType::StartingTown][json["id"]] = region;
+                }
+                else if (type == "town")
                 {
                     region.leyline = false;
                     Regions[RegionType::Town][json["id"]] = region;

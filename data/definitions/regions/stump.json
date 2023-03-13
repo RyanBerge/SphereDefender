@@ -1,0 +1,74 @@
+{
+  "type": "town",
+  "name": "Stump",
+  "id": 0,
+  "background": "grass",
+  "bounds": {
+    "x": -600,
+    "y": -450,
+    "width": 2000,
+    "height": 1000
+  },
+  "convoy": {
+    "orientation": "north",
+    "position": {
+      "x": -500,
+      "y": 0
+    }
+  },
+  "obstacles": [
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": -200,
+        "y": -400,
+        "width": 350,
+        "height": 150
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 200,
+        "y": -400,
+        "width": 350,
+        "height": 150
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 400,
+        "y": -125,
+        "width": 150,
+        "height": 350
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Mayor",
+      "sprite": "old_man",
+      "dialog": [
+        "Welcome to Stump.",
+        "Feel free to look around and we're happy to trade, but don't stay long.",
+        "We can't afford to feed any more mouths..."
+      ],
+      "position": {
+        "x": -150,
+        "y": 0
+      }
+    },
+    {
+      "name": "Shopkeeper",
+      "sprite": "old_man",
+      "dialog": [
+        "Sorry, my inventory is empty today... come back tomorrow?"
+      ],
+      "position": {
+        "x": -50,
+        "y": -180
+      }
+    }
+  ]
+}

@@ -84,7 +84,37 @@ void Game::Update(sf::Time elapsed)
         }
         else
         {
-            resources::GetWorldView().setCenter(local_player.GetPosition());
+            sf::View& world_view = resources::GetWorldView();
+            world_view.setCenter(local_player.GetPosition());
+
+            sf::FloatRect view_bounds;
+            view_bounds.left = world_view.getCenter().x - world_view.getSize().x / 2;
+            view_bounds.top = world_view.getCenter().y - world_view.getSize().y / 2;
+            view_bounds.width = world_view.getSize().x;
+            view_bounds.height = world_view.getSize().y;
+
+            float left_limit = region_map.Bounds.left - local_player.Avatar.GetGlobalBounds().width - (15 * current_zoom);
+            float right_limit = region_map.Bounds.left + region_map.Bounds.width + local_player.Avatar.GetGlobalBounds().width + (15 * current_zoom);
+            float top_limit = region_map.Bounds.top - local_player.Avatar.GetGlobalBounds().height - (15 * current_zoom);
+            float bottom_limit = region_map.Bounds.top + region_map.Bounds.height + local_player.Avatar.GetGlobalBounds().height + (15 * current_zoom);
+
+            if (view_bounds.left < left_limit)
+            {
+                world_view.move(left_limit - view_bounds.left, 0);
+            }
+            else if (view_bounds.left + view_bounds.width > right_limit)
+            {
+                world_view.move(right_limit - (view_bounds.left + view_bounds.width), 0);
+            }
+
+            if (view_bounds.top < top_limit)
+            {
+                world_view.move(0,top_limit - view_bounds.top);
+            }
+            else if (view_bounds.top + view_bounds.height > bottom_limit)
+            {
+                world_view.move(0,bottom_limit - (view_bounds.top + view_bounds.height));
+            }
         }
     }
 }

@@ -95,7 +95,7 @@ struct Npc
 
 enum class RegionType : uint8_t
 {
-    Town, Leyline, Neutral, Secret, MenuEvent
+    StartingTown, Town, Leyline, Neutral, Secret, MenuEvent
 };
 
 struct RegionDefinition
@@ -104,6 +104,7 @@ struct RegionDefinition
     uint16_t id;
     bool leyline;
     std::string background_file;
+    sf::FloatRect bounds;
     ConvoyDefinition convoy;
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
