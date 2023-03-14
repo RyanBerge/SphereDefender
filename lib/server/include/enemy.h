@@ -25,6 +25,7 @@ class Enemy
 public:
     enum class Behavior
     {
+        Idle,
         Moving,
         Feeding,
         Hunting,
@@ -42,6 +43,7 @@ public:
     };
 
     Enemy();
+    Enemy(bool will_attack_convoy);
 
     void Update(sf::Time elapsed, definitions::ConvoyDefinition convoy, std::vector<sf::FloatRect> obstacles);
     void WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector, float invulnerability_window);
@@ -56,6 +58,8 @@ public:
 
 private:
     definitions::EntityDefinition definition;
+
+    bool attack_convoy = true;
 
     Behavior current_behavior;
     Action current_action;

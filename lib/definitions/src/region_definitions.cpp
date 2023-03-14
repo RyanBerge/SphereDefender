@@ -25,10 +25,66 @@ class RegionInitializer
 public:
     RegionInitializer()
     {
-        LoadRegions();
+        LoadEntityData();
+        LoadRegionData();
     }
 
-    void LoadRegions()
+    void LoadEntityData()
+    {
+        std::filesystem::path path("../data/definitions/enemy_pack.json");
+        if (!std::filesystem::exists(path))
+        {
+            cerr << "Error loading enemy packs: could not open file: " << path << endl;
+            return;
+        }
+
+        try
+        {
+            std::ifstream file(path);
+            nlohmann::json json;
+            file >> json;
+
+            for (auto& j_pack : json["packs"])
+            {
+                std::vector<SpawnDetails> pack;
+
+                for (auto& j_enemy : j_pack["enemies"])
+                {
+                    SpawnDetails details;
+                    details.min = j_enemy["min"];
+                    details.max = j_enemy["max"];
+                    for (int scaling : j_enemy["zone_scaling"])
+                    {
+                        details.zone_scaling.push_back(scaling);
+                    }
+
+                    std::string enemy_type = j_enemy["type"];
+                    if (enemy_type == "small_demon")
+                    {
+                        details.type = EnemyType::SmallDemon;
+                    }
+                    else if (enemy_type == "bat")
+                    {
+                        details.type = EnemyType::Bat;
+                    }
+                    else
+                    {
+                        cerr << "Enemy type not supported: " << enemy_type << endl;
+                    }
+
+                    pack.push_back(details);
+                }
+
+                EnemyPacks[j_pack["type"]] = pack;
+            }
+        }
+        catch(const std::exception& e)
+        {
+            cerr << "Initializer failed to parse file: " << path << endl;
+        }
+    }
+
+    void LoadRegionData()
     {
         std::filesystem::path path("../data/definitions/regions");
         if (!std::filesystem::exists(path))
@@ -104,6 +160,18 @@ public:
                     region.npcs.push_back(npc);
                 }
 
+                for (auto& j_enemy_type : json["enemies"])
+                {
+                    for (auto& j_pack : j_enemy_type["packs"])
+                    {
+                        EnemyPack pack;
+                        pack.position = sf::Vector2f{j_pack["position"]["x"], j_pack["position"]["y"]};
+
+                        pack.spawns = EnemyPacks[j_pack["type"]];
+                        region.enemy_packs.push_back(pack);
+                    }
+                }
+
                 std::string type = json["type"];
                 if (type == "starting_town")
                 {
@@ -144,6 +212,7 @@ public:
     }
 
     std::map<RegionType, std::map<uint16_t, RegionDefinition>> Regions;
+    std::map<std::string, std::vector<SpawnDetails>> EnemyPacks;
 };
 
 }

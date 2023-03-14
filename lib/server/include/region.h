@@ -36,6 +36,7 @@ public:
     float BatteryLevel = 0;
 
 private:
+    int region_difficulty = 0;
     unsigned num_players = 1;
     util::Seconds region_age = 0; // In seconds
     float spawn_interval;

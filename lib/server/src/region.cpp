@@ -66,6 +66,21 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
             ServerMessage::SetMenuEvent(*p.Socket, current_event.event_id);
         }
     }
+
+    for (auto& pack : definition.enemy_packs)
+    {
+        for (auto& spawn : pack.spawns)
+        {
+            int count = util::GetRandomInt(spawn.min, spawn.max) + spawn.zone_scaling[region_difficulty];
+
+            for (int i = 0; i < count; ++i)
+            {
+                Enemy enemy(false);
+                enemy.Data.position = util::GetRandomPositionFromPoint(pack.position, 30 * count);
+                Enemies.push_back(enemy);
+            }
+        }
+    }
 }
 
 void Region::Update(sf::Time elapsed)

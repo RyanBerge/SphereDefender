@@ -18,7 +18,8 @@ namespace definitions
 enum class EntityType : uint8_t
 {
     Player,
-    SmallDemon
+    SmallDemon,
+    Bat
 };
 
 struct EntityDefinition

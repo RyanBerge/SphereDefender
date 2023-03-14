@@ -93,6 +93,25 @@ struct Npc
     sf::Vector2f position;
 };
 
+enum class EnemyType
+{
+    SmallDemon, Bat
+};
+
+struct SpawnDetails
+{
+    EnemyType type;
+    int min;
+    int max;
+    std::vector<int> zone_scaling;
+};
+
+struct EnemyPack
+{
+    sf::Vector2f position;
+    std::vector<SpawnDetails> spawns;
+};
+
 enum class RegionType : uint8_t
 {
     StartingTown, Town, Leyline, Neutral, Secret, MenuEvent
@@ -109,6 +128,7 @@ struct RegionDefinition
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
     std::vector<MenuEvent> events;
+    std::vector<EnemyPack> enemy_packs;
 };
 
 struct Zone

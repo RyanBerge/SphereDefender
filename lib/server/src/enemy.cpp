@@ -33,13 +33,24 @@ namespace {
     constexpr float LEAP_WINDUP = 0.75f; // seconds
 }
 
-Enemy::Enemy()
+Enemy::Enemy() : Enemy(true) { }
+
+Enemy::Enemy(bool will_attack_convoy) : attack_convoy{will_attack_convoy}
 {
     static uint16_t identifier = 0;
     Data.id = identifier++;
     Data.health = 100;
     Data.type = definitions::EntityType::SmallDemon;
-    current_behavior = Behavior::Moving;
+
+    if (attack_convoy)
+    {
+        current_behavior = Behavior::Moving;
+    }
+    else
+    {
+        current_behavior = Behavior::Idle;
+    }
+
     current_action  = Action::None;
 
     definition = definitions::GetEntityDefinition(Data.type);
@@ -222,6 +233,7 @@ void Enemy::setActionFlags()
         {
             switch (current_behavior)
             {
+                case Behavior::Idle:
                 case Behavior::Moving:
                 case Behavior::Hunting:
                 {
@@ -278,6 +290,16 @@ void Enemy::chooseAction(sf::Time elapsed, definitions::ConvoyDefinition convoy,
 
     switch (current_behavior)
     {
+        case Behavior::Idle:
+        {
+            if (sniff_timer > sniff_cooldown)
+            {
+                setAction(Action::Sniffing);
+            }
+
+            destination = Data.position;
+        }
+        break;
         case Behavior::Moving:
         {
             destination = getTargetConvoyPoint(convoy);
@@ -354,7 +376,14 @@ void Enemy::checkAggro()
             {
                 if (player_target == player.Data.id && player.Status != Player::PlayerStatus::Alive)
                 {
-                    setBehavior(Behavior::Moving);
+                    if (attack_convoy)
+                    {
+                        setBehavior(Behavior::Moving);
+                    }
+                    else
+                    {
+                        setBehavior(Behavior::Idle);
+                    }
                     break;
                 }
             }
@@ -364,6 +393,10 @@ void Enemy::checkAggro()
         case Behavior::Feeding:
         {
             aggro_range -= 200;
+            [[fallthrough]];
+        }
+        case Behavior::Idle:
+        {
             [[fallthrough]];
         }
         case Behavior::Moving:
@@ -459,7 +492,15 @@ sf::Vector2f Enemy::getTargetPlayerPoint()
         }
     }
 
-    setBehavior(Behavior::Moving);
+    if (attack_convoy)
+    {
+        setBehavior(Behavior::Moving);
+    }
+    else
+    {
+        setBehavior(Behavior::Idle);
+    }
+
     return Data.position;
 }
 

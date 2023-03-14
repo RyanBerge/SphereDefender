@@ -290,4 +290,12 @@ float GetRandomFloat(float min, float max)
     return distribution(random_generator);
 }
 
+sf::Vector2f GetRandomPositionFromPoint(sf::Vector2f point, float max_distance)
+{
+    float angle = GetRandomFloat(0, util::pi * 2);
+    float distance = GetRandomFloat(0, max_distance);
+
+    return sf::Vector2f{distance * std::cos(angle) + point.x, distance * std::sin(angle) + point.y};
+}
+
 } // util

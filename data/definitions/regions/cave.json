@@ -1,0 +1,71 @@
+{
+  "type": "neutral",
+  "name": "",
+  "id": 0,
+  "background": "cracked_mud",
+  "bounds": {
+    "x": -300,
+    "y": -1000,
+    "width": 2500,
+    "height": 1500
+  },
+  "convoy": {
+    "orientation": "north",
+    "position": {
+      "x": -200,
+      "y": 0
+    }
+  },
+  "obstacles": [
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": -50,
+        "y": 250,
+        "width": 2100,
+        "height": 600
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": -50,
+        "y": -1300,
+        "width": 800,
+        "height": 1200
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 2000,
+        "y": -1500,
+        "width": 2000,
+        "height": 3000
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 600,
+        "y": -1200,
+        "width": 1600,
+        "height": 600
+      }
+    }
+  ],
+  "npcs": [ ],
+  "enemies": [
+    {
+      "packs": [
+        {
+          "type": "demon",
+          "position": {
+            "x": 1500,
+            "y": -350
+          }
+        }
+      ]
+    }
+  ]
+}

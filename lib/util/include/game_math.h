@@ -43,4 +43,5 @@ namespace util
 
     int GetRandomInt(int min, int max);
     float GetRandomFloat(float min, float max);
+    sf::Vector2f GetRandomPositionFromPoint(sf::Vector2f point, float max_distance);
 }
