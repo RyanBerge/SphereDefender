@@ -321,7 +321,7 @@ void Gui::ChangeRegion(uint16_t region_id)
 void Gui::MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list)
 {
     double distance = std::numeric_limits<double>::infinity();
-    unsigned index;
+    unsigned index = 0;
 
     for (unsigned i = 0; i < bounds_list.size(); ++i)
     {

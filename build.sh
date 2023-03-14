@@ -125,13 +125,13 @@ build() {
         if [ ${ARCHITECTURE} == Win32 ]; then
             cp bin/*.exe publish/bin/
             cp bin/*.dll publish/bin/
+
+            cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll publish/bin
+            cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll publish/bin
+            cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll publish/bin
         elif [ ${ARCHITECTURE} == Linux ]; then
             cp bin/* publish/bin/
         fi
-
-        cp /mnt/c/WinLibs/mingw32/bin/libgcc_s_dw2-1.dll publish/bin
-        cp /mnt/c/WinLibs/mingw32/bin/libstdc++-6.dll publish/bin
-        cp /mnt/c/WinLibs/mingw32/bin/libwinpthread-1.dll publish/bin
 
         dig +short myip.opendns.com @resolver1.opendns.com > publish/bin/config.ini
     fi

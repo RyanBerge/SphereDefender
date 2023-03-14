@@ -1,5 +1,9 @@
 #!/bin/bash
 
 pushd bin
-./SphereDefender.exe
+if test -f ./SphereDefender.exe; then
+    ./SphereDefender.exe
+elif test -f ./SphereDefender; then
+    ./SphereDefender
+fi
 popd

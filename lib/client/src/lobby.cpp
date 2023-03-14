@@ -107,13 +107,20 @@ bool Lobby::Create(std::string player_name)
     cerr << "Launching server..." << endl;
 
 #if __linux__
-    std::system("./Server");
+    int result = std::system("gnome-terminal -- bash -c \"LD_LIBRARY_PATH=. ./Server; exec bash\"");
+    if (result != 0)
+    {
+        cerr << "An error occurred while launching the server." << endl;
+        return false;
+    }
+
 #else
     std::system("start Server.exe");
 #endif
 
     if (!GameManager::GetInstance().ConnectToServer("127.0.0.1"))
     {
+        cerr << "Could not connect to server." << endl;
         return false;
     }
 

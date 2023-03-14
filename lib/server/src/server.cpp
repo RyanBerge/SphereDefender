@@ -455,7 +455,8 @@ definitions::Zone Server::createTestZone()
 
 std::optional<definitions::Zone::RegionNode> Server::getNodeById(definitions::Zone& new_zone, uint16_t node_id)
 {
-    for (unsigned i = std::min(node_id, static_cast<uint16_t>(new_zone.regions.size() - 1)); new_zone.regions[i].id >= i; --i)
+    //for (unsigned i = std::min(node_id, static_cast<uint16_t>(new_zone.regions.size() - 1)); new_zone.regions[i].id >= i; --i)
+    for (unsigned i = 0; i < new_zone.regions.size(); ++i)
     {
         if (new_zone.regions[i].id == node_id)
         {

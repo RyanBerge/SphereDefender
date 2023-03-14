@@ -146,7 +146,7 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
     interaction.type = InteractionType::None;
     double distance = std::numeric_limits<double>::infinity();
     double new_distance{};
-    unsigned index;
+    unsigned index = 0;
 
     for (unsigned i = 0; i < npcs.size(); ++i)
     {
