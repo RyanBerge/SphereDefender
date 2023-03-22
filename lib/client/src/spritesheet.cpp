@@ -65,6 +65,11 @@ void Spritesheet::Draw()
         }
 
         resources::GetWindow().draw(sprite);
+
+        if (debug_animation_print)
+        {
+            resources::GetWindow().draw(animation_text);
+        }
     }
 }
 
@@ -117,6 +122,12 @@ void Spritesheet::LoadAnimationData(std::string filename)
             animation_data.animations[animation.name] = animation;
         }
 
+        animation_text.setFont(*resources::FontManager::GetFont("Vera"));
+        animation_text.setCharacterSize(12);
+        animation_text.setFillColor(sf::Color::White);
+        animation_text.setOutlineColor(sf::Color::Black);
+        animation_text.setOutlineThickness(1);
+
         SetAnimation(animation_data.animations.begin()->first);
     }
     catch(const std::exception& e)
@@ -152,6 +163,8 @@ void Spritesheet::SetAnimation(std::string animation_name)
         current_animation = animation_data.animations[animation_name];
         setFrame(current_animation.start);
         animation_timer = 0;
+
+        animation_text.setString(current_animation.name);
     }
     else
     {
@@ -163,6 +176,11 @@ void Spritesheet::SetPosition(float x, float y)
 {
     sprite.setPosition(x, y);
 
+    if (debug_animation_print)
+    {
+        animation_text.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top - animation_text.getGlobalBounds().height * 2);
+    }
+
     if (casts_shadow)
     {
         shadow.setPosition(x + 4, y + 4);
@@ -172,6 +190,11 @@ void Spritesheet::SetPosition(float x, float y)
 void Spritesheet::SetPosition(sf::Vector2f position)
 {
     SetPosition(position.x, position.y);
+}
+
+void Spritesheet::SetDebugAnimationPrint(bool print)
+{
+    debug_animation_print = print;
 }
 
 void Spritesheet::CenterOrigin()

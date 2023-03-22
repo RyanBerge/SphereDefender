@@ -271,7 +271,9 @@ void Server::startGame()
     }
 
     current_region = debug::StartingRegion.value;
-    region = Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
+
+    region.~Region();
+    new(&region)Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -1124,7 +1126,7 @@ void Server::broadcastStates()
 
     for (auto& enemy : region.Enemies)
     {
-        enemy_list.push_back(enemy.Data);
+        enemy_list.push_back(enemy.GetData());
     }
 
     for (auto& projectile : region.Projectiles)

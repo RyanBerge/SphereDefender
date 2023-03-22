@@ -14,9 +14,9 @@
 #include <cstdint>
 #include <list>
 #include "entity_data.h"
-#include "region_definitions.h"
+#include "definitions.h"
 #include "messaging.h"
-#include "types.h"
+#include "game_math.h"
 
 namespace server {
 

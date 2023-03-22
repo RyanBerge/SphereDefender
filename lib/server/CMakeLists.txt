@@ -2,7 +2,7 @@ set(TargetName Server)
 find_package(SFML COMPONENTS network PATHS ${PROJECT_SOURCE_DIR}/externals/sfml/install)
 
 set(Sources
-    src/enemy.cpp
+    src/new_enemy.cpp
     src/main.cpp
     src/global_state.cpp
     src/player.cpp

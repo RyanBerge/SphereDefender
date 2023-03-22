@@ -14,7 +14,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "spritesheet.h"
 #include "entity_data.h"
-#include "types.h"
+#include "game_math.h"
 
 namespace client {
 

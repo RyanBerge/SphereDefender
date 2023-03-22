@@ -1,6 +1,6 @@
 {
   "start_in_game": {
-    "override": false,
+    "override": true,
     "value": true
   },
   "player_movement_speed": {

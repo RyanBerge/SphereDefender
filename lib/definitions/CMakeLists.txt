@@ -3,8 +3,7 @@ find_package(nlohmann_json 3.2.0 REQUIRED PATHS ${PROJECT_SOURCE_DIR}/externals/
 
 set(Sources
     src/debug_overrides.cpp
-    src/entity_definitions.cpp
-    src/region_definitions.cpp
+    src/definitions.cpp
 )
 
 add_library(${TargetName} ${Sources})

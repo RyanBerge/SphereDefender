@@ -13,8 +13,8 @@
 #include "cursor_button.h"
 #include "overmap.h"
 #include "stash.h"
-#include "entity_definitions.h"
-#include "region_definitions.h"
+#include "definitions.h"
+#include "definitions.h"
 #include "wrappable_text.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>

@@ -15,7 +15,7 @@
 #include "entity_data.h"
 #include "game_math.h"
 #include "region.h"
-#include "region_definitions.h"
+#include "definitions.h"
 
 namespace server {
 

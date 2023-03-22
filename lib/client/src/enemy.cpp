@@ -23,9 +23,10 @@ namespace {
 
 Enemy::Enemy()
 {
-    spritesheet.LoadAnimationData("entities/small_demon.json");
+    spritesheet.LoadAnimationData("entities/bat.json");
     spritesheet.CenterOrigin();
     spritesheet.SetAnimation("Move");
+    spritesheet.SetDebugAnimationPrint(true);
 }
 
 void Enemy::Update(sf::Time elapsed)
@@ -68,6 +69,11 @@ void Enemy::UpdateData(network::EnemyData new_data)
     data = new_data;
     spritesheet.SetPosition(data.position.x, data.position.y);
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
+
+    if (new_data.id == 7)
+    {
+        spritesheet.SetAnimation("Sniff");
+    }
 }
 
 void Enemy::ChangeAction(network::EnemyAction action)

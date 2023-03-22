@@ -1,0 +1,19 @@
+{
+  "name": "Bat",
+  "behaviors": [
+    "wandering"
+  ],
+  "actions": [
+    "None", "Attacking"
+  ],
+  "movement_speed": 100,
+  "steering_force": 340,
+  "repulsion_force": 450,
+  "repulsion_radius": 20,
+  "acceleration": 100,
+  "deceleration": 50,
+  "wander_behavior": {
+    "rest_min": 1,
+    "rest_max": 3
+  }
+}

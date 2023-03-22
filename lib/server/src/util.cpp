@@ -15,7 +15,7 @@ Enemy& GetEnemyById(uint16_t id, std::list<Enemy>& enemies)
 {
     for (auto& enemy : enemies)
     {
-        if (enemy.Data.id == id)
+        if (enemy.GetData().id == id)
         {
             return enemy;
         }

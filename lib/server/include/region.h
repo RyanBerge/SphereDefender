@@ -9,8 +9,8 @@
  *************************************************************************************************/
 #pragma once
 
-#include "types.h"
-#include "enemy.h"
+#include "game_math.h"
+#include "new_enemy.h"
 #include <list>
 #include <random>
 #include "SFML/System/Clock.hpp"
@@ -43,7 +43,6 @@ private:
     float last_spawn;
     float battery_charge_rate = 0; // Units-per-second
     bool spawn_enemies = false;
-    bool charging = false;
     definitions::MenuEvent current_event;
 
     void spawnEnemy();

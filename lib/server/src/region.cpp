@@ -8,7 +8,7 @@
  *
  *************************************************************************************************/
 #include "region.h"
-#include "region_definitions.h"
+#include "definitions.h"
 #include "game_math.h"
 #include "global_state.h"
 #include <algorithm>
@@ -75,8 +75,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 
             for (int i = 0; i < count; ++i)
             {
-                Enemy enemy(false);
-                enemy.Data.position = util::GetRandomPositionFromPoint(pack.position, 30 * count);
+                Enemy enemy(this, spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
                 Enemies.push_back(enemy);
             }
         }
@@ -94,13 +93,13 @@ void Region::Update(sf::Time elapsed)
 
     for (auto& enemy : Enemies)
     {
-        enemy.Update(elapsed, Convoy, Obstacles);
+        enemy.Update(elapsed);
     }
 
     int siphon_rate = 0;
     for (auto& enemy : Enemies)
     {
-        if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
+        if (enemy.GetBehavior() == definitions::Behavior::Feeding)
         {
             siphon_rate += enemy.GetSiphonRate();
         }
@@ -210,15 +209,8 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
 
 void Region::spawnEnemy()
 {
-    static std::random_device random_device;
-    static std::mt19937 random_generator{random_device()};
-    static std::uniform_int_distribution<> distribution_x(450, 550);
-    static std::uniform_int_distribution<> distribution_y(-200, 300);
-
-    Enemy enemy;
-
-    enemy.Data.position.x = distribution_x(random_generator);
-    enemy.Data.position.y = distribution_y(random_generator);
+    sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), util::GetRandomFloat(-200, 300)};
+    Enemy enemy(this, definitions::EntityType::SmallDemon, spawn_position);
     //enemy.Data.position = sf::Vector2f{900, 0};
 
     Enemies.push_back(enemy);

@@ -11,7 +11,7 @@
 #include "convoy.h"
 #include "spritesheet.h"
 #include "entity_data.h"
-#include "region_definitions.h"
+#include "definitions.h"
 #include "player.h"
 
 namespace client {

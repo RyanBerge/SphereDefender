@@ -10,7 +10,7 @@
 
 #include "player.h"
 #include "game_math.h"
-#include "entity_definitions.h"
+#include "definitions.h"
 #include "util.h"
 #include "messaging.h"
 #include "global_state.h"
@@ -242,7 +242,7 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
 
                 if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
                 {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
+                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.GetData().position - Data.position, weapon.invulnerability_window);
                 }
             }
         }
@@ -279,7 +279,7 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
                 }
             }
 
-            uint16_t target_enemy_id = region.Enemies.front().Data.id;
+            uint16_t target_enemy_id = region.Enemies.front().GetData().id;
             bool enemy_hit = false;
             for (auto& enemy : region.Enemies)
             {
@@ -291,13 +291,13 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
                         collision = true;
                         point = temp;
                         enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
+                        target_enemy_id = enemy.GetData().id;
                     }
                     else if (util::Distance(Data.position, temp) < util::Distance(Data.position, point))
                     {
                         point = temp;
                         enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
+                        target_enemy_id = enemy.GetData().id;
                     }
                 }
             }
@@ -305,14 +305,7 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
             if (enemy_hit)
             {
                 Enemy& enemy = GetEnemyById(target_enemy_id, region.Enemies);
-                if (enemy.Data.health <= 10)
-                {
-                    enemy.Data.health = 0;
-                }
-                else
-                {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
-                }
+                enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.GetData().position - Data.position, weapon.invulnerability_window);
             }
 
             Attacking = false;

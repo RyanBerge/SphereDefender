@@ -1,0 +1,99 @@
+{
+  "filename": "Bat.png",
+  "pathing_hitbox": { "x": 20, "y": 12 },
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 1,
+      "location": [ 0, 12 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 2,
+      "location": [ 0, 24 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 3,
+      "location": [ 0, 36 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 4,
+      "location": [ 0, 48 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 5,
+      "location": [ 0, 60 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    },
+    {
+      "index": 6,
+      "location": [ 0, 72 ],
+      "size": [ 20, 12 ],
+      "origin": [ 10, 6 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Move",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Move"
+    },
+    {
+      "name": "Sniff",
+      "start_frame": 1,
+      "end_frame": 1,
+      "animation_speed": 0,
+      "next_animation": "Sniff"
+    },
+    {
+      "name": "Leap",
+      "start_frame": 2,
+      "end_frame": 2,
+      "animation_speed": 1,
+      "next_animation": "Move"
+    },
+    {
+      "name": "Stunned",
+      "start_frame": 3,
+      "end_frame": 3,
+      "animation_speed": 0,
+      "next_animation": "Stunned"
+    },
+    {
+      "name": "Feed",
+      "start_frame": 4,
+      "end_frame": 4,
+      "animation_speed": 0,
+      "next_animation": "Feed"
+    },
+    {
+      "name": "Death",
+      "start_frame": 5,
+      "end_frame": 5,
+      "animation_speed": 1,
+      "next_animation": "Dead"
+    },
+    {
+      "name": "Dead",
+      "start_frame": 6,
+      "end_frame": 6,
+      "animation_speed": 0,
+      "next_animation": "Dead"
+    }
+  ]
+}

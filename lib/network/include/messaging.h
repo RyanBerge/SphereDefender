@@ -13,7 +13,7 @@
 #include <string>
 #include <array>
 #include "entity_data.h"
-#include "region_definitions.h"
+#include "definitions.h"
 
 namespace network {
 

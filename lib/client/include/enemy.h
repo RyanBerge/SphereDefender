@@ -11,7 +11,7 @@
 
 #include "messaging.h"
 #include "spritesheet.h"
-#include "types.h"
+#include "game_math.h"
 
 namespace client
 {
