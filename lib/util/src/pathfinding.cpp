@@ -43,24 +43,28 @@ PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
     finish_node.position = finish;
     graph.nodes.push_back(finish_node); // finish: index == 1
 
+    float clearance = (std::max(entity_size.x, entity_size.y) / 2) * 1.25f;
+
     for (auto& rect : obstacles)
     {
         PathingNode upper_left{};
-        upper_left.position = sf::Vector2f{rect.left - (entity_size.x / 2 + 1), rect.top - (entity_size.y / 2 + 1)};
+        upper_left.position = sf::Vector2f{rect.left - clearance, rect.top - clearance};
         graph.nodes.push_back(upper_left);
 
         PathingNode upper_right{};
-        upper_right.position = sf::Vector2f{rect.left + rect.width + (entity_size.x / 2 + 1), rect.top - (entity_size.y / 2 + 1)};
+        upper_right.position = sf::Vector2f{rect.left + rect.width + clearance, rect.top - clearance};
         graph.nodes.push_back(upper_right);
 
         PathingNode lower_left{};
-        lower_left.position = sf::Vector2f{rect.left - (entity_size.x / 2 + 1), rect.top + rect.height + (entity_size.y / 2 + 1)};
+        lower_left.position = sf::Vector2f{rect.left - clearance, rect.top + rect.height + clearance};
         graph.nodes.push_back(lower_left);
 
         PathingNode lower_right{};
-        lower_right.position = sf::Vector2f{rect.left + rect.width + (entity_size.x / 2 + 1), rect.top + rect.height + (entity_size.y / 2 + 1)};
+        lower_right.position = sf::Vector2f{rect.left + rect.width + clearance, rect.top + rect.height + clearance};
         graph.nodes.push_back(lower_right);
     }
+
+    float sight_width = clearance - 1;
 
     for (unsigned i = 0; i < graph.nodes.size() - 1; ++i)
     {
@@ -71,8 +75,8 @@ PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
 
             sf::Vector2f path_vector = other_node.position - current_node.position;
             float length = std::hypot(path_vector.x, path_vector.y);
-            sf::Vector2f left_orthogonal{-path_vector.y / length * entity_size.x / 2, path_vector.x / length * entity_size.y / 2};
-            sf::Vector2f right_orthogonal{path_vector.y / length * entity_size.x / 2, -path_vector.x / length * entity_size.y / 2};
+            sf::Vector2f left_orthogonal{-path_vector.y / length * sight_width, path_vector.x / length * sight_width};
+            sf::Vector2f right_orthogonal{path_vector.y / length * sight_width, -path_vector.x / length * sight_width};
 
             LineSegment left_bound{current_node.position + left_orthogonal, other_node.position + left_orthogonal};
             LineSegment right_bound{current_node.position + right_orthogonal, other_node.position + right_orthogonal};
@@ -132,15 +136,14 @@ std::list<sf::Vector2f> GetPath(PathingGraph& graph)
             // No path available?
             break;
         }
+
         // Get node with lowest f-cost from the open list
         current_index = open_list.front();
-        PathingNode& current_node = graph.nodes[current_index];
         for (auto index : open_list)
         {
-            if (graph.nodes[index].f_cost < current_node.f_cost)
+            if (graph.nodes[index].f_cost < graph.nodes[current_index].f_cost)
             {
                 current_index = index;
-                current_node = graph.nodes[current_index];
             }
         }
 
@@ -150,29 +153,28 @@ std::list<sf::Vector2f> GetPath(PathingGraph& graph)
             break;
         }
 
-        current_node.visited = true;
+        graph.nodes[current_index].visited = true;
         open_list.remove(current_index);
 
-        for (auto& connection : current_node.connections)
+        for (auto& connection : graph.nodes[current_index].connections)
         {
             int neighbor_index = connection.first;
-            PathingNode& neighbor = graph.nodes[neighbor_index];
             float cost_from_current = connection.second;
 
-            if (!neighbor.visited)
+            if (!graph.nodes[neighbor_index].visited)
             {
-                float new_g_cost = current_node.g_cost + cost_from_current;
-                float new_f_cost = new_g_cost + neighbor.h_cost;
-                if (!neighbor.checked || neighbor.f_cost > new_f_cost)
+                float new_g_cost = graph.nodes[current_index].g_cost + cost_from_current;
+                float new_f_cost = new_g_cost + graph.nodes[neighbor_index].h_cost;
+                if (!graph.nodes[neighbor_index].checked || graph.nodes[neighbor_index].f_cost > new_f_cost)
                 {
-                    neighbor.g_cost = new_g_cost;
-                    neighbor.f_cost = new_f_cost;
-                    neighbor.parent = current_index;
+                    graph.nodes[neighbor_index].g_cost = new_g_cost;
+                    graph.nodes[neighbor_index].f_cost = new_f_cost;
+                    graph.nodes[neighbor_index].parent = current_index;
                 }
 
-                if (!neighbor.checked)
+                if (!graph.nodes[neighbor_index].checked)
                 {
-                    neighbor.checked = true;
+                    graph.nodes[neighbor_index].checked = true;
                     open_list.push_back(neighbor_index);
                 }
             }

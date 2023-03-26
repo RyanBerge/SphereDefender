@@ -1232,6 +1232,48 @@ bool ServerMessage::AdvanceMenuEvent(sf::TcpSocket& socket, uint16_t page_id, bo
     return true;
 }
 
+bool ServerMessage::DisplayPath(sf::TcpSocket& socket, util::PathingGraph graph, std::list<sf::Vector2f> path)
+{
+    Code code = ServerMessage::Code::DisplayPath;
+
+    uint16_t num_graph_nodes = graph.nodes.size();
+    uint16_t num_path_nodes = path.size();
+
+    size_t buffer_size = sizeof(code) + sizeof(num_graph_nodes) + (sizeof(sf::Vector2f) * num_graph_nodes) + sizeof(num_path_nodes) + (sizeof(sf::Vector2f) * num_path_nodes);
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+
+    std::memcpy(buffer + offset, &num_graph_nodes, sizeof(num_graph_nodes));
+    offset += sizeof(num_graph_nodes);
+    for (unsigned i = 0; i < num_graph_nodes; ++i)
+    {
+        sf::Vector2f node = graph.nodes[i].position;
+        std::memcpy(buffer + offset, &node, sizeof(node));
+        offset += sizeof(node);
+    }
+
+    std::memcpy(buffer + offset, &num_path_nodes, sizeof(num_path_nodes));
+    offset += sizeof(num_path_nodes);
+    for (auto& node : path)
+    {
+        std::memcpy(buffer + offset, &node, sizeof(node));
+        offset += sizeof(node);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
 bool ServerMessage::DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id)
 {
     uint16_t id;
@@ -1798,6 +1840,56 @@ bool ServerMessage::DecodeAdvanceMenuEvent(sf::TcpSocket& socket, uint16_t& out_
 
     out_page_id = page_id;
     out_finish = finish;
+    return true;
+}
+
+bool ServerMessage::DecodeDisplayPath(sf::TcpSocket& socket, std::vector<sf::Vector2f>& out_graph, std::vector<sf::Vector2f>& out_path)
+{
+    std::vector<sf::Vector2f> graph;
+    std::vector<sf::Vector2f> path;
+
+    uint16_t graph_size;
+    uint16_t path_size;
+
+    if (!read(socket, &graph_size, sizeof(graph_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a graph size value." << endl;
+        return false;
+    }
+
+    for (unsigned i = 0; i < graph_size; ++i)
+    {
+        sf::Vector2f node;
+        if (!read(socket, &node, sizeof(node)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a graph node." << endl;
+            return false;
+        }
+
+        graph.push_back(node);
+    }
+
+    if (!read(socket, &path_size, sizeof(path_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a path size value." << endl;
+        return false;
+    }
+
+    for (unsigned i = 0; i < path_size; ++i)
+    {
+        sf::Vector2f node;
+        if (!read(socket, &node, sizeof(node)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a graph node." << endl;
+            return false;
+        }
+
+        path.push_back(node);
+    }
+
+    out_graph = graph;
+    out_path = path;
+
     return true;
 }
 

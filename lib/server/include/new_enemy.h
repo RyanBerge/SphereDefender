@@ -35,6 +35,7 @@ public:
     sf::FloatRect GetBounds();
     sf::FloatRect GetBounds(sf::Vector2f position);
     sf::FloatRect GetProjectedBounds(util::Seconds future);
+    sf::FloatRect GetProjectedBounds(util::Seconds future, sf::Vector2f velocity);
     int GetSiphonRate();
 
     bool Despawn = false;
@@ -50,8 +51,9 @@ private:
     void takeStep(sf::Vector2f step);
     sf::Vector2f getGoal();
     bool pathClear(sf::Vector2f direction, util::Seconds time_offset);
-    bool checkForwardCollision();
+    util::VectorCloud configureDirectionWeights(util::VectorCloud cloud);
     sf::Vector2f steer(sf::Vector2f goal);
+    sf::Vector2f avoid(sf::Vector2f direction);
     void accelerate(sf::Time elapsed);
     void decelerate(sf::Time elapsed);
     sf::Vector2f getRepulsionForce(float distance);

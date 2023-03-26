@@ -6,11 +6,10 @@ set(Sources
     src/pathfinding.cpp
 )
 
-add_library(${TargetName} ${Sources})
+add_library(${TargetName} SHARED ${Sources})
 
-target_include_directories(${TargetName} PRIVATE
+target_include_directories(${TargetName} PUBLIC
     ${PROJECT_SOURCE_DIR}/lib/util/include
-    ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
 )
 
 target_link_libraries(${TargetName} sfml-graphics)

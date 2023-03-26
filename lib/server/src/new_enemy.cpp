@@ -11,6 +11,8 @@
 #include "region.h"
 #include "pathfinding.h"
 #include "global_state.h"
+#include "messaging.h"
+#include "SFML/System/Sleep.hpp"
 #include <iostream>
 #include <cassert>
 
@@ -35,16 +37,15 @@ Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2
 
     definition = definitions::GetEntityDefinition(enemy_type);
 
+    current_max_speed = definition.base_movement_speed;
     current_behavior = Behavior::Hunting;
 }
 
 void Enemy::Update(sf::Time elapsed)
 {
-    (void)elapsed;
-
     switch (current_action)
     {
-        case Action::Attacking:
+        case Action::Tackling:
         {
 
         }
@@ -118,8 +119,13 @@ sf::FloatRect Enemy::GetBounds(sf::Vector2f position)
 
 sf::FloatRect Enemy::GetProjectedBounds(util::Seconds future)
 {
+    return GetProjectedBounds(future, current_velocity);
+}
+
+sf::FloatRect Enemy::GetProjectedBounds(util::Seconds future, sf::Vector2f velocity)
+{
     sf::Vector2f size = definition.hitbox;
-    sf::Vector2f projected_position = data.position + current_velocity * future;
+    sf::Vector2f projected_position = data.position + velocity * future;
     return sf::FloatRect(projected_position.x - size.x / 2, projected_position.y - size.y / 2, size.x, size.y);
 }
 
@@ -165,13 +171,27 @@ void Enemy::move(sf::Time elapsed)
         sf::Vector2f goal = getGoal();
         sf::Vector2f steering_force = util::TruncateVector(steer(goal), definition.steering_force * elapsed.asSeconds());
         sf::Vector2f repulsion_force = util::TruncateVector(getRepulsionForce(definition.repulsion_radius), definition.repulsion_force * elapsed.asSeconds());
+
+        float distance = util::Distance(goal, data.position);
+        float threshold = definition.hitbox.x;
+        if (distance < threshold * 3)
+        {
+            if (distance <= threshold)
+            {
+                repulsion_force = sf::Vector2f{0, 0};
+            }
+            else
+            {
+                repulsion_force *= (distance - threshold) / (threshold * 2);
+            }
+        }
+
         sf::Vector2f velocity = current_velocity + steering_force + repulsion_force;
 
         if (current_velocity != sf::Vector2f{0, 0})
         {
             util::AngleDegrees angle_between = util::AngleBetween(current_velocity, goal - data.position);
-            bool imminent_collision = checkForwardCollision();
-            if ((angle_between > 90 && angle_between < 270) || imminent_collision)
+            if (angle_between > 90 && angle_between < 270)
             {
                 decelerate(elapsed);
             }
@@ -225,14 +245,41 @@ sf::Vector2f Enemy::getGoal()
     std::vector<sf::FloatRect> obstacles = region->Obstacles;
     util::PathingGraph graph = util::CreatePathingGraph(data.position, destination, obstacles, GetBounds().getSize());
     std::list<sf::Vector2f> path = util::GetPath(graph);
+
+//    if (data.id == 1)
+//    {
+//        for (auto& player : PlayerList)
+//        {
+//            network::ServerMessage::DisplayPath(*player.Socket, graph, path);
+//        }
+//    }
+
     return path.front();
 }
 
 sf::Vector2f Enemy::steer(sf::Vector2f goal)
 {
-    sf::Vector2f desired_velocity = util::Normalize(goal - data.position) * definition.base_movement_speed;
+    sf::Vector2f desired_direction = util::Normalize(goal - data.position);
 
-    return desired_velocity - current_velocity;
+    return (desired_direction * current_max_speed) - current_velocity;
+}
+
+sf::Vector2f Enemy::avoid(sf::Vector2f direction)
+{
+    sf::Vector2f desired_direction = util::Normalize(direction - data.position);
+
+    util::VectorCloud cloud = util::CreateVectorCloud(desired_direction);
+    cloud = configureDirectionWeights(cloud);
+    sf::Vector2f new_direction = util::CollapseVectorCloud(cloud);
+
+    if (new_direction != desired_direction)
+    {
+        return (desired_direction * current_max_speed) - current_velocity;
+    }
+    else
+    {
+        return sf::Vector2f{0, 0};
+    }
 }
 
 void Enemy::accelerate(sf::Time elapsed)
@@ -277,16 +324,22 @@ void Enemy::decelerate(sf::Time elapsed)
 
 sf::Vector2f Enemy::getRepulsionForce(float distance)
 {
-    // TODO: Fix this! invert the vector so closer things have more weight, not less
     sf::Vector2f aggragate_direction{0, 0};
 
     for (auto& enemy : region->Enemies)
     {
+        if (enemy.data.id == data.id)
+        {
+            continue;
+        }
+
         if (util::Distance(enemy.GetBounds().getPosition(), data.position) < distance)
         {
-            aggragate_direction += data.position - enemy.data.position;
+            sf::Vector2f vector = data.position - enemy.data.position;
+            aggragate_direction += util::InvertVectorMagnitude(vector, distance);
         }
     }
+
     return aggragate_direction;
 }
 
@@ -318,19 +371,22 @@ bool Enemy::pathClear(sf::Vector2f direction, util::Seconds time_offset)
     return true;
 }
 
-bool Enemy::checkForwardCollision()
+util::VectorCloud Enemy::configureDirectionWeights(util::VectorCloud cloud)
 {
-    sf::FloatRect projected_bounds = GetProjectedBounds(current_max_speed / definition.deceleration);
-
-    for (auto& obstacle : region->Obstacles)
+    for (auto& vector : cloud)
     {
-        if (util::Intersects(projected_bounds, obstacle))
+        sf::FloatRect projected_bounds = GetProjectedBounds(current_max_speed / definition.deceleration, vector.vector * current_max_speed);
+        for (auto& obstacle : region->Obstacles)
         {
-            return true;
+            if (util::Intersects(projected_bounds, obstacle))
+            {
+                vector.weight = 0;
+                break;
+            }
         }
     }
 
-    return false;
+    return cloud;
 }
 
 void Enemy::handleWandering(sf::Time elapsed)

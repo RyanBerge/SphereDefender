@@ -14,6 +14,7 @@
 #include <array>
 #include "entity_data.h"
 #include "definitions.h"
+#include "pathfinding.h"
 
 namespace network {
 
@@ -134,6 +135,9 @@ public:
         SetMenuEvent,
         AdvanceMenuEvent,
 
+        // Debugging messages
+        DisplayPath,
+
         Error = 0xFF
     };
 
@@ -162,6 +166,7 @@ public:
     static bool CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm);
     static bool SetMenuEvent(sf::TcpSocket& socket, uint16_t event_id);
     static bool AdvanceMenuEvent(sf::TcpSocket& socket, uint16_t advance_value, bool finish);
+    static bool DisplayPath(sf::TcpSocket& socket, util::PathingGraph graph, std::list<sf::Vector2f> path);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -184,6 +189,7 @@ public:
     static bool DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm);
     static bool DecodeSetMenuEvent(sf::TcpSocket& socket, uint16_t& out_event_id);
     static bool DecodeAdvanceMenuEvent(sf::TcpSocket& socket, uint16_t& out_advance_value, bool& out_finish);
+    static bool DecodeDisplayPath(sf::TcpSocket& socket, std::vector<sf::Vector2f>& out_graph, std::vector<sf::Vector2f>& out_path);
 };
 
 } // network

@@ -563,6 +563,23 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::DisplayPath:
+            {
+                std::vector<sf::Vector2f> graph;
+                std::vector<sf::Vector2f> path;
+                if (ServerMessage::DecodeDisplayPath(resources::GetServerSocket(), graph, path))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.DisplayDebugPath(graph, path);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
             default:
             {
                 cerr << "Unrecognized code: " << static_cast<int>(code) << endl;

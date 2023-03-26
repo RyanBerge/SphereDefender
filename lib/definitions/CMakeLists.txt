@@ -6,13 +6,10 @@ set(Sources
     src/definitions.cpp
 )
 
-add_library(${TargetName} ${Sources})
+add_library(${TargetName} SHARED ${Sources})
 
-target_include_directories(${TargetName} PRIVATE
+target_include_directories(${TargetName} PUBLIC
     ${PROJECT_SOURCE_DIR}/lib/definitions/include
-    ${PROJECT_SOURCE_DIR}/lib/util/include
-    ${PROJECT_SOURCE_DIR}/externals/sfml/install/include
-    ${PROJECT_SOURCE_DIR}/externals/Json/install/include
 )
 
 target_link_libraries(${TargetName}

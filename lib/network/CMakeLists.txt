@@ -5,11 +5,14 @@ set(Sources
     src/messaging.cpp
 )
 
-add_library(${TargetName} ${Sources})
+add_library(${TargetName} SHARED ${Sources})
 
-target_include_directories(${TargetName} PRIVATE
+target_include_directories(${TargetName} PUBLIC
     ${PROJECT_SOURCE_DIR}/lib/network/include
-    ${PROJECT_SOURCE_DIR}/lib/definitions/include
 )
 
-target_link_libraries(${TargetName} sfml-network)
+target_link_libraries(${TargetName}
+    util
+    definitions
+    sfml-network
+)

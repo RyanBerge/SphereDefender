@@ -148,6 +148,19 @@ void Game::Draw()
             }
         }
 
+        if (display_debug_path)
+        {
+            for (auto& node : debug_graph_nodes)
+            {
+                resources::GetWindow().draw(node);
+            }
+
+            for (auto& node : debug_path_nodes)
+            {
+                resources::GetWindow().draw(node);
+            }
+        }
+
         resources::GetWindow().setView(old_view);
 
         gui.Draw();
@@ -430,6 +443,33 @@ void Game::DisplayGatherPlayers(uint16_t player_id, bool start)
 void Game::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
 {
     gui.DisplayVote(player_id, vote, confirmed);
+}
+
+void Game::DisplayDebugPath(std::vector<sf::Vector2f> graph, std::vector<sf::Vector2f> path)
+{
+    display_debug_path = true;
+    debug_graph_nodes.clear();
+    debug_path_nodes.clear();
+
+    for (auto& node : graph)
+    {
+        sf::CircleShape dot;
+        dot.setFillColor(sf::Color::Red);
+        dot.setRadius(4);
+        dot.setPosition(node);
+        dot.setOrigin(dot.getLocalBounds().left + dot.getLocalBounds().width / 2, dot.getLocalBounds().top + dot.getLocalBounds().height / 2);
+        debug_graph_nodes.push_back(dot);
+    }
+
+    for (auto& node : path)
+    {
+        sf::CircleShape dot;
+        dot.setFillColor(sf::Color::Blue);
+        dot.setRadius(5);
+        dot.setPosition(node);
+        dot.setOrigin(dot.getLocalBounds().left + dot.getLocalBounds().width / 2, dot.getLocalBounds().top + dot.getLocalBounds().height / 2);
+        debug_path_nodes.push_back(dot);
+    }
 }
 
 void Game::updateScroll(sf::Time elapsed)

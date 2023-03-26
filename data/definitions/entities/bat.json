@@ -4,12 +4,12 @@
     "wandering"
   ],
   "actions": [
-    "None", "Attacking"
+    "none", "tackling"
   ],
   "movement_speed": 100,
-  "steering_force": 340,
-  "repulsion_force": 450,
-  "repulsion_radius": 20,
+  "steering_force": 440,
+  "repulsion_force": 550,
+  "repulsion_radius": 30,
   "acceleration": 100,
   "deceleration": 50,
   "wander_behavior": {

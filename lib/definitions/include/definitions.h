@@ -52,7 +52,7 @@ enum class Behavior
 enum class Action
 {
     None,
-    Attacking,
+    Tackling,
     Knockback,
     Sniffing,
     Stunned,

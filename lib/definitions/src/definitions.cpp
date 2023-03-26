@@ -259,7 +259,7 @@ public:
                 entity.behaviors = { { Behavior::Wandering, false }, { Behavior::Moving, false }, { Behavior::Feeding, false },
                                      { Behavior::Hunting, false }, { Behavior::Dead, false } };
 
-                entity.actions = { { Action::None, false }, { Action::Attacking, false }, { Action::Knockback, false },
+                entity.actions = { { Action::None, false }, { Action::Tackling, false }, { Action::Knockback, false },
                                    { Action::Sniffing, false }, { Action::Stunned, false }, { Action::Leaping, false } };
 
                 entity.base_movement_speed = json["movement_speed"];
@@ -301,9 +301,9 @@ public:
                     {
                         entity.actions[Action::None] = true;
                     }
-                    else if (action == "attacking")
+                    else if (action == "tackling")
                     {
-                        entity.actions[Action::Attacking] = true;
+                        entity.actions[Action::Tackling] = true;
                     }
                     else if (action == "knockback")
                     {
