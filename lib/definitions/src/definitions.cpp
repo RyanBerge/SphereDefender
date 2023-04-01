@@ -256,13 +256,15 @@ public:
                 file >> json;
 
                 EntityDefinition entity;
-                entity.behaviors = { { Behavior::Wandering, false }, { Behavior::Moving, false }, { Behavior::Feeding, false },
-                                     { Behavior::Hunting, false }, { Behavior::Dead, false } };
+                entity.behaviors = { { Behavior::Wandering, false }, { Behavior::Feeding, false },
+                                     { Behavior::Hunting, false }, { Behavior::Stalking, false }, { Behavior::Dead, false } };
 
-                entity.actions = { { Action::None, false }, { Action::Tackling, false }, { Action::Knockback, false },
+                entity.actions = { { Action::Tackling, false }, { Action::Knockback, false },
                                    { Action::Sniffing, false }, { Action::Stunned, false }, { Action::Leaping, false } };
 
                 entity.base_movement_speed = json["movement_speed"];
+                entity.walking_speed = json["walking_speed"];
+                entity.feeding_range = json["feeding_range"];
                 entity.steering_force = json["steering_force"];
                 entity.repulsion_force = json["repulsion_force"];
                 entity.repulsion_radius = json["repulsion_radius"];
@@ -270,16 +272,16 @@ public:
                 entity.deceleration = json["deceleration"];
                 entity.wander_rest_time_min = json["wander_behavior"]["rest_min"];
                 entity.wander_rest_time_max = json["wander_behavior"]["rest_max"];
+                entity.aggro_range = json["aggro_range"];
+                entity.close_quarters_range = json["close_quarters_range"];
+                entity.leash_range = json["leash_range"];
+                entity.base_aggression = json["base_aggression"];
 
                 for (auto& behavior : json["behaviors"])
                 {
                     if (behavior == "wandering")
                     {
                         entity.behaviors[Behavior::Wandering] = true;
-                    }
-                    else if (behavior == "moving")
-                    {
-                        entity.behaviors[Behavior::Moving] = true;
                     }
                     else if (behavior == "feeding")
                     {
@@ -289,19 +291,23 @@ public:
                     {
                         entity.behaviors[Behavior::Hunting] = true;
                     }
+                    else if (behavior == "stalking")
+                    {
+                        entity.behaviors[Behavior::Stalking] = true;
+                    }
                     else if (behavior == "dead")
                     {
                         entity.behaviors[Behavior::Dead] = true;
+                    }
+                    else
+                    {
+                        cerr << "Unsupported behavior " << behavior << " listed in entity file: " << entity_file.path() << "\n";
                     }
                 }
 
                 for (auto& action : json["actions"])
                 {
-                    if (action == "none")
-                    {
-                        entity.actions[Action::None] = true;
-                    }
-                    else if (action == "tackling")
+                    if (action == "tackling")
                     {
                         entity.actions[Action::Tackling] = true;
                     }
@@ -320,6 +326,10 @@ public:
                     else if (action == "leaping")
                     {
                         entity.actions[Action::Leaping] = true;
+                    }
+                    else
+                    {
+                        cerr << "Unsupported action " << action << " listed in entity file: " << entity_file.path() << "\n";
                     }
                 }
 

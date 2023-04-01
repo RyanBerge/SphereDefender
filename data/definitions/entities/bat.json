@@ -1,12 +1,14 @@
 {
   "name": "Bat",
   "behaviors": [
-    "wandering"
+    "wandering", "feeding", "hunting", "stalking"
   ],
   "actions": [
-    "none", "tackling"
+    "tackling", "leaping"
   ],
-  "movement_speed": 100,
+  "movement_speed": 70,
+  "walking_speed" : 40,
+  "feeding_range": 5,
   "steering_force": 440,
   "repulsion_force": 550,
   "repulsion_radius": 30,
@@ -15,5 +17,9 @@
   "wander_behavior": {
     "rest_min": 1,
     "rest_max": 3
-  }
+  },
+  "aggro_range": 500,
+  "close_quarters_range": 90,
+  "leash_range": 500,
+  "base_aggression": 0.4
 }

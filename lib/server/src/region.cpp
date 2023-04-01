@@ -30,9 +30,9 @@ namespace server {
 
 Region::Region() { }
 
-Region::Region(definitions::RegionType region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionType region_type, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
-    definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
+    definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_type);
 
     Bounds = definition.bounds;
     Convoy = definition.convoy;
@@ -46,6 +46,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
     Obstacles.insert(Obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
 
     spawn_enemies = definition.leyline;
+    Leyline = definition.leyline;
 
     if (definition.leyline)
     {
@@ -56,7 +57,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 
     last_spawn = 0;
 
-    if (region_name == definitions::RegionType::MenuEvent)
+    if (region_type == definitions::RegionType::MenuEvent)
     {
         global::Paused = true;
         global::MenuEvent = true;
@@ -75,6 +76,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 
             for (int i = 0; i < count; ++i)
             {
+                spawnEnemy(spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
                 Enemy enemy(this, spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
                 Enemies.push_back(enemy);
             }
@@ -114,7 +116,7 @@ void Region::Update(sf::Time elapsed)
         BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
         if (spawn_enemies && (last_spawn == 0 || region_age >= last_spawn + spawn_interval))
         {
-            spawnEnemy();
+            spawnWaveEnemy();
         }
     }
 
@@ -207,13 +209,34 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
     return false;
 }
 
-void Region::spawnEnemy()
+void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position)
 {
-    sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), util::GetRandomFloat(-200, 300)};
-    Enemy enemy(this, definitions::EntityType::SmallDemon, spawn_position);
-    //enemy.Data.position = sf::Vector2f{900, 0};
+    spawnEnemy(type, position, position);
+}
 
+void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf::Vector2f pack_position)
+{
+    if (PathingGraphs.find(type) == PathingGraphs.end())
+    {
+        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, definitions::GetEntityDefinition(type).hitbox);
+    }
+
+    Enemy enemy(this, type, position, pack_position);
     Enemies.push_back(enemy);
+}
+
+void Region::spawnWaveEnemy()
+{
+    //if (Enemies.size() > 0)
+    //    return;
+
+    sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), util::GetRandomFloat(-200, 300)};
+    //sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), 200};
+    //sf::Vector2f spawn_position{-500, 450}; // Under convoy
+    //sf::Vector2f spawn_position{-900, -450}; // Left of convoy
+
+    spawnEnemy(definitions::EntityType::Bat, spawn_position);
+
     last_spawn = region_age;
     spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;
     if (spawn_interval < MINIMUM_SPAWN_INTERVAL)

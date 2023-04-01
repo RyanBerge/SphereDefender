@@ -34,7 +34,7 @@ Player& GetPlayerById(uint16_t id, std::vector<Player>& players)
         }
     }
 
-    throw std::runtime_error("Player Id not found.");
+    throw std::runtime_error("Player Id not found: " + std::to_string(id));
 }
 
 } // namespace server

@@ -92,6 +92,11 @@ void Server::update()
         }
     }
 
+    if (PlayerList.size() == 0)
+    {
+        return;
+    }
+
     sf::Time elapsed = clock.restart();
 
     if (game_state == GameState::Game)

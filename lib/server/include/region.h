@@ -34,6 +34,9 @@ public:
     std::vector<sf::FloatRect> Obstacles;
     std::list<definitions::Projectile> Projectiles;
     float BatteryLevel = 0;
+    bool Leyline = false;
+
+    std::map<definitions::EntityType, util::PathingGraph> PathingGraphs;
 
 private:
     int region_difficulty = 0;
@@ -45,7 +48,9 @@ private:
     bool spawn_enemies = false;
     definitions::MenuEvent current_event;
 
-    void spawnEnemy();
+    void spawnEnemy(definitions::EntityType type, sf::Vector2f position);
+    void spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf::Vector2f pack_position);
+    void spawnWaveEnemy();
     void handleProjectiles(sf::Time elapsed);
 };
 

@@ -11,6 +11,7 @@
 #include "definitions.h"
 #include "messaging.h"
 #include "game_math.h"
+#include <optional>
 
 using definitions::Behavior, definitions::Action;
 
@@ -32,28 +33,36 @@ public:
     network::EnemyData GetData();
     Behavior GetBehavior();
     Action GetAction();
-    sf::FloatRect GetBounds();
-    sf::FloatRect GetBounds(sf::Vector2f position);
-    sf::FloatRect GetProjectedBounds(util::Seconds future);
-    sf::FloatRect GetProjectedBounds(util::Seconds future, sf::Vector2f velocity);
+    const sf::FloatRect GetBounds();
+    const sf::FloatRect GetBounds(sf::Vector2f position);
+    const sf::FloatRect GetProjectedBounds(util::Seconds future);
+    const sf::FloatRect GetProjectedBounds(util::Seconds future, sf::Vector2f velocity);
     int GetSiphonRate();
 
     bool Despawn = false;
 
 private:
-    bool chooseAction();
+    void setBehavior(Behavior behavior);
+    void setAction(Action action);
+    void chooseBehavior();
+    bool attack();
     void handleBehavior(sf::Time elapsed);
 
     void handleWandering(sf::Time elapsed);
+    void handleFeeding(sf::Time elapsed);
     void handleHunting(sf::Time elapsed);
+    void handleStalking(sf::Time elapsed);
+
+    std::optional<uint16_t> playerInRange(float aggro_distance);
+    bool aggroPlayer();
+    sf::Vector2f getTargetConvoyPoint();
+    float getConvoyDistance();
 
     void move(sf::Time elapsed);
+    void walk(sf::Time elapsed);
     void takeStep(sf::Vector2f step);
     sf::Vector2f getGoal();
-    bool pathClear(sf::Vector2f direction, util::Seconds time_offset);
-    util::VectorCloud configureDirectionWeights(util::VectorCloud cloud);
     sf::Vector2f steer(sf::Vector2f goal);
-    sf::Vector2f avoid(sf::Vector2f direction);
     void accelerate(sf::Time elapsed);
     void decelerate(sf::Time elapsed);
     sf::Vector2f getRepulsionForce(float distance);
@@ -71,9 +80,11 @@ private:
     sf::Vector2f spawn_position;
     sf::Vector2f destination;
     bool is_moving = false;
+    bool is_walking = false;
     bool braking = false;
     sf::Vector2f current_velocity{0, 0};
     float current_max_speed = 0;
+    int aggro_range;
 
     enum class WanderState
     {
@@ -86,15 +97,37 @@ private:
     util::Seconds wander_timer = 0;
     util::Seconds wander_rest_time = 0;
 
-    enum class HuntingState
+    enum class FeedingState
     {
         Start,
         Moving,
-        Attacking
+        Approaching,
+        Feeding
+    };
+
+    FeedingState feeding_state = FeedingState::Start;
+
+    enum class HuntingState
+    {
+        Start,
+        Moving
     };
 
     HuntingState hunting_state = HuntingState::Start;
     util::Seconds hunting_timer = 0;
+    uint16_t hunting_target;
+    float aggression;
+
+    enum class StalkingState
+    {
+        Start,
+        Moving,
+        Resting
+    };
+
+    StalkingState stalking_state = StalkingState::Start;
+    util::Seconds stalking_rest_timer = 0;
+    util::Seconds stalking_rest_time;
 
 };
 

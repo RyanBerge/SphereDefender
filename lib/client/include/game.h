@@ -119,7 +119,8 @@ private:
     std::map<sf::Event::EventType, uint64_t> event_id_map;
 
     bool display_debug_path = false;
-    std::vector<sf::CircleShape> debug_graph_nodes;
+    std::vector<sf::Text> debug_graph_nodes;
+    //std::vector<sf::CircleShape> debug_graph_nodes;
     std::vector<sf::CircleShape> debug_path_nodes;
 };
 

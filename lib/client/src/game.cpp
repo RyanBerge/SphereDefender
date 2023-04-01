@@ -451,15 +451,23 @@ void Game::DisplayDebugPath(std::vector<sf::Vector2f> graph, std::vector<sf::Vec
     debug_graph_nodes.clear();
     debug_path_nodes.clear();
 
-    for (auto& node : graph)
+    //for (auto& node : graph)
+    for (unsigned i = 0; i < graph.size(); ++i)
     {
-        sf::CircleShape dot;
-        dot.setFillColor(sf::Color::Red);
-        dot.setRadius(4);
-        dot.setPosition(node);
-        dot.setOrigin(dot.getLocalBounds().left + dot.getLocalBounds().width / 2, dot.getLocalBounds().top + dot.getLocalBounds().height / 2);
-        debug_graph_nodes.push_back(dot);
+        sf::Text number;
+        number.setFont(*resources::FontManager::GetFont("Vera"));
+        number.setFillColor(sf::Color::Red);
+        number.setOutlineColor(sf::Color::Black);
+        number.setOutlineThickness(2);
+        number.setCharacterSize(16);
+        number.setString(std::to_string(i));
+        //number.setRadius(4);
+        number.setPosition(graph[i]);
+        number.setOrigin(number.getLocalBounds().left + number.getLocalBounds().width / 2, number.getLocalBounds().top + number.getLocalBounds().height / 2);
+        debug_graph_nodes.push_back(number);
     }
+
+    //debug_graph_nodes[13].setFillColor(sf::Color::Yellow);
 
     for (auto& node : path)
     {

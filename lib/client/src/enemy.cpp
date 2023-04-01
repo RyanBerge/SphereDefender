@@ -70,7 +70,7 @@ void Enemy::UpdateData(network::EnemyData new_data)
     spritesheet.SetPosition(data.position.x, data.position.y);
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
 
-    if (new_data.id == 1)
+    if (new_data.id == 0)
     {
         spritesheet.SetAnimation("Sniff");
     }

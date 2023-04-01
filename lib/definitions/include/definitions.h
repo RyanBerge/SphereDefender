@@ -42,10 +42,11 @@ enum class EntityType : uint8_t
 
 enum class Behavior
 {
+    None,
     Wandering,
-    Moving,
     Feeding,
     Hunting,
+    Stalking,
     Dead
 };
 
@@ -63,6 +64,8 @@ struct EntityDefinition
 {
     //std::string name;
     float base_movement_speed;
+    float walking_speed;
+    int feeding_range;
     std::map<Behavior, bool> behaviors;
     std::map<Action, bool> actions;
     sf::Vector2f hitbox;
@@ -73,6 +76,10 @@ struct EntityDefinition
     int deceleration;
     float wander_rest_time_min;
     float wander_rest_time_max;
+    int aggro_range;
+    int close_quarters_range;
+    int leash_range;
+    float base_aggression;
 };
 
 EntityDefinition GetEntityDefinition(EntityType type);

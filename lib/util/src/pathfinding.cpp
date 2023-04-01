@@ -31,42 +31,88 @@ namespace {
 
 } // anonymous namespace
 
-PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size)
+PathingGraph CreatePathingGraph(std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size)
 {
     PathingGraph graph;
 
-    PathingNode start_node{};
-    start_node.position = start;
-    graph.nodes.push_back(start_node); // start: index == 0
-
-    PathingNode finish_node{};
-    finish_node.position = finish;
-    graph.nodes.push_back(finish_node); // finish: index == 1
+    // Create two blank nodes for start and finish later
+    graph.nodes.push_back(PathingNode{});
+    graph.nodes.push_back(PathingNode{});
 
     float clearance = (std::max(entity_size.x, entity_size.y) / 2) * 1.25f;
 
     for (auto& rect : obstacles)
     {
+        bool collides = false;
+
         PathingNode upper_left{};
         upper_left.position = sf::Vector2f{rect.left - clearance, rect.top - clearance};
-        graph.nodes.push_back(upper_left);
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Contains(obstacle, upper_left.position))
+            {
+                collides = true;
+                break;
+            }
+        }
+
+        if (!collides)
+        {
+            graph.nodes.push_back(upper_left);
+        }
 
         PathingNode upper_right{};
         upper_right.position = sf::Vector2f{rect.left + rect.width + clearance, rect.top - clearance};
-        graph.nodes.push_back(upper_right);
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Contains(obstacle, upper_right.position))
+            {
+                collides = true;
+                break;
+            }
+        }
+
+        if (!collides)
+        {
+            graph.nodes.push_back(upper_right);
+        }
 
         PathingNode lower_left{};
         lower_left.position = sf::Vector2f{rect.left - clearance, rect.top + rect.height + clearance};
-        graph.nodes.push_back(lower_left);
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Contains(obstacle, lower_left.position))
+            {
+                collides = true;
+                break;
+            }
+        }
+
+        if (!collides)
+        {
+            graph.nodes.push_back(lower_left);
+        }
 
         PathingNode lower_right{};
         lower_right.position = sf::Vector2f{rect.left + rect.width + clearance, rect.top + rect.height + clearance};
-        graph.nodes.push_back(lower_right);
+        for (auto& obstacle : obstacles)
+        {
+            if (util::Contains(obstacle, lower_right.position))
+            {
+                collides = true;
+                break;
+            }
+        }
+
+        if (!collides)
+        {
+            graph.nodes.push_back(lower_right);
+        }
     }
 
     float sight_width = clearance - 1;
 
-    for (unsigned i = 0; i < graph.nodes.size() - 1; ++i)
+    for (unsigned i = 2; i < graph.nodes.size() - 1; ++i)
     {
         PathingNode& current_node = graph.nodes[i];
         for (unsigned j = i + 1; j < graph.nodes.size(); ++j)
@@ -104,11 +150,69 @@ PathingGraph CreatePathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
                 other_node.connections[i] = distance;
             }
         }
-
-        current_node.h_cost = Distance(current_node.position, graph.nodes[1].position);
     }
 
     return graph;
+}
+
+PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size, const PathingGraph& in_graph)
+{
+    PathingGraph out_graph = in_graph;
+
+    out_graph.nodes[0].position = start;
+    out_graph.nodes[1].position = finish;
+
+    float clearance = (std::max(entity_size.x, entity_size.y) / 2) * 1.25f;
+    float sight_width = clearance - 1;
+
+    for (auto& node : out_graph.nodes)
+    {
+        node.h_cost = Distance(node.position, out_graph.nodes[1].position);
+    }
+
+    for (unsigned i = 0; i < 2; ++i)
+    {
+        PathingNode& current_node = out_graph.nodes[i];
+        for (unsigned j = i + 1; j < out_graph.nodes.size(); ++j)
+        {
+            PathingNode& other_node = out_graph.nodes[j];
+
+            sf::Vector2f path_vector = other_node.position - current_node.position;
+            float length = std::hypot(path_vector.x, path_vector.y);
+            sf::Vector2f left_orthogonal{-path_vector.y / length * sight_width, path_vector.x / length * sight_width};
+            sf::Vector2f right_orthogonal{path_vector.y / length * sight_width, -path_vector.x / length * sight_width};
+
+            LineSegment left_bound{current_node.position + left_orthogonal, other_node.position + left_orthogonal};
+            LineSegment right_bound{current_node.position + right_orthogonal, other_node.position + right_orthogonal};
+
+            bool line_of_sight = true;
+            for (auto& rect : obstacles)
+            {
+                if (Intersects(rect, left_bound))
+                {
+                    line_of_sight = false;
+                    break;
+                }
+
+                if (Intersects(rect, right_bound))
+                {
+                    line_of_sight = false;
+                    break;
+                }
+            }
+
+            if (line_of_sight)
+            {
+                float distance = Distance(current_node.position, other_node.position);
+                current_node.connections[j] = distance;
+                other_node.connections[i] = distance;
+            }
+        }
+
+        current_node.h_cost = Distance(current_node.position, out_graph.nodes[1].position);
+    }
+
+    return out_graph;
 }
 
 std::list<sf::Vector2f> GetPath(PathingGraph& graph)
@@ -134,6 +238,7 @@ std::list<sf::Vector2f> GetPath(PathingGraph& graph)
         if (open_list.empty())
         {
             // No path available?
+            cerr << "Cannot find path\n";
             break;
         }
 
@@ -156,11 +261,8 @@ std::list<sf::Vector2f> GetPath(PathingGraph& graph)
         graph.nodes[current_index].visited = true;
         open_list.remove(current_index);
 
-        for (auto& connection : graph.nodes[current_index].connections)
+        for (auto& [neighbor_index, cost_from_current] : graph.nodes[current_index].connections)
         {
-            int neighbor_index = connection.first;
-            float cost_from_current = connection.second;
-
             if (!graph.nodes[neighbor_index].visited)
             {
                 float new_g_cost = graph.nodes[current_index].g_cost + cost_from_current;
