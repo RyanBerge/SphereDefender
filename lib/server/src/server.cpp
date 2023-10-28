@@ -942,7 +942,8 @@ void Server::loadingComplete(Player& player)
         {
             if (node.id == current_region)
             {
-                region = Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
+                region.~Region();
+                new(&region)Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
                 break;
             }
         }

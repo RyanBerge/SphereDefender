@@ -28,28 +28,24 @@ struct PlayerActionFlags
     bool start_attack: 1;
 };
 
-struct EnemyActionFlags
+enum class EnemyAnimation
 {
-    bool move: 1;
-    bool feed: 1;
-    bool knockback: 1;
-    bool stunned: 1;
-    bool start_attack: 1;
-    bool dead: 1;
-    bool sniffing: 1;
-    bool leaping: 1;
+    Rest,
+    Move,
+    Feed,
+    Knockback,
+    Stun,
+    Tackle,
+    Dead,
+    Sniff,
+    LeapWindup,
+    Leap
 };
 
 struct PlayerAction
 {
     PlayerActionFlags flags;
     uint16_t attack_angle;
-};
-
-struct EnemyAction
-{
-    EnemyActionFlags flags;
-    sf::Vector2f attack_vector;
 };
 
 class ClientMessage
@@ -154,7 +150,7 @@ public:
     static bool SetZone(sf::TcpSocket& socket, definitions::Zone zone);
     static bool SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
-    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
+    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action);
     static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
@@ -177,7 +173,7 @@ public:
     static bool DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone);
     static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
-    static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
+    static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action);
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);

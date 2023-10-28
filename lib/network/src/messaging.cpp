@@ -926,42 +926,27 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
     return true;
 }
 
-bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action)
+bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action)
 {
     Code code = ServerMessage::Code::EnemyChangeAction;
 
-    size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action.flags);
-    if (action.flags.start_attack)
-    {
-        buffer_size += sizeof(action.attack_vector.x) + sizeof(action.attack_vector.y);
-    }
-
-    uint8_t* buffer = new uint8_t[buffer_size];
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action);
+    uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
     std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
     offset += sizeof(enemy_id);
-    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
-    offset += sizeof(action.flags);
-
-    if (action.flags.start_attack)
-    {
-        std::memcpy(buffer + offset, &action.attack_vector.x, sizeof(action.attack_vector.x));
-        offset += sizeof(action.attack_vector.x);
-        std::memcpy(buffer + offset, &action.attack_vector.y, sizeof(action.attack_vector.y));
-        offset += sizeof(action.attack_vector.y);
-    }
+    std::memcpy(buffer + offset, &action, sizeof(action));
+    offset += sizeof(action);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
         cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
@@ -1564,10 +1549,10 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
     return true;
 }
 
-bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action)
+bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action)
 {
     uint16_t id;
-    EnemyAction temp_action;
+    EnemyAnimation action;
 
     if (!read(socket, &id, sizeof(id)))
     {
@@ -1575,29 +1560,14 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
-    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
+    if (!read(socket, &action, sizeof(action)))
     {
         cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
     }
 
-    if (temp_action.flags.start_attack)
-    {
-        if (!read(socket, &temp_action.attack_vector.x, sizeof(temp_action.attack_vector.x)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack vector x." << endl;
-            return false;
-        }
-
-        if (!read(socket, &temp_action.attack_vector.y, sizeof(temp_action.attack_vector.y)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack vector y." << endl;
-            return false;
-        }
-    }
-
     out_enemy_id = id;
-    out_action = temp_action;
+    out_action = action;
 
     return true;
 }

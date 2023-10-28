@@ -77,8 +77,6 @@ Region::Region(definitions::RegionType region_type, unsigned player_count, float
             for (int i = 0; i < count; ++i)
             {
                 spawnEnemy(spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
-                Enemy enemy(this, spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
-                Enemies.push_back(enemy);
             }
         }
     }

@@ -47,6 +47,13 @@
   ],
   "animations": [
     {
+      "name": "Rest",
+      "start_frame": 0,
+      "end_frame": 0,
+      "animation_speed": 0,
+      "next_animation": "Rest"
+    },
+    {
       "name": "Move",
       "start_frame": 0,
       "end_frame": 0,
@@ -61,10 +68,17 @@
       "next_animation": "Sniff"
     },
     {
-      "name": "Leap",
+      "name": "LeapWindup",
       "start_frame": 2,
       "end_frame": 2,
       "animation_speed": 1,
+      "next_animation": "Leap"
+    },
+    {
+      "name": "Leap",
+      "start_frame": 2,
+      "end_frame": 2,
+      "animation_speed": 2,
       "next_animation": "Move"
     },
     {

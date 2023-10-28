@@ -259,8 +259,9 @@ public:
                 entity.behaviors = { { Behavior::Wandering, false }, { Behavior::Feeding, false },
                                      { Behavior::Hunting, false }, { Behavior::Stalking, false }, { Behavior::Dead, false } };
 
-                entity.actions = { { Action::Tackling, false }, { Action::Knockback, false },
-                                   { Action::Sniffing, false }, { Action::Stunned, false }, { Action::Leaping, false } };
+                entity.actions = { { Action::Knockback, false }, { Action::Sniffing, false }, { Action::Stunned, false } };
+
+                entity.attacks = { { Action::Tackling, std::nullopt }, { Action::Leaping, std::nullopt }};
 
                 entity.base_movement_speed = json["movement_speed"];
                 entity.walking_speed = json["walking_speed"];
@@ -305,13 +306,31 @@ public:
                     }
                 }
 
+                for (auto& j_attack : json["attacks"])
+                {
+                    AttackDefinition attack_definition;
+                    attack_definition.damage = j_attack["damage"];
+                    attack_definition.range = j_attack["range"];
+                    attack_definition.cooldown = j_attack["cooldown"];
+
+                    std::string name = j_attack["name"];
+                    if (name == "tackle")
+                    {
+                        entity.attacks[Action::Tackling] = attack_definition;
+                    }
+                    else if (name == "leap")
+                    {
+                        entity.attacks[Action::Leaping] = attack_definition;
+                    }
+                    else
+                    {
+                        cerr << "Unsupported attack " << name << " listed in entity file: " << entity_file.path() << "\n";
+                    }
+                }
+
                 for (auto& action : json["actions"])
                 {
-                    if (action == "tackling")
-                    {
-                        entity.actions[Action::Tackling] = true;
-                    }
-                    else if (action == "knockback")
+                    if (action == "knockback")
                     {
                         entity.actions[Action::Knockback] = true;
                     }
@@ -322,10 +341,6 @@ public:
                     else if (action == "stunned")
                     {
                         entity.actions[Action::Stunned] = true;
-                    }
-                    else if (action == "leaping")
-                    {
-                        entity.actions[Action::Leaping] = true;
                     }
                     else
                     {
@@ -350,6 +365,20 @@ public:
 
                     entity.hitbox.x = sprite_json["pathing_hitbox"]["x"];
                     entity.hitbox.y = sprite_json["pathing_hitbox"]["y"];
+
+                    for (auto& j_animation : sprite_json["animations"])
+                    {
+                        int num_frames = j_animation["end_frame"].get<int>() - j_animation["start_frame"].get<int>() + 1;
+                        util::Seconds time = (1 / j_animation["animation_speed"].get<double>()) * num_frames;
+                        if (j_animation["name"] == "LeapWindup")
+                        {
+                            entity.leap_windup_time = time;
+                        }
+                        else if (j_animation["name"] == "Leap")
+                        {
+                            entity.leap_time = time;
+                        }
+                    }
                 }
                 catch (const std::exception& e)
                 {

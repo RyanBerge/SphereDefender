@@ -20,6 +20,7 @@
 
 using std::cout, std::endl;
 using server::global::PlayerList;
+using network::EnemyAnimation;
 
 constexpr bool DISPLAY_PATHS = false;
 
@@ -50,6 +51,14 @@ Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2
 
 void Enemy::Update(sf::Time elapsed)
 {
+    for (auto& [attack_type, attack] : definition.attacks)
+    {
+        if (attack.has_value())
+        {
+            attack.value().cooldown_timer += elapsed.asSeconds();
+        }
+    }
+
     switch (current_action)
     {
         case Action::Tackling:
@@ -74,7 +83,7 @@ void Enemy::Update(sf::Time elapsed)
         break;
         case Action::Leaping:
         {
-
+            handleLeaping(elapsed);
         }
         break;
         case Action::None:
@@ -140,11 +149,20 @@ int Enemy::GetSiphonRate()
 
 void Enemy::setBehavior(Behavior behavior)
 {
+    wander_state = WanderState::Start;
+    feeding_state = FeedingState::Start;
+    hunting_state = HuntingState::Start;
+    stalking_state = StalkingState::Start;
+    leaping_state = LeapingState::Start;
+
     current_behavior = behavior;
 }
 
 void Enemy::setAction(Action action)
 {
+    // reset states
+    leaping_state = LeapingState::Start;
+
     current_action = action;
 }
 
@@ -170,13 +188,12 @@ void Enemy::chooseBehavior()
 
 bool Enemy::attack()
 {
-    return false;
     std::vector<Action> attacks;
-    for (auto& [action, available] : definition.actions)
+    for (auto& [attack_type, attack] : definition.attacks)
     {
-        if (available)
+        if (attack.has_value() && attack.value().cooldown_timer >= attack.value().cooldown)
         {
-            attacks.push_back(action);
+            attacks.push_back(attack_type);
         }
     }
 
@@ -188,8 +205,16 @@ bool Enemy::attack()
     srand(std::time(nullptr));
     std::random_shuffle(attacks.begin(), attacks.end());
 
-    setAction(attacks[0]);
-    return true;
+    for (auto& attack : attacks)
+    {
+        if (util::Distance(GetPlayerById(hunting_target, PlayerList).Data.position, data.position) <= definition.attacks[attack].value().range)
+        {
+            setAction(attack);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void Enemy::handleBehavior(sf::Time elapsed)
@@ -444,6 +469,7 @@ void Enemy::handleWandering(sf::Time elapsed)
             wander_timer = 0;
             wander_rest_time = util::GetRandomFloat(definition.wander_rest_time_min, definition.wander_rest_time_max);
             wander_state = WanderState::Resting;
+            changeAnimation(EnemyAnimation::Rest);
             aggro_range = definition.aggro_range;
             is_moving = false;
             is_walking = true;
@@ -470,6 +496,7 @@ void Enemy::handleWandering(sf::Time elapsed)
                     if (!util::Contains(region->Obstacles, new_destination))
                     {
                         wander_state = WanderState::Moving;
+                        changeAnimation(EnemyAnimation::Move);
                         destination = new_destination;
                         is_moving = true;
                         break;
@@ -506,6 +533,7 @@ void Enemy::handleFeeding(sf::Time elapsed)
         case FeedingState::Start:
         {
             feeding_state = FeedingState::Moving;
+            changeAnimation(EnemyAnimation::Move);
             destination = region->Convoy.Position;
             is_moving = true;
             is_walking = false;
@@ -534,6 +562,7 @@ void Enemy::handleFeeding(sf::Time elapsed)
             {
                 is_moving = false;
                 feeding_state = FeedingState::Feeding;
+                changeAnimation(EnemyAnimation::Feed);
             }
         }
         break;
@@ -563,6 +592,7 @@ void Enemy::handleHunting(sf::Time elapsed)
         {
             hunting_timer = 0;
             hunting_state = HuntingState::Moving;
+            changeAnimation(EnemyAnimation::Move);
             destination = target.Data.position;
             is_moving = true;
             is_walking = false;
@@ -572,11 +602,6 @@ void Enemy::handleHunting(sf::Time elapsed)
         {
             destination = target.Data.position;
             float distance = util::Distance(destination, data.position);
-            if (distance <= definition.close_quarters_range && definition.behaviors[Behavior::Stalking] == true)
-            {
-                setBehavior(Behavior::Stalking);
-                return;
-            }
 
             if (distance >= definition.leash_range)
             {
@@ -584,9 +609,20 @@ void Enemy::handleHunting(sf::Time elapsed)
                 return;
             }
 
-            if (attack())
+            if (definition.behaviors[Behavior::Stalking])
             {
-                setBehavior(Behavior::None);
+                if (distance <= definition.close_quarters_range)
+                {
+                    setBehavior(Behavior::Stalking);
+                    return;
+                }
+            }
+            else
+            {
+                if (attack())
+                {
+                    setBehavior(Behavior::None);
+                }
             }
         }
         break;
@@ -648,6 +684,7 @@ void Enemy::handleStalking(sf::Time elapsed)
             }
 
             stalking_state = StalkingState::Moving;
+            changeAnimation(EnemyAnimation::Move);
 
             if (!collision)
             {
@@ -669,6 +706,7 @@ void Enemy::handleStalking(sf::Time elapsed)
             if (data.position == destination)
             {
                 stalking_state = StalkingState::Resting;
+                changeAnimation(EnemyAnimation::Rest);
                 stalking_rest_timer = 0;
                 is_moving = false;
             }
@@ -689,6 +727,51 @@ void Enemy::handleStalking(sf::Time elapsed)
             }
         }
         break;
+    }
+}
+
+void Enemy::handleLeaping(sf::Time elapsed)
+{
+    leaping_state_timer += elapsed.asSeconds();
+
+    switch (leaping_state)
+    {
+        case LeapingState::Start:
+        {
+            leaping_state_timer = 0;
+            leaping_state = LeapingState::Windup;
+            changeAnimation(EnemyAnimation::LeapWindup);
+            leaping_direction = util::Normalize(GetPlayerById(hunting_target, PlayerList).Data.position - data.position);
+            [[fallthrough]];
+        }
+        case LeapingState::Windup:
+        {
+            if (leaping_state_timer >= definition.leap_windup_time)
+            {
+                leaping_state = LeapingState::Leaping;
+                leaping_state_timer = 0;
+            }
+        }
+        break;
+        case LeapingState::Leaping:
+        {
+            if (leaping_state_timer >= definition.leap_time)
+            {
+                definition.attacks[Action::Leaping].value().cooldown_timer = 0;
+                setAction(Action::None);
+            }
+
+            data.position += leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
+        }
+        break;
+    }
+}
+
+void Enemy::changeAnimation(EnemyAnimation animation)
+{
+    for (auto& player : PlayerList)
+    {
+        network::ServerMessage::EnemyChangeAction(*player.Socket, data.id, animation);
     }
 }
 

@@ -53,6 +53,9 @@ private:
     void handleHunting(sf::Time elapsed);
     void handleStalking(sf::Time elapsed);
 
+    void handleLeaping(sf::Time elapsed);
+
+    void changeAnimation(network::EnemyAnimation animation);
     std::optional<uint16_t> playerInRange(float aggro_distance);
     bool aggroPlayer();
     sf::Vector2f getTargetConvoyPoint();
@@ -128,6 +131,17 @@ private:
     StalkingState stalking_state = StalkingState::Start;
     util::Seconds stalking_rest_timer = 0;
     util::Seconds stalking_rest_time;
+
+    enum class LeapingState
+    {
+        Start,
+        Windup,
+        Leaping
+    };
+
+    LeapingState leaping_state = LeapingState::Start;
+    util::Seconds leaping_state_timer = 0;
+    sf::Vector2f leaping_direction;
 
 };
 

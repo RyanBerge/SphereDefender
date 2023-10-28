@@ -11,8 +11,10 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <optional>
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
+#include "game_math.h"
 
 namespace definitions
 {
@@ -60,6 +62,14 @@ enum class Action
     Leaping
 };
 
+struct AttackDefinition
+{
+    float range;
+    float damage;
+    util::Seconds cooldown;
+    util::Seconds cooldown_timer;
+};
+
 struct EntityDefinition
 {
     //std::string name;
@@ -68,6 +78,7 @@ struct EntityDefinition
     int feeding_range;
     std::map<Behavior, bool> behaviors;
     std::map<Action, bool> actions;
+    std::map<Action, std::optional<AttackDefinition>> attacks;
     sf::Vector2f hitbox;
     int steering_force;
     int repulsion_force;
@@ -80,6 +91,8 @@ struct EntityDefinition
     int close_quarters_range;
     int leash_range;
     float base_aggression;
+    util::Seconds leap_windup_time;
+    util::Seconds leap_time;
 };
 
 EntityDefinition GetEntityDefinition(EntityType type);

@@ -45,8 +45,7 @@ void Spritesheet::Update(sf::Time elapsed)
         animation_timer -= 1 / current_animation.speed;
         if (current_frame == current_animation.end)
         {
-            current_animation = animation_data.animations[current_animation.next];
-            setFrame(current_animation.start);
+            SetAnimation(current_animation.next);
         }
         else
         {

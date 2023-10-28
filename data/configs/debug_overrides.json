@@ -13,6 +13,6 @@
   },
   "starting_region": {
     "override": true,
-    "value": 1
+    "value": 5
   }
 }

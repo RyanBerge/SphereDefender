@@ -425,7 +425,7 @@ void GameManager::checkMessages()
             case ServerMessage::Code::EnemyChangeAction:
             {
                 uint16_t enemy_id;
-                network::EnemyAction action;
+                network::EnemyAnimation action;
                 if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action))
                 {
                     Game.ChangeEnemyAction(enemy_id, action);

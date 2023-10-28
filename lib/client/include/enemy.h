@@ -26,7 +26,7 @@ public:
 
     network::EnemyData GetData();
     void UpdateData(network::EnemyData new_data);
-    void ChangeAction(network::EnemyAction action);
+    void ChangeAction(network::EnemyAnimation action);
 
     bool Despawn = false;
 

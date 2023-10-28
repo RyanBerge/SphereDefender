@@ -1,10 +1,15 @@
 {
-  "name": "Bat",
+  "name": "Demon",
   "behaviors": [
     "wandering", "feeding", "hunting", "stalking"
   ],
-  "actions": [
-    "tackling", "leaping"
+  "attacks": [
+    {
+      "name": "leap",
+      "range": 120,
+      "damage": 30,
+      "cooldown": 3
+    }
   ],
   "movement_speed": 70,
   "walking_speed" : 40,
@@ -19,7 +24,7 @@
     "rest_max": 3
   },
   "aggro_range": 500,
-  "close_quarters_range": 90,
+  "close_quarters_range": 110,
   "leash_range": 500,
   "base_aggression": 0.4
 }

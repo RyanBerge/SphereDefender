@@ -46,7 +46,7 @@ public:
     void SetPaused(bool paused, network::GuiType gui_type);
     void SetPlayerActionsEnabled(bool enable);
     void StartAction(uint16_t player_id, network::PlayerAction action);
-    void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
+    void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAnimation action);
     void ChangeItem(definitions::ItemType item);
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(uint16_t region_id);

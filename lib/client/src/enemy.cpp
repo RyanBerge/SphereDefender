@@ -69,53 +69,69 @@ void Enemy::UpdateData(network::EnemyData new_data)
     data = new_data;
     spritesheet.SetPosition(data.position.x, data.position.y);
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
-
-    if (new_data.id == 0)
-    {
-        spritesheet.SetAnimation("Sniff");
-    }
 }
 
-void Enemy::ChangeAction(network::EnemyAction action)
+void Enemy::ChangeAction(network::EnemyAnimation animation)
 {
     if (!alive)
     {
         return;
     }
 
-    if (action.flags.move)
+    switch (animation)
     {
-        spritesheet.SetAnimation("Move");
-    }
-    else if (action.flags.sniffing)
-    {
-        spritesheet.SetAnimation("Sniff");
-    }
-    else if (action.flags.feed)
-    {
-        spritesheet.SetAnimation("Feed");
-    }
-    else if (action.flags.leaping)
-    {
-        spritesheet.SetAnimation("Leap");
-    }
-    else if (action.flags.knockback)
-    {
-        spritesheet.SetAnimation("Stunned");
-    }
-    else if (action.flags.stunned)
-    {
-        spritesheet.SetAnimation("Stunned");
-    }
-    else if (action.flags.start_attack)
-    {
-
-    }
-    else if (action.flags.dead)
-    {
-        alive = false;
-        spritesheet.SetAnimation("Death");
-        despawn_timer = 0;
+        case network::EnemyAnimation::Rest:
+        {
+            spritesheet.SetAnimation("Rest");
+        }
+        break;
+        case network::EnemyAnimation::Move:
+        {
+            spritesheet.SetAnimation("Move");
+        }
+        break;
+        case network::EnemyAnimation::Feed:
+        {
+            spritesheet.SetAnimation("Feed");
+        }
+        break;
+        case network::EnemyAnimation::Knockback:
+        {
+            spritesheet.SetAnimation("Stunned");
+        }
+        break;
+        case network::EnemyAnimation::Stun:
+        {
+            spritesheet.SetAnimation("Stunned");
+        }
+        break;
+        case network::EnemyAnimation::Tackle:
+        {
+            spritesheet.SetAnimation("Tackle");
+        }
+        break;
+        case network::EnemyAnimation::Dead:
+        {
+            alive = false;
+            spritesheet.SetAnimation("Death");
+            despawn_timer = 0;
+        }
+        break;
+        case network::EnemyAnimation::Sniff:
+        {
+            spritesheet.SetAnimation("Sniff");
+        }
+        break;
+        case network::EnemyAnimation::LeapWindup:
+        {
+            spritesheet.SetAnimation("LeapWindup");
+        }
+        break;
+        case network::EnemyAnimation::Leap:
+        {
+            spritesheet.SetAnimation("Leap");
+        }
+        break;
     }
 }
 
