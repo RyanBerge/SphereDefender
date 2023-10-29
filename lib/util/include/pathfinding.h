@@ -37,7 +37,7 @@ struct PathingGraph
 };
 
 PathingGraph CreatePathingGraph(std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size);
-PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size, const PathingGraph& in_graph);
+PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::FloatRect entity_bounds, const PathingGraph& in_graph);
 std::list<sf::Vector2f> GetPath(PathingGraph& graph);
 
 struct DjikstraNode

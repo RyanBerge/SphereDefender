@@ -59,6 +59,11 @@ void Enemy::Update(sf::Time elapsed)
         }
     }
 
+    if (checkStuck(elapsed))
+    {
+        return;
+    }
+
     switch (current_action)
     {
         case Action::Tackling:
@@ -358,10 +363,32 @@ void Enemy::takeStep(sf::Vector2f step)
     data.position += step;
 }
 
+bool Enemy::checkStuck(sf::Time elapsed)
+{
+    sf::FloatRect bounds = GetBounds(data.position);
+    sf::Vector2f direction;
+
+    for (auto& obstacle : region->Obstacles)
+    {
+        if (util::Intersects(obstacle, bounds))
+        {
+            sf::Vector2f center;
+            center.x = obstacle.left + ((obstacle.left + obstacle.width) / 2);
+            center.y = obstacle.top + ((obstacle.top + obstacle.height) / 2);
+
+            direction = util::Normalize(data.position - center);
+            data.position += direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
+            return true;
+        }
+    }
+
+    return false;
+}
+
 sf::Vector2f Enemy::getGoal()
 {
     std::vector<sf::FloatRect> obstacles = region->Obstacles;
-    util::PathingGraph graph = util::AppendPathingGraph(data.position, destination, region->Obstacles, definition.hitbox, region->PathingGraphs[type]);
+    util::PathingGraph graph = util::AppendPathingGraph(data.position, destination, region->Obstacles, GetBounds(), region->PathingGraphs[type]);
     std::list<sf::Vector2f> path = util::GetPath(graph);
 
     if (DISPLAY_PATHS)
@@ -667,10 +694,11 @@ void Enemy::handleStalking(sf::Time elapsed)
             for (int i = 0; i < 5; ++i)
             {
                 goal = util::GetRandomPositionInCone(target.Data.position, definition.close_quarters_range * 0.75f, definition.close_quarters_range, angle, arc);
+                sf::FloatRect projected_bounds = GetBounds(goal);
                 collision = false;
                 for (auto& obstacle : region->Obstacles)
                 {
-                    if (util::Contains(obstacle, destination))
+                    if (util::Intersects(obstacle, projected_bounds))
                     {
                         collision = true;
                         break;
@@ -695,9 +723,15 @@ void Enemy::handleStalking(sf::Time elapsed)
             }
             else
             {
-                attack();
+                if (!attack())
+                {
+                    setBehavior(Behavior::None);
+                }
+
                 is_moving = false;
                 is_walking = false;
+
+                return;
             }
             [[fallthrough]];
         }
@@ -761,7 +795,8 @@ void Enemy::handleLeaping(sf::Time elapsed)
                 setAction(Action::None);
             }
 
-            data.position += leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
+            sf::Vector2f step = leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
+            takeStep(step);
         }
         break;
     }

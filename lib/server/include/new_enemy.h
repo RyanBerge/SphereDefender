@@ -64,6 +64,7 @@ private:
     void move(sf::Time elapsed);
     void walk(sf::Time elapsed);
     void takeStep(sf::Vector2f step);
+    bool checkStuck(sf::Time elapsed);
     sf::Vector2f getGoal();
     sf::Vector2f steer(sf::Vector2f goal);
     void accelerate(sf::Time elapsed);

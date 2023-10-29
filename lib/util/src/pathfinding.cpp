@@ -155,14 +155,14 @@ PathingGraph CreatePathingGraph(std::vector<sf::FloatRect> obstacles, sf::Vector
     return graph;
 }
 
-PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::Vector2f entity_size, const PathingGraph& in_graph)
+PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::vector<sf::FloatRect> obstacles, sf::FloatRect entity_bounds, const PathingGraph& in_graph)
 {
     PathingGraph out_graph = in_graph;
 
     out_graph.nodes[0].position = start;
     out_graph.nodes[1].position = finish;
 
-    float clearance = (std::max(entity_size.x, entity_size.y) / 2) * 1.25f;
+    float clearance = (std::max(entity_bounds.width, entity_bounds.height) / 2) * 1.25f;
     float sight_width = clearance - 1;
 
     for (auto& node : out_graph.nodes)
@@ -179,11 +179,34 @@ PathingGraph AppendPathingGraph(sf::Vector2f start, sf::Vector2f finish, std::ve
 
             sf::Vector2f path_vector = other_node.position - current_node.position;
             float length = std::hypot(path_vector.x, path_vector.y);
-            sf::Vector2f left_orthogonal{-path_vector.y / length * sight_width, path_vector.x / length * sight_width};
-            sf::Vector2f right_orthogonal{path_vector.y / length * sight_width, -path_vector.x / length * sight_width};
+            LineSegment left_bound;
+            LineSegment right_bound;
 
-            LineSegment left_bound{current_node.position + left_orthogonal, other_node.position + left_orthogonal};
-            LineSegment right_bound{current_node.position + right_orthogonal, other_node.position + right_orthogonal};
+            if (i == 0)
+            {
+                // Special case for calculating the line of sight, because we know the position of the entity
+                if ((path_vector.x >= 0 && path_vector.y >= 0) || (path_vector.x < 0 && path_vector.y < 0))
+                {
+                    left_bound.p1 = sf::Vector2f{entity_bounds.left, entity_bounds.top}; // upper left corner
+                    right_bound.p1 = sf::Vector2f{entity_bounds.left + entity_bounds.width, entity_bounds.top + entity_bounds.height}; // lower right corner
+                }
+                else
+                {
+                    left_bound.p1 = sf::Vector2f{entity_bounds.left, entity_bounds.top + entity_bounds.height}; // lower left corner
+                    right_bound.p1 = sf::Vector2f{entity_bounds.left + entity_bounds.width, entity_bounds.top}; // upper right corner
+                }
+
+                left_bound.p2 = left_bound.p1 + path_vector;
+                right_bound.p2 = right_bound.p1 + path_vector;
+            }
+            else
+            {
+                sf::Vector2f left_orthogonal{-path_vector.y / length * sight_width, path_vector.x / length * sight_width};
+                sf::Vector2f right_orthogonal{path_vector.y / length * sight_width, -path_vector.x / length * sight_width};
+
+                left_bound = LineSegment{current_node.position + left_orthogonal, other_node.position + left_orthogonal};
+                right_bound = LineSegment{current_node.position + right_orthogonal, other_node.position + right_orthogonal};
+            }
 
             bool line_of_sight = true;
             for (auto& rect : obstacles)
