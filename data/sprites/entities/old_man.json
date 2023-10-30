@@ -26,34 +26,39 @@
       "origin": [ 11, 34 ]
     }
   ],
-  "animations": [
+  "animation_groups": [
     {
-      "name": "Default",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Default"
-    },
-    {
-      "name": "AvailableDialog",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "AvailableDialog"
-    },
-    {
-      "name": "AvailableDialogAndFocus",
-      "start_frame": 2,
-      "end_frame": 2,
-      "animation_speed": 0,
-      "next_animation": "AvailableDialogAndFocus"
-    },
-    {
-      "name": "Focus",
-      "start_frame": 3,
-      "end_frame": 3,
-      "animation_speed": 0,
-      "next_animation": "Focus"
+      "name": "None",
+      "animations": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Default" }
+        },
+        {
+          "name": "AvailableDialog",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "AvailableDialog" }
+        },
+        {
+          "name": "AvailableDialogAndFocus",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "AvailableDialogAndFocus" }
+        },
+        {
+          "name": "Focus",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Focus" }
+        }
+      ]
     }
   ]
 }

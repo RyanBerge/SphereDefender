@@ -122,55 +122,59 @@
       "origin": [ 13, 11 ]
     }
   ],
-  "animations": [
+  "animation_groups": [
     {
-      "name": "Move",
-      "start_frame": 0,
-      "end_frame": 3,
-      "animation_speed": 10,
-      "next_animation": "Move"
-    },
-    {
-      "name": "Sniff",
-      "start_frame": 4,
-      "end_frame": 8,
-      "animation_speed": 5,
-      "next_animation": "Sniff"
-    },
-    {
-      "name": "Leap",
-      "start_frame": 10,
-      "end_frame": 14,
-      "animation_speed": 5.5,
-      "next_animation": "Move"
-    },
-    {
-      "name": "Stunned",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Stunned"
-    },
-    {
-      "name": "Feed",
-      "start_frame": 9,
-      "end_frame": 9,
-      "animation_speed": 0,
-      "next_animation": "Feed"
-    },
-    {
-      "name": "Death",
-      "start_frame": 15,
-      "end_frame": 19,
-      "animation_speed": 10,
-      "next_animation": "Dead"
-    },
-    {
-      "name": "Dead",
-      "start_frame": 19,
-      "end_frame": 19,
-      "animation_speed": 0,
-      "next_animation": "Dead"
+      "animations": [
+        {
+          "name": "Move",
+          "start_frame": 0,
+          "end_frame": 3,
+          "animation_speed": 10,
+          "next_animation": { "group": "None", "animation": "Move" }
+        },
+        {
+          "name": "Sniff",
+          "start_frame": 4,
+          "end_frame": 8,
+          "animation_speed": 5,
+          "next_animation": { "group": "None", "animation": "Sniff" }
+        },
+        {
+          "name": "Leap",
+          "start_frame": 10,
+          "end_frame": 14,
+          "animation_speed": 5.5,
+          "next_animation": { "group": "None", "animation": "Move" }
+        },
+        {
+          "name": "Stunned",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Stunned" }
+        },
+        {
+          "name": "Feed",
+          "start_frame": 9,
+          "end_frame": 9,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Feed" }
+        },
+        {
+          "name": "Death",
+          "start_frame": 15,
+          "end_frame": 19,
+          "animation_speed": 10,
+          "next_animation": { "group": "None", "animation": "Dead" }
+        },
+        {
+          "name": "Dead",
+          "start_frame": 19,
+          "end_frame": 19,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Dead" }
+        }
+      ]
     }
   ]
 }

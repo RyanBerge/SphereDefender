@@ -366,7 +366,7 @@ public:
                     entity.hitbox.x = sprite_json["pathing_hitbox"]["x"];
                     entity.hitbox.y = sprite_json["pathing_hitbox"]["y"];
 
-                    for (auto& j_animation : sprite_json["animations"])
+                    for (auto& j_animation : sprite_json["animation_groups"][0]["animations"])
                     {
                         int num_frames = j_animation["end_frame"].get<int>() - j_animation["start_frame"].get<int>() + 1;
                         util::Seconds time = (1 / j_animation["animation_speed"].get<double>()) * num_frames;
@@ -377,6 +377,10 @@ public:
                         else if (j_animation["name"] == "Leap")
                         {
                             entity.leap_time = time;
+                        }
+                        else if (j_animation["name"] == "LeapResting")
+                        {
+                            entity.leap_rest_time = time;
                         }
                     }
                 }

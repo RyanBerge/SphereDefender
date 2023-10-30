@@ -8,27 +8,32 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animations": [
+  "animation_groups": [
     {
-      "name": "Up",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Up"
-    },
-    {
-      "name": "Hover",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Hover"
-    },
-    {
-      "name": "Down",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Down"
+      "name": "None",
+      "animations": [
+        {
+          "name": "Up",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Up" }
+        },
+        {
+          "name": "Hover",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Hover" }
+        },
+        {
+          "name": "Down",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Down" }
+        }
+      ]
     }
   ]
 }

@@ -12,6 +12,7 @@
 #include <SFML/Network/TcpSocket.hpp>
 #include <memory>
 #include <list>
+#include <queue>
 #include "entity_data.h"
 #include "game_math.h"
 #include "region.h"
@@ -52,6 +53,7 @@ public:
     bool SpawnProjectile(definitions::Projectile& out_projectile);
     definitions::ItemType UseItem();
     definitions::ItemType ChangeItem(definitions::ItemType item);
+    void AddIncomingAttack(definitions::AttackEvent attack);
 
     std::shared_ptr<sf::TcpSocket> Socket;
     PlayerStatus Status;
@@ -74,6 +76,7 @@ private:
     double starting_attack_angle;
     double current_attack_angle;
 
+    std::queue<definitions::AttackEvent> attack_events;
 };
 
 } // server

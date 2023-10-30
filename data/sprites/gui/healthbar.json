@@ -8,13 +8,18 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animations": [
+  "animation_groups": [
     {
-      "name": "Static",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Static"
+      "name": "None",
+      "animations": [
+        {
+          "name": "Static",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Static" }
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,156 @@
+{
+  "filename": "Player.png",
+  "pathing_hitbox": { "x": 36, "y": 36 },
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 1,
+      "location": [ 36, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 2,
+      "location": [ 72, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 3,
+      "location": [ 108, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 4,
+      "location": [ 144, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 5,
+      "location": [ 180, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 6,
+      "location": [ 216, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 7,
+      "location": [ 252, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    }
+  ],
+  "animation_groups": [
+    {
+      "name": "None",
+      "animations": [ ]
+    },
+    {
+      "name": "South",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "South", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "Southeast",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "group": "Southeast", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "East",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "group": "East", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "Northeast",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "group": "Northeast", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "North",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 4,
+          "end_frame": 4,
+          "animation_speed": 0,
+          "next_animation": { "group": "North", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "Northwest",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 5,
+          "end_frame": 5,
+          "animation_speed": 0,
+          "next_animation": { "group": "Northwest", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "West",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 6,
+          "end_frame": 6,
+          "animation_speed": 0,
+          "next_animation": { "group": "West", "animation": "Idle" }
+        }
+      ]
+    },
+    {
+      "name": "Southwest",
+      "animations": [
+        {
+          "name": "Idle",
+          "start_frame": 7,
+          "end_frame": 7,
+          "animation_speed": 0,
+          "next_animation": { "group": "Southwest", "animation": "Idle" }
+        }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,12 @@ namespace client {
 class Spritesheet
 {
 public:
+    struct AnimationIdentifier
+    {
+        std::string name;
+        std::string group;
+    };
+
     Spritesheet();
     Spritesheet(std::string filename);
     Spritesheet(std::string filename, bool tiled);
@@ -32,7 +38,9 @@ public:
     sf::Sprite& GetSprite();
     void LoadAnimationData(std::string filename);
     void SetShadow(bool shadows_on);
-    void SetAnimation(std::string animation_name);
+    void SetAnimation(AnimationIdentifier identifier);
+    void SetAnimation(std::string name, std::string group);
+    void SetAnimation(std::string name);
     void SetPosition(float x, float y);
     void SetPosition(sf::Vector2f position);
     void SetDebugAnimationPrint(bool print);
@@ -50,18 +58,18 @@ private:
 
     struct Animation
     {
-        std::string name;
+        AnimationIdentifier identifier;
         unsigned start;
         unsigned end;
         float speed;
-        std::string next;
+        AnimationIdentifier next;
     };
 
     struct AnimationData
     {
         std::string filepath;
         std::vector<Frame> frames;
-        std::map<std::string, Animation> animations;
+        std::map<std::string, std::map<std::string, Animation>> animations;
     };
 
     sf::Sprite sprite;

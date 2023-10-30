@@ -595,7 +595,7 @@ void Enemy::handleFeeding(sf::Time elapsed)
         break;
         case FeedingState::Feeding:
         {
-
+            // TODO: this
         }
         break;
     }
@@ -792,11 +792,33 @@ void Enemy::handleLeaping(sf::Time elapsed)
             if (leaping_state_timer >= definition.leap_time)
             {
                 definition.attacks[Action::Leaping].value().cooldown_timer = 0;
-                setAction(Action::None);
+                leaping_state_timer = 0;
+                leaping_state = LeapingState::Resting;
             }
 
             sf::Vector2f step = leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
             takeStep(step);
+
+            // check for a hit
+            for (auto& player : PlayerList)
+            {
+                if (util::Intersects(player.GetBounds(), GetBounds()))
+                {
+                    player.AddIncomingAttack(definitions::AttackEvent{definition.attacks[Action::Leaping].value(), data.position});
+                    definition.attacks[Action::Leaping].value().cooldown_timer = 0;
+                    leaping_state_timer = 0;
+                    leaping_state = LeapingState::Resting;
+                    break;
+                }
+            }
+        }
+        break;
+        case LeapingState::Resting:
+        {
+            if (leaping_state_timer >= definition.leap_rest_time)
+            {
+                setAction(Action::None);
+            }
         }
         break;
     }

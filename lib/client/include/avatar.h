@@ -37,6 +37,7 @@ public:
     bool Attacking = false;
 
 private:
+    Spritesheet spritesheet;
     sf::CircleShape sphere;
     sf::RectangleShape sword;
     sf::RectangleShape gun;

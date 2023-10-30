@@ -70,6 +70,12 @@ struct AttackDefinition
     util::Seconds cooldown_timer;
 };
 
+struct AttackEvent
+{
+    AttackDefinition attack;
+    sf::Vector2f origin;
+};
+
 struct EntityDefinition
 {
     //std::string name;
@@ -93,6 +99,7 @@ struct EntityDefinition
     float base_aggression;
     util::Seconds leap_windup_time;
     util::Seconds leap_time;
+    util::Seconds leap_rest_time;
 };
 
 EntityDefinition GetEntityDefinition(EntityType type);

@@ -220,6 +220,11 @@ definitions::ItemType Player::ChangeItem(definitions::ItemType item)
     return temp;
 }
 
+void Player::AddIncomingAttack(definitions::AttackEvent attack)
+{
+    attack_events.push(attack);
+}
+
 void Player::handleAttack(sf::Time elapsed, Region& region)
 {
     switch (Data.properties.weapon_type)

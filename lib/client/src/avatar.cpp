@@ -25,6 +25,11 @@ Avatar::Avatar() { }
 
 Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
+    spritesheet.LoadAnimationData("entities/player.json");
+    spritesheet.CenterOrigin();
+    spritesheet.SetAnimation("Idle", "South");
+    spritesheet.SetDebugAnimationPrint(true);
+
     definitions::PlayerDefinition player_definition = definitions::PlayerDefinition::Get();
     sphere.setRadius(player_definition.radius);
     sphere.setFillColor(color);
@@ -59,6 +64,8 @@ void Avatar::Update(sf::Time elapsed)
     }
 
     attack_timer += elapsed.asSeconds();
+
+    spritesheet.Update(elapsed);
 
     if (Data.health > 0)
     {
@@ -121,14 +128,49 @@ void Avatar::Draw()
             }
         }
 
-        resources::GetWindow().draw(sphere);
+        //resources::GetWindow().draw(sphere);
+        spritesheet.Draw();
     }
 }
 
 void Avatar::SetPosition(sf::Vector2f position)
 {
+    if (position.x - Data.position.x == 0 && position.y - Data.position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", "South");
+    }
+    else if (position.x - Data.position.x == 0 && position.y - Data.position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", "North");
+    }
+    else if (position.x - Data.position.x < 0 && position.y - Data.position.y == 0)
+    {
+        spritesheet.SetAnimation("Idle", "West");
+    }
+    else if (position.x - Data.position.x > 0 && position.y - Data.position.y == 0)
+    {
+        spritesheet.SetAnimation("Idle", "East");
+    }
+    else if (position.x - Data.position.x > 0 && position.y - Data.position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", "Southeast");
+    }
+    else if (position.x - Data.position.x > 0 && position.y - Data.position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", "Northeast");
+    }
+    else if (position.x - Data.position.x < 0 && position.y - Data.position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", "Southwest");
+    }
+    else if (position.x - Data.position.x < 0 && position.y - Data.position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", "Northwest");
+    }
+
     Data.position = position;
     sphere.setPosition(position);
+    spritesheet.SetPosition(position);
 }
 
 sf::Vector2f Avatar::GetPosition()

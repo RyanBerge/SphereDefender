@@ -137,7 +137,8 @@ private:
     {
         Start,
         Windup,
-        Leaping
+        Leaping,
+        Resting
     };
 
     LeapingState leaping_state = LeapingState::Start;

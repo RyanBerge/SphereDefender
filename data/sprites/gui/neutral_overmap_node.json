@@ -20,34 +20,39 @@
       "origin": [ 11, 10 ]
     }
   ],
-  "animations": [
+  "animation_groups": [
     {
-      "name": "Up",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Up"
-    },
-    {
-      "name": "Hover",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "Hover"
-    },
-    {
-      "name": "Down",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "Down"
-    },
-    {
-      "name": "Disabled",
-      "start_frame": 2,
-      "end_frame": 2,
-      "animation_speed": 0,
-      "next_animation": "Disabled"
+      "name": "None",
+      "animations": [
+        {
+          "name": "Up",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Up" }
+        },
+        {
+          "name": "Hover",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Hover" }
+        },
+        {
+          "name": "Down",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Down" }
+        },
+        {
+          "name": "Disabled",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "group": "None", "animation": "Disabled" }
+        }
+      ]
     }
   ]
 }

@@ -28,10 +28,10 @@ Spritesheet::Spritesheet(std::string filename) : Spritesheet(filename, false) { 
 Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
     Frame frame = {sf::IntRect(0, 0, 0, 0), sf::Vector2f{0, 0}};
-    Animation animation{"Default", 0, 0, 0, "Default"};
+    Animation animation{AnimationIdentifier{"Default", "None"}, 0, 0, 0, AnimationIdentifier{"Default", "None"}};
 
     animation_data.frames.push_back(frame);
-    animation_data.animations[animation.name] = animation;
+    animation_data.animations[animation.identifier.group][animation.identifier.name] = animation;
 
     LoadAnimationData(filename);
     SetTiling(tiled);
@@ -109,16 +109,22 @@ void Spritesheet::LoadAnimationData(std::string filename)
             animation_data.frames[object["index"]] = frame;
         }
 
-        for (auto& object : j["animations"])
+        for (auto& group_object : j["animation_groups"])
         {
-            Animation animation;
-            animation.name = object["name"];
-            animation.start = object["start_frame"];
-            animation.end = object["end_frame"];
-            animation.speed = object["animation_speed"];
-            animation.next = object["next_animation"];
+            std::string group_name = group_object["name"];
+            for (auto& animation_object : group_object["animations"])
+            {
+                Animation animation;
+                animation.identifier.name = animation_object["name"];
+                animation.identifier.group = group_name;
+                animation.start = animation_object["start_frame"];
+                animation.end = animation_object["end_frame"];
+                animation.speed = animation_object["animation_speed"];
+                animation.next.name = animation_object["next_animation"]["animation"];
+                animation.next.group = animation_object["next_animation"]["group"];
 
-            animation_data.animations[animation.name] = animation;
+                animation_data.animations[animation.identifier.group][animation.identifier.name] = animation;
+            }
         }
 
         animation_text.setFont(*resources::FontManager::GetFont("Vera"));
@@ -127,7 +133,8 @@ void Spritesheet::LoadAnimationData(std::string filename)
         animation_text.setOutlineColor(sf::Color::Black);
         animation_text.setOutlineThickness(1);
 
-        SetAnimation(animation_data.animations.begin()->first);
+        Animation front = animation_data.animations.begin()->second.begin()->second;
+        SetAnimation(front.identifier);
     }
     catch(const std::exception& e)
     {
@@ -150,25 +157,36 @@ sf::Sprite& Spritesheet::GetSprite()
     return sprite;
 }
 
-void Spritesheet::SetAnimation(std::string animation_name)
+void Spritesheet::SetAnimation(AnimationIdentifier identifier)
 {
-    if (current_animation.name == animation_name)
+    if (current_animation.identifier.group == identifier.group && current_animation.identifier.name == identifier.name)
     {
         return;
     }
 
-    if (animation_data.animations.find(animation_name) != animation_data.animations.end())
+    if (animation_data.animations.find(identifier.group) != animation_data.animations.end() &&
+        animation_data.animations[identifier.group].find(identifier.name) != animation_data.animations[identifier.group].end())
     {
-        current_animation = animation_data.animations[animation_name];
+        current_animation = animation_data.animations[identifier.group][identifier.name];
         setFrame(current_animation.start);
         animation_timer = 0;
 
-        animation_text.setString(current_animation.name);
+        animation_text.setString(current_animation.identifier.group + ", " + current_animation.identifier.name);
     }
     else
     {
-        cerr << "Animation not found: " << animation_name << endl;
+        cerr << "Animation not found: " << current_animation.identifier.group << ", " << current_animation.identifier.name << endl;
     }
+}
+
+void Spritesheet::SetAnimation(std::string name, std::string group)
+{
+    SetAnimation(AnimationIdentifier{name, group});
+}
+
+void Spritesheet::SetAnimation(std::string name)
+{
+    SetAnimation(AnimationIdentifier{name, "None"});
 }
 
 void Spritesheet::SetPosition(float x, float y)
