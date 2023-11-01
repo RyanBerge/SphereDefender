@@ -54,9 +54,13 @@ void Player::Update(sf::Time elapsed, Region& region)
     }
 
     projectile_timer += elapsed.asSeconds();
-
-    sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
-    bool collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
+    bool collision = false;
+    sf::Vector2f new_position = Data.position;
+    if (!Attacking)
+    {
+        new_position = Data.position + velocity * elapsed.asSeconds();
+        collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
+    }
 
     if (collision)
     {

@@ -41,6 +41,8 @@ public:
     void SetAnimation(AnimationIdentifier identifier);
     void SetAnimation(std::string name, std::string group);
     void SetAnimation(std::string name);
+    AnimationIdentifier GetAnimation();
+    sf::Vector2f GetPathingHitbox();
     void SetPosition(float x, float y);
     void SetPosition(sf::Vector2f position);
     void SetDebugAnimationPrint(bool print);
@@ -62,6 +64,7 @@ private:
         unsigned start;
         unsigned end;
         float speed;
+        sf::Vector2f pathing_hitbox;
         AnimationIdentifier next;
     };
 

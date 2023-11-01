@@ -28,7 +28,9 @@ Spritesheet::Spritesheet(std::string filename) : Spritesheet(filename, false) { 
 Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
     Frame frame = {sf::IntRect(0, 0, 0, 0), sf::Vector2f{0, 0}};
-    Animation animation{AnimationIdentifier{"Default", "None"}, 0, 0, 0, AnimationIdentifier{"Default", "None"}};
+    Animation animation{};
+    animation.identifier = AnimationIdentifier{"Default", "None"};
+    animation.next = AnimationIdentifier{"Default", "None"};
 
     animation_data.frames.push_back(frame);
     animation_data.animations[animation.identifier.group][animation.identifier.name] = animation;
@@ -120,6 +122,12 @@ void Spritesheet::LoadAnimationData(std::string filename)
                 animation.start = animation_object["start_frame"];
                 animation.end = animation_object["end_frame"];
                 animation.speed = animation_object["animation_speed"];
+                animation.pathing_hitbox = sf::Vector2f{0, 0};
+                if (animation_object.find("pathing_hitbox") != animation_object.end())
+                {
+                    animation.pathing_hitbox.x = animation_object["pathing_hitbox"]["x"];
+                    animation.pathing_hitbox.y = animation_object["pathing_hitbox"]["y"];
+                }
                 animation.next.name = animation_object["next_animation"]["animation"];
                 animation.next.group = animation_object["next_animation"]["group"];
 
@@ -171,7 +179,7 @@ void Spritesheet::SetAnimation(AnimationIdentifier identifier)
         setFrame(current_animation.start);
         animation_timer = 0;
 
-        animation_text.setString(current_animation.identifier.group + ", " + current_animation.identifier.name);
+        animation_text.setString(current_animation.identifier.name);
     }
     else
     {
@@ -187,6 +195,16 @@ void Spritesheet::SetAnimation(std::string name, std::string group)
 void Spritesheet::SetAnimation(std::string name)
 {
     SetAnimation(AnimationIdentifier{name, "None"});
+}
+
+Spritesheet::AnimationIdentifier Spritesheet::GetAnimation()
+{
+    return current_animation.identifier;
+}
+
+sf::Vector2f Spritesheet::GetPathingHitbox()
+{
+    return current_animation.pathing_hitbox;
 }
 
 void Spritesheet::SetPosition(float x, float y)

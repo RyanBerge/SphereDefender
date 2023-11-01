@@ -28,7 +28,7 @@ public:
 
     void SetPosition(sf::Vector2f position);
     sf::Vector2f GetPosition();
-    sf::FloatRect GetGlobalBounds();
+    sf::Vector2f GetPathingHitbox();
 
     void StartAttack(uint16_t attack_angle);
     void UpdateHealth(uint8_t health);
@@ -38,8 +38,6 @@ public:
 
 private:
     Spritesheet spritesheet;
-    sf::CircleShape sphere;
-    sf::RectangleShape sword;
     sf::RectangleShape gun;
     Spritesheet gunshot;
 

@@ -189,15 +189,7 @@ void Player::startAttack(sf::Vector2i point)
         sf::Vector2f distance_to_destination = resources::GetWindow().mapPixelToCoords(point, resources::GetWorldView()) - Avatar.GetPosition();
         float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
 
-        uint16_t attack_angle = 0;
-        if (Avatar.Data.properties.weapon_type == definitions::WeaponType::Sword)
-        {
-            attack_angle = (static_cast<uint16_t>(rotation + 315)) % 360;
-        }
-        else
-        {
-            attack_angle = (static_cast<uint16_t>(rotation + 360)) % 360;
-        }
+        uint16_t attack_angle = (static_cast<uint16_t>(rotation + 360)) % 360;
 
         network::PlayerAction action;
         action.flags.start_attack = true;
