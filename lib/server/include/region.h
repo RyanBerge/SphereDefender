@@ -25,7 +25,6 @@ public:
     Region(definitions::RegionType region_name, unsigned player_count, float battery_level);
 
     void Update(sf::Time elapsed);
-    void Cull();
     bool AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action);
 
     sf::FloatRect Bounds;

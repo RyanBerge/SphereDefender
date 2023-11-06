@@ -28,13 +28,12 @@ public:
     void UpdateData(network::EnemyData new_data);
     void ChangeAction(network::EnemyAnimation action);
 
-    bool Despawn = false;
-
 private:
     Spritesheet spritesheet;
     network::EnemyData data;
 
     bool alive = true;
+    bool despawn = false;
     util::Seconds despawn_timer;
 
     bool attacking;

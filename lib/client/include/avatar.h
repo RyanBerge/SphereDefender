@@ -31,6 +31,7 @@ public:
     sf::Vector2f GetPathingHitbox();
 
     void StartAttack(uint16_t attack_angle);
+    void SetStunned(util::Seconds duration);
     void UpdateHealth(uint8_t health);
 
     network::PlayerData Data;
@@ -43,6 +44,9 @@ private:
 
     float starting_attack_angle;
     util::Seconds attack_timer;
+    bool stunned = false;
+    util::Seconds stun_duration;
+    util::Seconds stun_timer;
 
 };
 

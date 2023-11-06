@@ -23,9 +23,10 @@ enum class GuiType : uint8_t
     Overmap, MenuEvent
 };
 
-struct PlayerActionFlags
+enum class PlayerActionType
 {
-    bool start_attack: 1;
+    Attack,
+    Stunned
 };
 
 enum class EnemyAnimation
@@ -44,8 +45,9 @@ enum class EnemyAnimation
 
 struct PlayerAction
 {
-    PlayerActionFlags flags;
-    uint16_t attack_angle;
+    PlayerActionType type;
+    uint16_t action_angle;
+    util::Seconds duration;
 };
 
 class ClientMessage

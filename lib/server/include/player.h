@@ -44,7 +44,7 @@ public:
 
     void Update(sf::Time elapsed, Region& region);
     void UpdatePlayerState(sf::Vector2i movement_vector);
-    void StartAttack(uint16_t attack_angle);
+    bool StartAttack(uint16_t attack_angle);
     sf::FloatRect GetBounds();
     util::LineSegment GetSwordLocation();
     definitions::Weapon GetWeapon();
@@ -64,7 +64,12 @@ public:
 
 private:
     sf::FloatRect getBoundingBox(sf::Vector2f position);
+    void handleMovement(sf::Time elapsed, Region& region);
     void handleAttack(sf::Time elapsed, Region& region);
+    void step(sf::Time elapsed, Region& region);
+    void takeStep(sf::Vector2f step, Region& region);
+    void processIncomingAttacks();
+    void startPlayerAction(network::PlayerAction action);
 
     definitions::PlayerDefinition definition;
     definitions::Weapon weapon;
@@ -72,9 +77,14 @@ private:
     util::Seconds projectile_timer = 0;
     int projectiles_fired = 0;
     bool spawn_projectile = false;
-    sf::Vector2f velocity;
-    double starting_attack_angle;
-    double current_attack_angle;
+    sf::Vector2f velocity{};
+    sf::Vector2f movement_override_vector{};
+    util::Seconds movement_override_timer = 0;
+    util::Seconds movement_override_time = 0;
+    bool movement_override = false;
+    util::AngleDegrees starting_attack_angle;
+    util::AngleDegrees current_attack_angle;
+    util::Seconds attack_timer = 0;
 
     std::queue<definitions::AttackEvent> attack_events;
 };

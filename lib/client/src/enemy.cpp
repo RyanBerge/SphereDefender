@@ -48,13 +48,16 @@ void Enemy::Update(sf::Time elapsed)
 
     if (!alive && despawn_timer > DESPAWN_TIMER)
     {
-        Despawn = true;
+        despawn = true;
     }
 }
 
 void Enemy::Draw()
 {
-    spritesheet.Draw();
+    if (!despawn)
+    {
+        spritesheet.Draw();
+    }
 }
 
 void Enemy::UpdateData(network::EnemyData new_data)

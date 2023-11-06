@@ -8,7 +8,8 @@
       "name": "leap",
       "range": 120,
       "damage": 30,
-      "cooldown": 3
+      "cooldown": 3,
+      "knockback_distance": 35
     }
   ],
   "movement_speed": 70,
@@ -26,5 +27,5 @@
   "aggro_range": 500,
   "close_quarters_range": 110,
   "leash_range": 500,
-  "base_aggression": 0.4
+  "base_aggression": 0.7
 }

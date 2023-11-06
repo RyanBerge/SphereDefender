@@ -57,10 +57,6 @@ void Game::Update(sf::Time elapsed)
 
         gui.MarkInteractables(local_player.GetPosition(), region_map.GetInteractablePositions());
 
-        std::erase_if(enemies, [](const auto& element) {
-            return element.second.Despawn;
-        });
-
         if (current_zoom != target_zoom)
         {
             current_zoom += zoom_speed * elapsed.asSeconds();
@@ -363,14 +359,30 @@ void Game::SetPlayerActionsEnabled(bool enable)
 
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
 {
-    if (local_player.Avatar.Data.id == player_id)
+    switch (action.type)
     {
-    }
-    else
-    {
-        if (action.flags.start_attack)
+        case network::PlayerActionType::Attack:
         {
-            avatars[player_id].StartAttack(action.attack_angle);
+            if (local_player.Avatar.Data.id == player_id)
+            {
+                local_player.Avatar.StartAttack(action.action_angle);
+            }
+            else
+            {
+                avatars[player_id].StartAttack(action.action_angle);
+            }
+        }
+        break;
+        case network::PlayerActionType::Stunned:
+        {
+            if (local_player.Avatar.Data.id == player_id)
+            {
+                local_player.Avatar.SetStunned(action.duration);
+            }
+            else
+            {
+                avatars[player_id].SetStunned(action.duration);
+            }
         }
     }
 }

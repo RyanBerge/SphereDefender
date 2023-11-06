@@ -138,7 +138,6 @@ void Server::update()
         {
             broadcastStates();
             broadcast_delta = 0;
-            region.Cull();
         }
     }
 }
@@ -1029,14 +1028,15 @@ void Server::startPlayerAction(Player& player)
         return;
     }
 
-    if (action.flags.start_attack)
+    bool permitted = true;
+    if (action.type == network::PlayerActionType::Attack)
     {
-        player.StartAttack(action.attack_angle);
+        permitted = player.StartAttack(action.action_angle);
     }
 
-    for (auto& p : PlayerList)
+    if (permitted)
     {
-        if (p.Data.id != player.Data.id)
+        for (auto& p : PlayerList)
         {
             ServerMessage::PlayerStartAction(*p.Socket, player.Data.id, action);
         }

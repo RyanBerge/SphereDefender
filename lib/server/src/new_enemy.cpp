@@ -38,6 +38,7 @@ Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2
     static uint16_t identifier = 0;
     data.id = identifier++;
     data.position = position;
+    data.health = 100;
     destination = data.position;
 
     definition = definitions::GetEntityDefinition(enemy_type);
@@ -51,6 +52,11 @@ Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2
 
 void Enemy::Update(sf::Time elapsed)
 {
+    for (auto& [id, timer] : invulnerability_timers)
+    {
+        timer += elapsed.asSeconds();
+    }
+
     for (auto& [attack_type, attack] : definition.attacks)
     {
         if (attack.has_value())
@@ -73,7 +79,7 @@ void Enemy::Update(sf::Time elapsed)
         break;
         case Action::Knockback:
         {
-
+            handleKnockback(elapsed);
         }
         break;
         case Action::Sniffing:
@@ -83,7 +89,7 @@ void Enemy::Update(sf::Time elapsed)
         break;
         case Action::Stunned:
         {
-
+            handleStunned(elapsed);
         }
         break;
         case Action::Leaping:
@@ -101,11 +107,47 @@ void Enemy::Update(sf::Time elapsed)
 
 void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector, float invulnerability_window)
 {
-    (void)player_id;
-    (void)damage;
-    (void)knockback;
-    (void)hit_vector;
-    (void)invulnerability_window;
+    if (invulnerability_timers.find(player_id) == invulnerability_timers.end())
+    {
+        invulnerability_timers[player_id] = 0;
+    }
+    else if (invulnerability_timers[player_id] < invulnerability_windows[player_id])
+    {
+        return;
+    }
+    else if (data.health == 0)
+    {
+        return;
+    }
+
+    if (data.health < damage)
+    {
+        data.health = 0;
+    }
+    else
+    {
+        data.health -= damage;
+    }
+
+    if (data.health == 0)
+    {
+        setAction(Action::None);
+        setBehavior(Behavior::Dead);
+        changeAnimation(EnemyAnimation::Dead);
+    }
+
+    invulnerability_timers[player_id] = 0;
+    invulnerability_windows[player_id] = invulnerability_window;
+
+    if (knockback.distance > 0)
+    {
+        knockback_vector = util::Normalize(hit_vector) * (knockback.distance / knockback.duration);
+        knockback_distance = knockback.distance;
+        knockback_duration = knockback.duration;
+        stun_duration = knockback.stun_duration;
+
+        setAction(Action::Knockback);
+    }
 }
 
 network::EnemyData Enemy::GetData()
@@ -166,6 +208,8 @@ void Enemy::setBehavior(Behavior behavior)
 void Enemy::setAction(Action action)
 {
     // reset states
+    stunned_state = StunnedState::Start;
+    knockback_state = KnockbackState::Start;
     leaping_state = LeapingState::Start;
 
     current_action = action;
@@ -251,7 +295,10 @@ void Enemy::handleBehavior(sf::Time elapsed)
             handleStalking(elapsed);
         }
         break;
-        case Behavior::Dead: { }
+        case Behavior::Dead:
+        {
+            return;
+        }
         break;
     }
 
@@ -335,15 +382,19 @@ void Enemy::walk(sf::Time elapsed)
     }
 }
 
-void Enemy::takeStep(sf::Vector2f step)
+bool Enemy::takeStep(sf::Vector2f step)
 {
     sf::FloatRect bounds = GetBounds(data.position + step);
+    bool collision = false;
+
     for (auto& obstacle : region->Obstacles)
     {
         if (!util::Intersects(obstacle, bounds))
         {
             continue;
         }
+
+        collision = true;
 
         sf::FloatRect slide_bounds = GetBounds(data.position + sf::Vector2f{step.x, 0});
         if (!util::Intersects(obstacle, slide_bounds))
@@ -361,6 +412,8 @@ void Enemy::takeStep(sf::Vector2f step)
     }
 
     data.position += step;
+
+    return collision;
 }
 
 bool Enemy::checkStuck(sf::Time elapsed)
@@ -766,13 +819,13 @@ void Enemy::handleStalking(sf::Time elapsed)
 
 void Enemy::handleLeaping(sf::Time elapsed)
 {
-    leaping_state_timer += elapsed.asSeconds();
+    leaping_timer += elapsed.asSeconds();
 
     switch (leaping_state)
     {
         case LeapingState::Start:
         {
-            leaping_state_timer = 0;
+            leaping_timer = 0;
             leaping_state = LeapingState::Windup;
             changeAnimation(EnemyAnimation::LeapWindup);
             leaping_direction = util::Normalize(GetPlayerById(hunting_target, PlayerList).Data.position - data.position);
@@ -780,24 +833,25 @@ void Enemy::handleLeaping(sf::Time elapsed)
         }
         case LeapingState::Windup:
         {
-            if (leaping_state_timer >= definition.leap_windup_time)
+            if (leaping_timer >= definition.leap_windup_time)
             {
                 leaping_state = LeapingState::Leaping;
-                leaping_state_timer = 0;
+                leaping_timer = 0;
             }
         }
         break;
         case LeapingState::Leaping:
         {
-            if (leaping_state_timer >= definition.leap_time)
+            if (leaping_timer >= definition.leap_time)
             {
                 definition.attacks[Action::Leaping].value().cooldown_timer = 0;
-                leaping_state_timer = 0;
+                leaping_timer = 0;
                 leaping_state = LeapingState::Resting;
+                changeAnimation(EnemyAnimation::Rest);
             }
 
             sf::Vector2f step = leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
-            takeStep(step);
+            bool collision = takeStep(step);
 
             // check for a hit
             for (auto& player : PlayerList)
@@ -806,16 +860,73 @@ void Enemy::handleLeaping(sf::Time elapsed)
                 {
                     player.AddIncomingAttack(definitions::AttackEvent{definition.attacks[Action::Leaping].value(), data.position});
                     definition.attacks[Action::Leaping].value().cooldown_timer = 0;
-                    leaping_state_timer = 0;
+                    leaping_timer = 0;
                     leaping_state = LeapingState::Resting;
+                    changeAnimation(EnemyAnimation::Rest);
                     break;
                 }
+            }
+
+            if (collision)
+            {
+                definition.attacks[Action::Leaping].value().cooldown_timer = 0;
+                leaping_timer = 0;
+                leaping_state = LeapingState::Resting;
+                changeAnimation(EnemyAnimation::Rest);
             }
         }
         break;
         case LeapingState::Resting:
         {
-            if (leaping_state_timer >= definition.leap_rest_time)
+            if (leaping_timer >= definition.leap_rest_time)
+            {
+                setAction(Action::None);
+            }
+        }
+        break;
+    }
+}
+
+void Enemy::handleKnockback(sf::Time elapsed)
+{
+    knockback_timer += elapsed.asSeconds();
+
+    switch (knockback_state)
+    {
+        case KnockbackState::Start:
+        {
+            knockback_timer = 0;
+            knockback_state = KnockbackState::Knockback;
+            changeAnimation(EnemyAnimation::Knockback);
+            [[fallthrough]];
+        }
+        case KnockbackState::Knockback:
+        {
+            sf::Vector2f step = knockback_vector * elapsed.asSeconds();
+            if (takeStep(step) || knockback_timer >= knockback_duration)
+            {
+                setAction(Action::Stunned);
+            }
+        }
+        break;
+    }
+}
+
+void Enemy::handleStunned(sf::Time elapsed)
+{
+    stunned_timer += elapsed.asSeconds();
+
+    switch (stunned_state)
+    {
+        case StunnedState::Start:
+        {
+            stunned_timer = 0;
+            stunned_state = StunnedState::Stunned;
+            [[fallthrough]];
+        }
+        case StunnedState::Stunned:
+        {
+            if (stunned_timer >= stun_duration)
             {
                 setAction(Action::None);
             }

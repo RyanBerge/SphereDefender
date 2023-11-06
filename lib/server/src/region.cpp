@@ -131,11 +131,6 @@ void Region::Update(sf::Time elapsed)
     handleProjectiles(elapsed);
 }
 
-void Region::Cull()
-{
-    Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
-}
-
 namespace {
 
 struct WinningLink

@@ -312,6 +312,7 @@ public:
                     attack_definition.damage = j_attack["damage"];
                     attack_definition.range = j_attack["range"];
                     attack_definition.cooldown = j_attack["cooldown"];
+                    attack_definition.knockback_distance = j_attack["knockback_distance"];
 
                     std::string name = j_attack["name"];
                     if (name == "tackle")
@@ -422,15 +423,17 @@ Weapon GetWeapon(WeaponType type)
     {
         case WeaponType::Sword:
         {
-            weapon.offset = -18;
-            weapon.length = 20;
+            weapon.offset = 12;
+            weapon.length = 43;
             weapon.damage = 50;
             weapon.knockback.distance = 35;
             weapon.knockback.duration = 0.1; // seconds
+            weapon.knockback.stun_duration = 0.5; // seconds
             weapon.attack_cooldown = 250; // milliseconds between attacks
-            weapon.arc = 90; // degrees;
-            weapon.arc_speed = 360; // degrees per second
+            weapon.arc = 146; // degrees;
+            weapon.arc_speed = (18.0f / 2.0f) * weapon.arc; // degrees per second
             weapon.invulnerability_window = 0.3; // seconds
+            weapon.animation_time = (7.0f / 18.0f);
         }
         break;
         case WeaponType::HitscanGun:
@@ -441,6 +444,7 @@ Weapon GetWeapon(WeaponType type)
             weapon.attack_cooldown = 500; // milliseconds between attacks
             weapon.knockback.distance = 0;
             weapon.knockback.duration = 0;
+            weapon.knockback.stun_duration = 0;
             weapon.projectiles_per_attack = 1;
             weapon.projectile_spread = 0; // degrees
             weapon.invulnerability_window = 0;
@@ -454,6 +458,7 @@ Weapon GetWeapon(WeaponType type)
             weapon.attack_cooldown = 900; // milliseconds between attacks
             weapon.knockback.distance = 0;
             weapon.knockback.duration = 0;
+            weapon.knockback.stun_duration = 0;
             weapon.projectiles_per_attack = 4;
             weapon.delay_per_projectile = 75; // milliseconds
             weapon.projectile_spread = 8; // degrees

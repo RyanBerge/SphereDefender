@@ -53,6 +53,8 @@ private:
     void handleHunting(sf::Time elapsed);
     void handleStalking(sf::Time elapsed);
 
+    void handleKnockback(sf::Time elapsed);
+    void handleStunned(sf::Time elapsed);
     void handleLeaping(sf::Time elapsed);
 
     void changeAnimation(network::EnemyAnimation animation);
@@ -63,7 +65,7 @@ private:
 
     void move(sf::Time elapsed);
     void walk(sf::Time elapsed);
-    void takeStep(sf::Vector2f step);
+    bool takeStep(sf::Vector2f step);
     bool checkStuck(sf::Time elapsed);
     sf::Vector2f getGoal();
     sf::Vector2f steer(sf::Vector2f goal);
@@ -89,6 +91,9 @@ private:
     sf::Vector2f current_velocity{0, 0};
     float current_max_speed = 0;
     int aggro_range;
+
+    std::map<uint16_t, util::Seconds> invulnerability_timers;
+    std::map<uint16_t, float> invulnerability_windows;
 
     enum class WanderState
     {
@@ -133,6 +138,28 @@ private:
     util::Seconds stalking_rest_timer = 0;
     util::Seconds stalking_rest_time;
 
+    enum class KnockbackState
+    {
+        Start,
+        Knockback
+    };
+
+    KnockbackState knockback_state = KnockbackState::Start;
+    util::Seconds knockback_timer = 0;
+    sf::Vector2f knockback_vector{};
+    float knockback_distance;
+    util::Seconds knockback_duration;
+
+    enum class StunnedState
+    {
+        Start,
+        Stunned
+    };
+
+    StunnedState stunned_state = StunnedState::Start;
+    util::Seconds stunned_timer = 0;
+    util::Seconds stun_duration;
+
     enum class LeapingState
     {
         Start,
@@ -142,7 +169,7 @@ private:
     };
 
     LeapingState leaping_state = LeapingState::Start;
-    util::Seconds leaping_state_timer = 0;
+    util::Seconds leaping_timer = 0;
     sf::Vector2f leaping_direction;
 
 };

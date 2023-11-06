@@ -68,6 +68,7 @@ struct AttackDefinition
     float damage;
     util::Seconds cooldown;
     util::Seconds cooldown_timer;
+    float knockback_distance;
 };
 
 struct AttackEvent
@@ -112,21 +113,23 @@ enum class WeaponType
 struct WeaponKnockback
 {
     float distance; // total distance over duration in pixels
-    float duration; // duration in seconds
+    util::Seconds duration; // duration in seconds
+    util::Seconds stun_duration; // Stun after knockback is over
 };
 
 struct Weapon
 {
     WeaponType type;
     int damage;
-    int attack_cooldown;
+    util::Milliseconds attack_cooldown;
     WeaponKnockback knockback;
     int length;
     int offset;
     float invulnerability_window;
 
-    int arc;
-    int arc_speed;
+    int arc; // degrees
+    int arc_speed; // degrees per second
+    util::Seconds animation_time;
 
     int projectiles_per_attack;
     int delay_per_projectile;

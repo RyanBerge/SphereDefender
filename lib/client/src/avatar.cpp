@@ -50,6 +50,7 @@ void Avatar::Update(sf::Time elapsed)
     }
 
     attack_timer += elapsed.asSeconds();
+    stun_timer += elapsed.asSeconds();
 
     spritesheet.Update(elapsed);
 
@@ -79,6 +80,11 @@ void Avatar::Update(sf::Time elapsed)
                 }
                 break;
             }
+        }
+
+        if (stunned && stun_timer >= stun_duration)
+        {
+            stunned = false;
         }
     }
 }
@@ -115,6 +121,11 @@ void Avatar::SetPosition(sf::Vector2f position)
     spritesheet.SetPosition(position);
 
     if (spritesheet.GetAnimation().name != "Idle")
+    {
+        return;
+    }
+
+    if (stunned)
     {
         return;
     }
@@ -203,6 +214,13 @@ void Avatar::StartAttack(uint16_t attack_angle)
     {
         spritesheet.SetAnimation("SwordAttack", "Northeast");
     }
+}
+
+void Avatar::SetStunned(util::Seconds duration)
+{
+    stunned = true;
+    stun_duration = duration + 0.05f;
+    stun_timer = 0;
 }
 
 void Avatar::UpdateHealth(uint8_t health)
