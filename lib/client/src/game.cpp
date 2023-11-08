@@ -37,6 +37,8 @@ void Game::Update(sf::Time elapsed)
 {
     if (loaded)
     {
+        gui.Update(elapsed);
+
         if (local_player.ActionsDisabled() && !gui.DisableActions() && !inCutscene())
         {
             local_player.SetActionsEnabled(true);

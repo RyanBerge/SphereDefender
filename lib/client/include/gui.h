@@ -27,6 +27,7 @@ class Gui
 public:
     Gui();
 
+    void Update(sf::Time elapsed);
     void Draw();
 
     void Load(definitions::Zone zone);
@@ -87,6 +88,8 @@ private:
     sf::Font* font;
 
     sf::RectangleShape healthbar;
+    sf::RectangleShape healthbar_missing;
+    util::Seconds missing_health_timer = 0;
     Spritesheet healthbar_frame;
     Spritesheet inventory_item;
     sf::RectangleShape battery_bar;
