@@ -97,7 +97,12 @@ bool Player::StartAttack(uint16_t attack_angle)
     }
 
     starting_attack_angle = attack_angle;
-    current_attack_angle = (starting_attack_angle - (definitions::GetWeapon(definitions::WeaponType::Sword).arc / 2)) - 5;
+    current_attack_angle = starting_attack_angle;
+    if (Data.properties.player_class == network::PlayerClass::Melee)
+    {
+        current_attack_angle = (starting_attack_angle - (definitions::GetWeapon(Data.properties.weapon_type).arc / 2)) - 5;
+    }
+
     projectile_timer = 0;
     attack_timer = 0;
     Attacking = true;

@@ -182,6 +182,11 @@ void Avatar::StartAttack(uint16_t attack_angle)
     attack_timer = 0;
     Attacking = true;
 
+    if (Data.properties.player_class != network::PlayerClass::Melee)
+    {
+        return;
+    }
+
     if (attack_angle <= 23 || attack_angle >= 338)
     {
         spritesheet.SetAnimation("SwordAttack", "East");
