@@ -15,6 +15,7 @@
   "movement_speed": 70,
   "walking_speed" : 40,
   "feeding_range": 5,
+  "siphon_rate": 3,
   "steering_force": 440,
   "repulsion_force": 550,
   "repulsion_radius": 30,

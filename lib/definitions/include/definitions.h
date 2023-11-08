@@ -83,6 +83,7 @@ struct EntityDefinition
     float base_movement_speed;
     float walking_speed;
     int feeding_range;
+    float siphon_rate;
     std::map<Behavior, bool> behaviors;
     std::map<Action, bool> actions;
     std::map<Action, std::optional<AttackDefinition>> attacks;

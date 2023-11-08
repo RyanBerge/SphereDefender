@@ -191,7 +191,14 @@ const sf::FloatRect Enemy::GetProjectedBounds(util::Seconds future, sf::Vector2f
 
 int Enemy::GetSiphonRate()
 {
-    return 0;
+    if (feeding_state == FeedingState::Feeding)
+    {
+        return definition.siphon_rate;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void Enemy::setBehavior(Behavior behavior)
@@ -638,7 +645,7 @@ void Enemy::handleFeeding(sf::Time elapsed)
         break;
         case FeedingState::Approaching:
         {
-            if (util::Distance(destination, data.position) <= 1)
+            if (util::Distance(destination, data.position) <= definition.feeding_range)
             {
                 is_moving = false;
                 feeding_state = FeedingState::Feeding;

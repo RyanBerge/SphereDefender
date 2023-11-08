@@ -266,6 +266,7 @@ public:
                 entity.base_movement_speed = json["movement_speed"];
                 entity.walking_speed = json["walking_speed"];
                 entity.feeding_range = json["feeding_range"];
+                entity.siphon_rate = json["siphon_rate"];
                 entity.steering_force = json["steering_force"];
                 entity.repulsion_force = json["repulsion_force"];
                 entity.repulsion_radius = json["repulsion_radius"];
