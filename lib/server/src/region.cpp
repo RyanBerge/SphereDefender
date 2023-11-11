@@ -216,6 +216,10 @@ void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf:
 
     Enemy enemy(this, type, position, pack_position);
     Enemies.push_back(enemy);
+    for (auto& player : PlayerList)
+    {
+        ServerMessage::AddEnemy(*player.Socket, enemy.GetData().id, type);
+    }
 }
 
 void Region::spawnWaveEnemy()
@@ -228,7 +232,7 @@ void Region::spawnWaveEnemy()
     //sf::Vector2f spawn_position{-500, 450}; // Under convoy
     //sf::Vector2f spawn_position{-900, -450}; // Left of convoy
 
-    spawnEnemy(definitions::EntityType::Bat, spawn_position);
+    spawnEnemy(definitions::EntityType::SmallDemon, spawn_position);
 
     last_spawn = region_age;
     spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;

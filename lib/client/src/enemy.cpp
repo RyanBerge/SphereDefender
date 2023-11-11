@@ -21,9 +21,13 @@ namespace {
     util::Seconds DESPAWN_TIMER = 3;
 }
 
-Enemy::Enemy()
+Enemy::Enemy() : Enemy(definitions::EntityType::Bat) { }
+
+Enemy::Enemy(definitions::EntityType type)
 {
-    spritesheet.LoadAnimationData("entities/bat.json");
+    std::string filename = definitions::GetEntityDefinition(type).animation_definition_file;
+
+    spritesheet.LoadAnimationData("entities/" + filename);
     spritesheet.CenterOrigin();
     spritesheet.SetAnimation("Move");
     spritesheet.SetDebugAnimationPrint(true);

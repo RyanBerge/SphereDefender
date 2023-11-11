@@ -40,6 +40,7 @@ public:
 
     void SetZone(definitions::Zone zone);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
+    void AddEnemy(uint16_t enemy_id, definitions::EntityType type);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);

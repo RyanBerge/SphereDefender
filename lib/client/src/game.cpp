@@ -308,11 +308,27 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
     }
 }
 
+void Game::AddEnemy(uint16_t enemy_id, definitions::EntityType type)
+{
+    if (enemies.find(enemy_id) == enemies.end())
+    {
+        enemies.emplace(enemy_id, Enemy(type));
+    }
+}
+
 void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
 {
     for (auto& enemy : enemy_list)
     {
-        enemies[enemy.id].UpdateData(enemy);
+        if (enemies.find(enemy.id) == enemies.end())
+        {
+            //enemies[enemy.id] = Enemy(enemy.type);
+            enemies.emplace(enemy.id, Enemy(enemy.type));
+        }
+        else
+        {
+            enemies[enemy.id].UpdateData(enemy);
+        }
     }
 }
 

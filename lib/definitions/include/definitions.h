@@ -26,22 +26,6 @@ enum class EntityType : uint8_t
     Bat
 };
 
-//struct EntityDefinition
-//{
-//    sf::Vector2f size;
-//    float base_movement_speed;
-//    float attack_damage;
-//    float attack_range;
-//    float minimum_leap_range;
-//    float maximum_leap_range;
-//    float leaping_speed;
-//    float leaping_distance;
-//    float feeding_range;
-//    float attack_distance;
-//    float attack_duration;
-//    float attack_cooldown;
-//};
-
 enum class Behavior
 {
     None,
@@ -49,6 +33,8 @@ enum class Behavior
     Feeding,
     Hunting,
     Stalking,
+    Flocking,
+    Swarming,
     Dead
 };
 
@@ -68,6 +54,7 @@ struct AttackDefinition
     float damage;
     util::Seconds cooldown;
     util::Seconds cooldown_timer;
+    util::Seconds duration;
     float knockback_distance;
 };
 
@@ -80,6 +67,8 @@ struct AttackEvent
 struct EntityDefinition
 {
     //std::string name;
+    std::string animation_definition_file;
+    int base_health;
     float base_movement_speed;
     float walking_speed;
     int feeding_range;
@@ -93,8 +82,10 @@ struct EntityDefinition
     int repulsion_radius;
     int acceleration;
     int deceleration;
-    float wander_rest_time_min;
-    float wander_rest_time_max;
+    util::Seconds wander_rest_time_min;
+    util::Seconds wander_rest_time_max;
+    util::Seconds swarming_rest_time_min;
+    util::Seconds swarming_rest_time_max;
     int aggro_range;
     int close_quarters_range;
     int leash_range;

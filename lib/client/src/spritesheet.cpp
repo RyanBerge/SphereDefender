@@ -74,6 +74,7 @@ void Spritesheet::Draw()
     }
 }
 
+// TODO: Cache animation data to avoid excessive I/O calls
 void Spritesheet::LoadAnimationData(std::string filename)
 {
     std::filesystem::path path("../data/sprites/" + filename);
@@ -183,7 +184,7 @@ void Spritesheet::SetAnimation(AnimationIdentifier identifier)
     }
     else
     {
-        cerr << "Animation not found: " << current_animation.identifier.group << ", " << current_animation.identifier.name << endl;
+        cerr << "Animation not found: " << identifier.group << ", " << identifier.name << endl;
     }
 }
 

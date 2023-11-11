@@ -20,6 +20,9 @@ class Enemy
 {
 public:
     Enemy();
+    Enemy(definitions::EntityType type);
+    //Enemy(const Enemy& other) = delete;
+    //Enemy& operator=(const Enemy&) = delete;
 
     void Update(sf::Time elapsed);
     void Draw();

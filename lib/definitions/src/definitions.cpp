@@ -219,22 +219,6 @@ class EntityDefinitionManager
 public:
     EntityDefinitionManager()
     {
-//        EntityDefinition small_demon;
-//        small_demon.base_movement_speed = 105;
-//        small_demon.size = sf::Vector2f{25, 25};
-//        small_demon.attack_damage = 30;
-//        small_demon.attack_range = 36;
-//        small_demon.minimum_leap_range = 75;
-//        small_demon.maximum_leap_range = 200;
-//        small_demon.leaping_speed = 750;
-//        small_demon.leaping_distance = 225;
-//        small_demon.feeding_range = 18;
-//        small_demon.attack_distance = 30;
-//        small_demon.attack_duration = 0.25;
-//        small_demon.attack_cooldown = 0.5;
-//
-//        definition_map[EntityType::SmallDemon] = small_demon;
-
         std::filesystem::path path("../data/definitions/entities");
         if (!std::filesystem::exists(path))
         {
@@ -263,7 +247,9 @@ public:
 
                 entity.attacks = { { Action::Tackling, std::nullopt }, { Action::Leaping, std::nullopt }};
 
+                entity.base_health = json["base_health"];
                 entity.base_movement_speed = json["movement_speed"];
+                entity.animation_definition_file = entity_file.path().filename().string();
                 entity.walking_speed = json["walking_speed"];
                 entity.feeding_range = json["feeding_range"];
                 entity.siphon_rate = json["siphon_rate"];
@@ -274,6 +260,8 @@ public:
                 entity.deceleration = json["deceleration"];
                 entity.wander_rest_time_min = json["wander_behavior"]["rest_min"];
                 entity.wander_rest_time_max = json["wander_behavior"]["rest_max"];
+                entity.swarming_rest_time_min = json["swarming_behavior"]["rest_min"];
+                entity.swarming_rest_time_max = json["swarming_behavior"]["rest_max"];
                 entity.aggro_range = json["aggro_range"];
                 entity.close_quarters_range = json["close_quarters_range"];
                 entity.leash_range = json["leash_range"];
@@ -297,6 +285,14 @@ public:
                     {
                         entity.behaviors[Behavior::Stalking] = true;
                     }
+                    else if (behavior == "flocking")
+                    {
+                        entity.behaviors[Behavior::Flocking] = true;
+                    }
+                    else if (behavior == "swarming")
+                    {
+                        entity.behaviors[Behavior::Swarming] = true;
+                    }
                     else if (behavior == "dead")
                     {
                         entity.behaviors[Behavior::Dead] = true;
@@ -313,6 +309,11 @@ public:
                     attack_definition.damage = j_attack["damage"];
                     attack_definition.range = j_attack["range"];
                     attack_definition.cooldown = j_attack["cooldown"];
+                    attack_definition.cooldown_timer = 0;
+                    if (j_attack.find("duration") != j_attack.end())
+                    {
+                        attack_definition.duration = j_attack["duration"];
+                    }
                     attack_definition.knockback_distance = j_attack["knockback_distance"];
 
                     std::string name = j_attack["name"];
@@ -394,6 +395,10 @@ public:
                 if (type == "bat")
                 {
                     definition_map[EntityType::Bat] = entity;
+                }
+                else if (type == "small_demon")
+                {
+                    definition_map[EntityType::SmallDemon] = entity;
                 }
             }
             catch (const std::exception& e)

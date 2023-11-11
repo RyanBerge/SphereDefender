@@ -26,28 +26,29 @@ constexpr bool DISPLAY_PATHS = false;
 
 namespace server {
 
-Enemy::Enemy(Region* region_ptr) : Enemy{region_ptr, definitions::EntityType::Bat, sf::Vector2f{0, 0}} { }
-
 Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2f position) : Enemy{region_ptr, enemy_type, position, position} { }
 
 Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2f position, sf::Vector2f pack_spawn) :
-             region{region_ptr}, type{enemy_type}, spawn_position{pack_spawn}
+             region{region_ptr}, spawn_position{pack_spawn}
 {
     assert(region_ptr != nullptr);
 
     static uint16_t identifier = 0;
     data.id = identifier++;
     data.position = position;
-    data.health = 100;
+    data.type = enemy_type;
     destination = data.position;
 
     definition = definitions::GetEntityDefinition(enemy_type);
+    data.health = definition.base_health;
 
-    current_max_speed = 0;
-    hunting_target = PlayerList[0].Data.id;
+    current_speed = 0;
+    aggro_target = PlayerList[0].Data.id;
     setBehavior(Behavior::None);
     aggression = definition.base_aggression;
     aggro_range = definition.aggro_range;
+    flocking_anchor_point = spawn_position;
+    current_max_speed = definition.base_movement_speed;
 }
 
 void Enemy::Update(sf::Time elapsed)
@@ -70,39 +71,7 @@ void Enemy::Update(sf::Time elapsed)
         return;
     }
 
-    switch (current_action)
-    {
-        case Action::Tackling:
-        {
-
-        }
-        break;
-        case Action::Knockback:
-        {
-            handleKnockback(elapsed);
-        }
-        break;
-        case Action::Sniffing:
-        {
-
-        }
-        break;
-        case Action::Stunned:
-        {
-            handleStunned(elapsed);
-        }
-        break;
-        case Action::Leaping:
-        {
-            handleLeaping(elapsed);
-        }
-        break;
-        case Action::None:
-        {
-            handleBehavior(elapsed);
-        }
-        break;
-    }
+    handleAction(elapsed);
 }
 
 void Enemy::WeaponHit(uint16_t player_id, uint8_t damage, definitions::WeaponKnockback knockback, sf::Vector2f hit_vector, float invulnerability_window)
@@ -208,6 +177,8 @@ void Enemy::setBehavior(Behavior behavior)
     hunting_state = HuntingState::Start;
     stalking_state = StalkingState::Start;
     leaping_state = LeapingState::Start;
+    flocking_state = FlockingState::Start;
+    swarming_state = SwarmingState::Start;
 
     current_behavior = behavior;
 }
@@ -218,6 +189,7 @@ void Enemy::setAction(Action action)
     stunned_state = StunnedState::Start;
     knockback_state = KnockbackState::Start;
     leaping_state = LeapingState::Start;
+    tackling_state = TacklingState::Start;
 
     current_action = action;
 }
@@ -235,10 +207,16 @@ void Enemy::chooseBehavior()
         return;
     }
 
-
     if (definition.behaviors[Behavior::Wandering])
     {
         setBehavior(Behavior::Wandering);
+        return;
+    }
+
+    if (definition.behaviors[Behavior::Flocking])
+    {
+        setBehavior(Behavior::Flocking);
+        return;
     }
 }
 
@@ -263,7 +241,7 @@ bool Enemy::attack()
 
     for (auto& attack : attacks)
     {
-        if (util::Distance(GetPlayerById(hunting_target, PlayerList).Data.position, data.position) <= definition.attacks[attack].value().range)
+        if (util::Distance(GetPlayerById(aggro_target, PlayerList).Data.position, data.position) <= definition.attacks[attack].value().range)
         {
             setAction(attack);
             return true;
@@ -271,6 +249,43 @@ bool Enemy::attack()
     }
 
     return false;
+}
+
+void Enemy::handleAction(sf::Time elapsed)
+{
+    switch (current_action)
+    {
+        case Action::Tackling:
+        {
+            handleTackling(elapsed);
+        }
+        break;
+        case Action::Knockback:
+        {
+            handleKnockback(elapsed);
+        }
+        break;
+        case Action::Sniffing:
+        {
+
+        }
+        break;
+        case Action::Stunned:
+        {
+            handleStunned(elapsed);
+        }
+        break;
+        case Action::Leaping:
+        {
+            handleLeaping(elapsed);
+        }
+        break;
+        case Action::None:
+        {
+            handleBehavior(elapsed);
+        }
+        break;
+    }
 }
 
 void Enemy::handleBehavior(sf::Time elapsed)
@@ -300,6 +315,16 @@ void Enemy::handleBehavior(sf::Time elapsed)
         case Behavior::Stalking:
         {
             handleStalking(elapsed);
+        }
+        break;
+        case Behavior::Flocking:
+        {
+            handleFlocking(elapsed);
+        }
+        break;
+        case Behavior::Swarming:
+        {
+            handleSwarming(elapsed);
         }
         break;
         case Behavior::Dead:
@@ -349,7 +374,7 @@ void Enemy::move(sf::Time elapsed)
     if (current_velocity != sf::Vector2f{0, 0})
     {
         util::AngleDegrees angle_between = util::AngleBetween(current_velocity, goal - data.position);
-        if (angle_between > 90 && angle_between < 270)
+        if ((angle_between > 90 && angle_between < 270) || current_speed > current_max_speed)
         {
             decelerate(elapsed);
         }
@@ -363,7 +388,7 @@ void Enemy::move(sf::Time elapsed)
         accelerate(elapsed);
     }
 
-    current_velocity = util::TruncateVector(current_velocity + velocity, current_max_speed);
+    current_velocity = util::TruncateVector(current_velocity + velocity, current_speed);
     sf::Vector2f step = current_velocity * elapsed.asSeconds();
 
     takeStep(step);
@@ -448,7 +473,7 @@ bool Enemy::checkStuck(sf::Time elapsed)
 sf::Vector2f Enemy::getGoal()
 {
     std::vector<sf::FloatRect> obstacles = region->Obstacles;
-    util::PathingGraph graph = util::AppendPathingGraph(data.position, destination, region->Obstacles, GetBounds(), region->PathingGraphs[type]);
+    util::PathingGraph graph = util::AppendPathingGraph(data.position, destination, region->Obstacles, GetBounds(), region->PathingGraphs[data.type]);
     std::list<sf::Vector2f> path = util::GetPath(graph);
 
     if (DISPLAY_PATHS)
@@ -475,7 +500,7 @@ sf::Vector2f Enemy::steer(sf::Vector2f goal)
 {
     sf::Vector2f desired_direction = util::Normalize(goal - data.position);
 
-    return (desired_direction * current_max_speed) - current_velocity;
+    return (desired_direction * current_speed) - current_velocity;
 }
 
 void Enemy::accelerate(sf::Time elapsed)
@@ -485,16 +510,16 @@ void Enemy::accelerate(sf::Time elapsed)
         return;
     }
 
-    if (current_max_speed == definition.base_movement_speed)
+    if (current_speed == current_max_speed)
     {
         return;
     }
 
-    current_max_speed += definition.acceleration * elapsed.asSeconds();
+    current_speed += definition.acceleration * elapsed.asSeconds();
 
-    if (current_max_speed > definition.base_movement_speed)
+    if (current_speed > current_max_speed)
     {
-        current_max_speed = definition.base_movement_speed;
+        current_speed = current_max_speed;
     }
 }
 
@@ -505,16 +530,16 @@ void Enemy::decelerate(sf::Time elapsed)
         return;
     }
 
-    if (current_max_speed == 0)
+    if (current_speed == 0)
     {
         return;
     }
 
-    current_max_speed -= definition.deceleration * elapsed.asSeconds();
+    current_speed -= definition.deceleration * elapsed.asSeconds();
 
-    if (current_max_speed < 0)
+    if (current_speed < 0)
     {
-        current_max_speed = 0;
+        current_speed = 0;
     }
 }
 
@@ -671,7 +696,7 @@ void Enemy::handleHunting(sf::Time elapsed)
     previous_behavior = current_behavior;
     hunting_timer += elapsed.asSeconds();
     stalking_rest_timer += elapsed.asSeconds();
-    const Player& target = GetPlayerById(hunting_target, PlayerList);
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
 
     switch (hunting_state)
     {
@@ -725,7 +750,7 @@ void Enemy::handleStalking(sf::Time elapsed)
 
     previous_behavior = current_behavior;
     stalking_rest_timer += elapsed.asSeconds();
-    const Player& target = GetPlayerById(hunting_target, PlayerList);
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
     float distance = util::Distance(data.position, target.Data.position);
 
     switch (stalking_state)
@@ -824,6 +849,73 @@ void Enemy::handleStalking(sf::Time elapsed)
     }
 }
 
+void Enemy::handleFlocking(sf::Time elapsed)
+{
+    (void)elapsed;
+
+    switch (flocking_state)
+    {
+        case FlockingState::Start:
+        {
+            is_moving = true;
+            is_walking = false;
+            flocking_state = FlockingState::Flocking;
+            [[fallthrough]];
+        }
+        case FlockingState::Flocking:
+        {
+            destination = flocking_anchor_point;
+            aggroPlayer();
+        }
+        break;
+    }
+}
+
+void Enemy::handleSwarming(sf::Time elapsed)
+{
+    swarming_rest_timer += elapsed.asSeconds();
+
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
+    double target_distance = util::Distance(data.position, target.Data.position);
+
+    switch (swarming_state)
+    {
+        case SwarmingState::Start:
+        {
+            swarming_state = SwarmingState::Approaching;
+            [[fallthrough]];
+        }
+        case SwarmingState::Approaching:
+        {
+            destination = target.Data.position;
+            if (target_distance <= definition.close_quarters_range)
+            {
+                setAction(Action::Tackling);
+                swarming_state = SwarmingState::Followthrough;
+            }
+        }
+        break;
+        case SwarmingState::Followthrough:
+        {
+            swarming_rest_point = (util::Normalize(current_velocity) * static_cast<float>(definition.close_quarters_range)) + data.position;
+            swarming_rest_timer = 0;
+            current_max_speed = definition.base_movement_speed;
+            swarming_rest_time = util::GetRandomFloat(definition.swarming_rest_time_min, definition.swarming_rest_time_max);
+            swarming_state = SwarmingState::Resting;
+            [[fallthrough]];
+        }
+        case SwarmingState::Resting:
+        {
+            destination = swarming_rest_point;
+            if (swarming_rest_timer >= swarming_rest_time)
+            {
+                setBehavior(Behavior::None);
+            }
+        }
+        break;
+    }
+}
+
 void Enemy::handleLeaping(sf::Time elapsed)
 {
     leaping_timer += elapsed.asSeconds();
@@ -835,7 +927,7 @@ void Enemy::handleLeaping(sf::Time elapsed)
             leaping_timer = 0;
             leaping_state = LeapingState::Windup;
             changeAnimation(EnemyAnimation::LeapWindup);
-            leaping_direction = util::Normalize(GetPlayerById(hunting_target, PlayerList).Data.position - data.position);
+            leaping_direction = util::Normalize(GetPlayerById(aggro_target, PlayerList).Data.position - data.position);
             [[fallthrough]];
         }
         case LeapingState::Windup:
@@ -942,6 +1034,48 @@ void Enemy::handleStunned(sf::Time elapsed)
     }
 }
 
+void Enemy::handleTackling(sf::Time elapsed)
+{
+    tackle_timer += elapsed.asSeconds();
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
+
+    switch (tackling_state)
+    {
+        case TacklingState::Start:
+        {
+            tackling_state = TacklingState::Tackle;
+            current_max_speed = definition.base_movement_speed * 2.5;
+            [[fallthrough]];
+        }
+        case TacklingState::Tackle:
+        {
+            destination = target.Data.position;
+            move(elapsed);
+
+            if (tackle_timer >= definition.attacks[Action::Tackling].value().duration)
+            {
+                current_max_speed = definition.base_movement_speed;
+                tackle_timer = 0;
+                setAction(Action::None);
+            }
+
+            // check for a hit
+            for (auto& player : PlayerList)
+            {
+                if (util::Intersects(player.GetBounds(), GetBounds()))
+                {
+                    player.AddIncomingAttack(definitions::AttackEvent{definition.attacks[Action::Tackling].value(), data.position});
+                    definition.attacks[Action::Tackling].value().cooldown_timer = 0;
+                    current_max_speed = definition.base_movement_speed;
+                    tackle_timer = 0;
+                    setAction(Action::None);
+                }
+            }
+        }
+        break;
+    }
+}
+
 void Enemy::changeAnimation(EnemyAnimation animation)
 {
     for (auto& player : PlayerList)
@@ -979,7 +1113,7 @@ std::optional<uint16_t> Enemy::playerInRange(float aggro_distance)
 
 bool Enemy::aggroPlayer()
 {
-    if (!definition.behaviors[Behavior::Hunting])
+    if (!(definition.behaviors[Behavior::Hunting] || definition.behaviors[Behavior::Swarming]))
     {
         return false;
     }
@@ -987,8 +1121,15 @@ bool Enemy::aggroPlayer()
     auto target = playerInRange(aggro_range);
     if (target.has_value())
     {
-        hunting_target = target.value();
-        setBehavior(Behavior::Hunting);
+        aggro_target = target.value();
+        if (definition.behaviors[Behavior::Hunting])
+        {
+            setBehavior(Behavior::Hunting);
+        }
+        else if (definition.behaviors[Behavior::Swarming])
+        {
+            setBehavior(Behavior::Swarming);
+        }
         return true;
     }
 

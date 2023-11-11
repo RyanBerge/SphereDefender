@@ -937,16 +937,37 @@ bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::ItemType item
     return true;
 }
 
+bool ServerMessage::AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type)
+{
+    Code code = ServerMessage::Code::AddEnemy;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(type);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
+    offset += sizeof(enemy_id);
+    std::memcpy(buffer + offset, &type, sizeof(type));
+    offset += sizeof(type);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
 {
     Code code = ServerMessage::Code::EnemyUpdate;
 
     uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
 
-    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y);
-    enemy_data_size += sizeof(EnemyData::health) + sizeof(EnemyData::charge);
-    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
-
+    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (sizeof(EnemyData) * num_enemies);
     uint8_t* buffer = new uint8_t[buffer_size];
 
     int offset = 0;
@@ -957,16 +978,8 @@ bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> en
 
     for (auto& enemy : enemies)
     {
-        std::memcpy(buffer + offset, &enemy.id, sizeof(enemy.id));
-        offset += sizeof(enemy.id);
-        std::memcpy(buffer + offset, &enemy.position.x, sizeof(enemy.position.x));
-        offset += sizeof(enemy.position.x);
-        std::memcpy(buffer + offset, &enemy.position.y, sizeof(enemy.position.y));
-        offset += sizeof(enemy.position.y);
-        std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
-        offset += sizeof(enemy.health);
-        std::memcpy(buffer + offset, &enemy.charge, sizeof(enemy.charge));
-        offset += sizeof(enemy.charge);
+        std::memcpy(buffer + offset, &enemy, sizeof(enemy));
+        offset += sizeof(enemy);
     }
 
     if (!writeBuffer(socket, buffer, buffer_size))
@@ -1542,6 +1555,28 @@ bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemTyp
     return true;
 }
 
+bool ServerMessage::DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type)
+{
+    uint16_t enemy_id;
+    definitions::EntityType type;
+
+    if (!read(socket, &enemy_id, sizeof(enemy_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read enemy id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &type, sizeof(type)))
+    {
+        cerr << "Network: " << __func__ << " failed to read enemy type." << endl;
+        return false;
+    }
+
+    out_enemy_id = enemy_id;
+    out_type = type;
+    return true;
+}
+
 bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies)
 {
     uint16_t num_enemies;
@@ -1557,33 +1592,9 @@ bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyDa
     {
         EnemyData data;
 
-        if (!read(socket, &data.id, sizeof(data.id)))
+        if (!read(socket, &data, sizeof(data)))
         {
-            cerr << "Network: " << __func__ << " failed to read an enemy id." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.x, sizeof(data.position.x)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy position.x." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.y, sizeof(data.position.y)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy position.y." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.health, sizeof(data.health)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy health." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.charge, sizeof(data.charge)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy charge." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy data." << endl;
             return false;
         }
 

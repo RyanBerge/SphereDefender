@@ -1,48 +1,48 @@
 {
   "filename": "Bat.png",
-  "pathing_hitbox": { "x": 20, "y": 12 },
+  "pathing_hitbox": { "x": 12, "y": 12 },
   "frames": [
     {
       "index": 0,
       "location": [ 0, 0 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 1,
       "location": [ 0, 12 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 2,
       "location": [ 0, 24 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 3,
       "location": [ 0, 36 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 4,
       "location": [ 0, 48 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 5,
       "location": [ 0, 60 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     },
     {
       "index": 6,
       "location": [ 0, 72 ],
-      "size": [ 20, 12 ],
-      "origin": [ 10, 6 ]
+      "size": [ 12, 12 ],
+      "origin": [ 6, 6 ]
     }
   ],
   "animation_groups": [
@@ -61,34 +61,6 @@
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Move" }
-        },
-        {
-          "name": "Sniff",
-          "start_frame": 1,
-          "end_frame": 1,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Sniff" }
-        },
-        {
-          "name": "LeapWindup",
-          "start_frame": 2,
-          "end_frame": 2,
-          "animation_speed": 1,
-          "next_animation": { "group": "None", "animation": "Leap" }
-        },
-        {
-          "name": "Leap",
-          "start_frame": 2,
-          "end_frame": 2,
-          "animation_speed": 2,
-          "next_animation": { "group": "None", "animation": "LeapResting" }
-        },
-        {
-          "name": "LeapResting",
-          "start_frame": 2,
-          "end_frame": 2,
-          "animation_speed": 1,
           "next_animation": { "group": "None", "animation": "Move" }
         },
         {

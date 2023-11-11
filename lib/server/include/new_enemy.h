@@ -23,7 +23,6 @@ class Region;
 class Enemy
 {
 public:
-    Enemy(Region* region_ptr);
     Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2f position);
     Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2f position, sf::Vector2f pack_spawn);
 
@@ -46,16 +45,20 @@ private:
     void setAction(Action action);
     void chooseBehavior();
     bool attack();
+    void handleAction(sf::Time elapsed);
     void handleBehavior(sf::Time elapsed);
 
     void handleWandering(sf::Time elapsed);
     void handleFeeding(sf::Time elapsed);
     void handleHunting(sf::Time elapsed);
     void handleStalking(sf::Time elapsed);
+    void handleFlocking(sf::Time elapsed);
+    void handleSwarming(sf::Time elapsed);
 
+    void handleLeaping(sf::Time elapsed);
     void handleKnockback(sf::Time elapsed);
     void handleStunned(sf::Time elapsed);
-    void handleLeaping(sf::Time elapsed);
+    void handleTackling(sf::Time elapsed);
 
     void changeAnimation(network::EnemyAnimation animation);
     std::optional<uint16_t> playerInRange(float aggro_distance);
@@ -74,7 +77,6 @@ private:
     sf::Vector2f getRepulsionForce(float distance);
 
     Region* region = nullptr;
-    definitions::EntityType type;
     definitions::EntityDefinition definition;
     network::EnemyData data{};
 
@@ -89,8 +91,10 @@ private:
     bool is_walking = false;
     bool braking = false;
     sf::Vector2f current_velocity{0, 0};
+    float current_speed = 0;
     float current_max_speed = 0;
     int aggro_range;
+    uint16_t aggro_target;
 
     std::map<uint16_t, util::Seconds> invulnerability_timers;
     std::map<uint16_t, float> invulnerability_windows;
@@ -124,7 +128,6 @@ private:
 
     HuntingState hunting_state = HuntingState::Start;
     util::Seconds hunting_timer = 0;
-    uint16_t hunting_target;
     float aggression;
 
     enum class StalkingState
@@ -137,6 +140,28 @@ private:
     StalkingState stalking_state = StalkingState::Start;
     util::Seconds stalking_rest_timer = 0;
     util::Seconds stalking_rest_time;
+
+    enum class FlockingState
+    {
+        Start,
+        Flocking
+    };
+
+    FlockingState flocking_state = FlockingState::Start;
+    sf::Vector2f flocking_anchor_point{};
+
+    enum class SwarmingState
+    {
+        Start,
+        Approaching,
+        Followthrough,
+        Resting
+    };
+
+    SwarmingState swarming_state = SwarmingState::Start;
+    sf::Vector2f swarming_rest_point{};
+    util::Seconds swarming_rest_timer = 0;
+    util::Seconds swarming_rest_time = 0;
 
     enum class KnockbackState
     {
@@ -171,6 +196,15 @@ private:
     LeapingState leaping_state = LeapingState::Start;
     util::Seconds leaping_timer = 0;
     sf::Vector2f leaping_direction;
+
+    enum class TacklingState
+    {
+        Start,
+        Tackle,
+    };
+
+    TacklingState tackling_state;
+    util::Seconds tackle_timer = 0;
 
 };
 

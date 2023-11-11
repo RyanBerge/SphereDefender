@@ -1,32 +1,38 @@
 {
-  "name": "Demon",
+  "name": "Bat",
   "behaviors": [
-    "wandering", "feeding", "hunting", "stalking"
+    "flocking", "swarming"
   ],
   "attacks": [
     {
-      "name": "leap",
-      "range": 120,
-      "damage": 30,
+      "name": "tackle",
+      "range": 60,
+      "damage": 5,
       "cooldown": 3,
-      "knockback_distance": 35
+      "duration": 0.7,
+      "knockback_distance": 5
     }
   ],
-  "movement_speed": 70,
+  "base_health": 50,
+  "movement_speed": 60,
   "walking_speed" : 40,
   "feeding_range": 5,
   "siphon_rate": 3,
-  "steering_force": 440,
-  "repulsion_force": 550,
-  "repulsion_radius": 30,
+  "steering_force": 240,
+  "repulsion_force": 350,
+  "repulsion_radius": 25,
   "acceleration": 100,
-  "deceleration": 50,
+  "deceleration": 65,
   "wander_behavior": {
     "rest_min": 1,
     "rest_max": 3
   },
+  "swarming_behavior": {
+    "rest_min": 6,
+    "rest_max": 6
+  },
   "aggro_range": 500,
-  "close_quarters_range": 110,
+  "close_quarters_range": 180,
   "leash_range": 500,
   "base_aggression": 0.7
 }

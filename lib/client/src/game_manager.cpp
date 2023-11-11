@@ -450,6 +450,16 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::AddEnemy:
+            {
+                uint16_t enemy_id;
+                definitions::EntityType type;
+                if (ServerMessage::DecodeAddEnemy(resources::GetServerSocket(), enemy_id, type))
+                {
+                    Game.AddEnemy(enemy_id, type);
+                }
+            }
+            break;
             case ServerMessage::Code::EnemyUpdate:
             {
                 std::vector<network::EnemyData> enemy_list;
