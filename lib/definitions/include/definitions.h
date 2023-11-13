@@ -45,7 +45,9 @@ enum class Action
     Knockback,
     Sniffing,
     Stunned,
-    Leaping
+    Leaping,
+    Hopping,
+    TailSwipe
 };
 
 struct AttackDefinition
@@ -86,13 +88,19 @@ struct EntityDefinition
     util::Seconds wander_rest_time_max;
     util::Seconds swarming_rest_time_min;
     util::Seconds swarming_rest_time_max;
+    int hopping_distance;
     int aggro_range;
+    int combat_range;
     int close_quarters_range;
     int leash_range;
     float base_aggression;
     util::Seconds leap_windup_time;
     util::Seconds leap_time;
     util::Seconds leap_rest_time;
+    util::Seconds hop_windup_time;
+    util::Seconds hop_time;
+    util::Seconds tail_swipe_time;
+    sf::FloatRect attack_hitbox;
 };
 
 EntityDefinition GetEntityDefinition(EntityType type);

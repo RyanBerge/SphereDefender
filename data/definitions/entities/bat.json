@@ -32,6 +32,7 @@
     "rest_max": 6
   },
   "aggro_range": 500,
+  "combat_range": 75,
   "close_quarters_range": 180,
   "leash_range": 500,
   "base_aggression": 0.7

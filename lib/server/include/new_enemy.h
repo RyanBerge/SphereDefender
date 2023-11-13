@@ -59,8 +59,11 @@ private:
     void handleKnockback(sf::Time elapsed);
     void handleStunned(sf::Time elapsed);
     void handleTackling(sf::Time elapsed);
+    void handleHopping(sf::Time elapsed);
+    void handleTailSwipe(sf::Time elapsed);
 
     void changeAnimation(network::EnemyAnimation animation);
+    void changeAnimation(network::EnemyAnimation animation, util::Direction direction);
     std::optional<uint16_t> playerInRange(float aggro_distance);
     bool aggroPlayer();
     sf::Vector2f getTargetConvoyPoint();
@@ -80,9 +83,9 @@ private:
     definitions::EntityDefinition definition;
     network::EnemyData data{};
 
-    Behavior previous_behavior = Behavior::Wandering;
+    Behavior previous_behavior = Behavior::None;
     Action previous_action = Action::None;
-    Behavior current_behavior = Behavior::Wandering;
+    Behavior current_behavior = Behavior::None;
     Action current_action = Action::None;
 
     sf::Vector2f spawn_position;
@@ -133,12 +136,13 @@ private:
     enum class StalkingState
     {
         Start,
-        Moving,
+        Choosing,
+        RestStart,
         Resting
     };
 
     StalkingState stalking_state = StalkingState::Start;
-    util::Seconds stalking_rest_timer = 0;
+    util::Seconds stalking_timer = 0;
     util::Seconds stalking_rest_time;
 
     enum class FlockingState
@@ -205,6 +209,28 @@ private:
 
     TacklingState tackling_state;
     util::Seconds tackle_timer = 0;
+
+    enum class HoppingState
+    {
+        Start,
+        Windup,
+        Hopping,
+        Resting
+    };
+
+    HoppingState hopping_state;
+    util::Seconds hopping_timer = 0;
+    util::Direction hop_direction;
+    sf::Vector2f hop_vector{};
+
+    enum class TailSwipeState
+    {
+        Start,
+        Swipe
+    };
+
+    TailSwipeState tail_swipe_state;
+    util::Seconds tail_swipe_timer = 0;
 
 };
 

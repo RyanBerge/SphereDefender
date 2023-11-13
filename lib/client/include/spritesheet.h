@@ -14,6 +14,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include "game_math.h"
 #include <memory>
 #include <map>
 
@@ -50,6 +51,8 @@ public:
     void SetTiling(bool tiled);
     void SetVisible(bool visible);
     bool IsVisible();
+
+    static std::string GetAnimationVariant(util::Direction direction);
 
 private:
     struct Frame

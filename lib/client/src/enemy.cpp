@@ -78,7 +78,7 @@ void Enemy::UpdateData(network::EnemyData new_data)
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
 }
 
-void Enemy::ChangeAction(network::EnemyAnimation animation)
+void Enemy::ChangeAction(network::EnemyAnimation animation, util::Direction direction)
 {
     if (!alive)
     {
@@ -137,6 +137,21 @@ void Enemy::ChangeAction(network::EnemyAnimation animation)
         case network::EnemyAnimation::Leap:
         {
             spritesheet.SetAnimation("Leap");
+        }
+        break;
+        case network::EnemyAnimation::HopWindup:
+        {
+            spritesheet.SetAnimation("HopWindup");
+        }
+        break;
+        case network::EnemyAnimation::Hop:
+        {
+            spritesheet.SetAnimation("Hop");
+        }
+        break;
+        case network::EnemyAnimation::TailSwipe:
+        {
+            spritesheet.SetAnimation("TailSwipe", Spritesheet::GetAnimationVariant(direction));
         }
         break;
     }

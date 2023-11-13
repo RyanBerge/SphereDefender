@@ -262,7 +262,12 @@ public:
                 entity.wander_rest_time_max = json["wander_behavior"]["rest_max"];
                 entity.swarming_rest_time_min = json["swarming_behavior"]["rest_min"];
                 entity.swarming_rest_time_max = json["swarming_behavior"]["rest_max"];
+                if (json.find("hopping_distance") != json.end())
+                {
+                    entity.hopping_distance = json["hopping_distance"];
+                }
                 entity.aggro_range = json["aggro_range"];
+                entity.combat_range = json["combat_range"];
                 entity.close_quarters_range = json["close_quarters_range"];
                 entity.leash_range = json["leash_range"];
                 entity.base_aggression = json["base_aggression"];
@@ -325,6 +330,10 @@ public:
                     {
                         entity.attacks[Action::Leaping] = attack_definition;
                     }
+                    else if (name == "tail swipe")
+                    {
+                        entity.attacks[Action::TailSwipe] = attack_definition;
+                    }
                     else
                     {
                         cerr << "Unsupported attack " << name << " listed in entity file: " << entity_file.path() << "\n";
@@ -369,21 +378,53 @@ public:
                     entity.hitbox.x = sprite_json["pathing_hitbox"]["x"];
                     entity.hitbox.y = sprite_json["pathing_hitbox"]["y"];
 
-                    for (auto& j_animation : sprite_json["animation_groups"][0]["animations"])
+                    for (auto& frame : sprite_json["frames"])
                     {
-                        int num_frames = j_animation["end_frame"].get<int>() - j_animation["start_frame"].get<int>() + 1;
-                        util::Seconds time = (1 / j_animation["animation_speed"].get<double>()) * num_frames;
-                        if (j_animation["name"] == "LeapWindup")
+                        if (frame.find("attack_hitbox") != frame.end())
                         {
-                            entity.leap_windup_time = time;
+                            sf::FloatRect hitbox;
+                            hitbox.left = frame["attack_hitbox"]["x"];
+                            hitbox.top = frame["attack_hitbox"]["y"];
+                            hitbox.width = frame["attack_hitbox"]["width"];
+                            hitbox.height = frame["attack_hitbox"]["height"];
+
+                            hitbox.left -= (int)frame["origin"][0];
+                            hitbox.top -= (int)frame["origin"][1];
+
+                            entity.attack_hitbox = hitbox;
                         }
-                        else if (j_animation["name"] == "Leap")
+                    }
+
+                    for (auto& j_animation_group : sprite_json["animation_groups"])
+                    {
+                        for (auto& j_animation : j_animation_group["animations"])
                         {
-                            entity.leap_time = time;
-                        }
-                        else if (j_animation["name"] == "LeapResting")
-                        {
-                            entity.leap_rest_time = time;
+                            int num_frames = j_animation["end_frame"].get<int>() - j_animation["start_frame"].get<int>() + 1;
+                            util::Seconds time = (1 / j_animation["animation_speed"].get<double>()) * num_frames;
+                            if (j_animation["name"] == "LeapWindup")
+                            {
+                                entity.leap_windup_time = time;
+                            }
+                            else if (j_animation["name"] == "Leap")
+                            {
+                                entity.leap_time = time;
+                            }
+                            else if (j_animation["name"] == "LeapResting")
+                            {
+                                entity.leap_rest_time = time;
+                            }
+                            else if (j_animation["name"] == "HopWindup")
+                            {
+                                entity.hop_windup_time = time;
+                            }
+                            else if (j_animation["name"] == "Hop")
+                            {
+                                entity.hop_time = time;
+                            }
+                            else if (j_animation["name"] == "TailSwipe")
+                            {
+                                entity.tail_swipe_time = time;
+                            }
                         }
                     }
                 }

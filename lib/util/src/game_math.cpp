@@ -297,6 +297,23 @@ sf::Vector2f RotateVector(sf::Vector2f input, AngleDegrees angle)
     return vector;
 }
 
+sf::Vector2f GetPerpendicular(sf::Vector2f input, util::Direction direction)
+{
+    if (direction == util::Direction::Left)
+    {
+        return sf::Vector2f{-input.y, input.x};
+    }
+    else if (direction == util::Direction::Right)
+    {
+        return sf::Vector2f{input.y, -input.x};
+    }
+    else
+    {
+        std::cerr << "Invalid direction input.\n";
+        return input;
+    }
+}
+
 sf::Vector2f TruncateVector(sf::Vector2f input, float magnitude)
 {
     float mag = std::hypot(input.x, input.y);
@@ -354,6 +371,43 @@ sf::Vector2f CollapseVectorCloud(VectorCloud cloud)
     }
 
     return cloud[index].vector;
+}
+
+util::Direction GetOctalDirection(util::AngleDegrees angle)
+{
+    angle = std::fmod(angle + 360, 360);
+    if (angle <= 23 || angle >= 338)
+    {
+        return util::Direction::East;
+    }
+    else if (angle <= 68)
+    {
+        return util::Direction::Southeast;
+    }
+    else if (angle <= 113)
+    {
+        return util::Direction::South;
+    }
+    else if (angle <= 158)
+    {
+        return util::Direction::Southwest;
+    }
+    else if (angle <= 203)
+    {
+        return util::Direction::West;
+    }
+    else if (angle <= 248)
+    {
+        return util::Direction::Northwest;
+    }
+    else if (angle <= 293)
+    {
+        return util::Direction::North;
+    }
+    else if (angle <= 338)
+    {
+        return util::Direction::Northeast;
+    }
 }
 
 sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color color, int thickness)

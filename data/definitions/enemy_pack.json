@@ -1,6 +1,27 @@
 {
   "packs": [
     {
+      "type": "test",
+      "enemies": [
+        {
+          "type": "small_demon",
+          "min": 1,
+          "max": 1,
+          "zone_scaling": [
+            0, 2, 4, 6, 8, 10
+          ]
+        },
+        {
+          "type": "bat",
+          "min": 0,
+          "max": 0,
+          "zone_scaling": [
+            0, 1, 1, 2, 2, 3
+          ]
+        }
+      ]
+    },
+    {
       "type": "demon",
       "enemies": [
         {

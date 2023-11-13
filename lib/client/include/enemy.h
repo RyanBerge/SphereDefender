@@ -29,7 +29,7 @@ public:
 
     network::EnemyData GetData();
     void UpdateData(network::EnemyData new_data);
-    void ChangeAction(network::EnemyAnimation action);
+    void ChangeAction(network::EnemyAnimation action, util::Direction direction);
 
 private:
     Spritesheet spritesheet;

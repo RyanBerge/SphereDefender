@@ -426,9 +426,10 @@ void GameManager::checkMessages()
             {
                 uint16_t enemy_id;
                 network::EnemyAnimation action;
-                if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action))
+                util::Direction direction;
+                if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action, direction))
                 {
-                    Game.ChangeEnemyAction(enemy_id, action);
+                    Game.ChangeEnemyAction(enemy_id, action, direction);
                 }
             }
             break;

@@ -268,8 +268,16 @@ void Server::startGame()
 
     for (size_t i = 0; i < PlayerList.size(); ++i)
     {
+        sf::Vector2f spawn_point{0, 0};
+#ifndef NDEBUG
+        if (debug::PlayerSpawnPoint.override)
+        {
+            spawn_point = debug::PlayerSpawnPoint.value;
+        }
+#endif
         // TODO: Magic numbers for distance
         sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+        spawn_position += spawn_point;
         ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
         PlayerList[i].Data.position = spawn_position;
     }
@@ -952,9 +960,17 @@ void Server::loadingComplete(Player& player)
 
         for (size_t i = 0; i < PlayerList.size(); ++i)
         {
+            sf::Vector2f spawn_point = region.Convoy.Position;
+            spawn_point.x += 200;
+#ifndef NDEBUG
+            if (debug::PlayerSpawnPoint.override)
+            {
+                spawn_point = debug::PlayerSpawnPoint.value;
+            }
+#endif
             // TODO: Magic numbers for distance
-            sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i)) + region.Convoy.Position;
-            spawn_position.x += 200;
+            sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+            spawn_position += spawn_point;
             ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
             PlayerList[i].Data.position = spawn_position;
         }

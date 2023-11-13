@@ -187,38 +187,7 @@ void Avatar::StartAttack(uint16_t attack_angle)
         return;
     }
 
-    if (attack_angle <= 23 || attack_angle >= 338)
-    {
-        spritesheet.SetAnimation("SwordAttack", "East");
-    }
-    else if (attack_angle <= 68)
-    {
-        spritesheet.SetAnimation("SwordAttack", "Southeast");
-    }
-    else if (attack_angle <= 113)
-    {
-        spritesheet.SetAnimation("SwordAttack", "South");
-    }
-    else if (attack_angle <= 158)
-    {
-        spritesheet.SetAnimation("SwordAttack", "Southwest");
-    }
-    else if (attack_angle <= 203)
-    {
-        spritesheet.SetAnimation("SwordAttack", "West");
-    }
-    else if (attack_angle <= 248)
-    {
-        spritesheet.SetAnimation("SwordAttack", "Northwest");
-    }
-    else if (attack_angle <= 293)
-    {
-        spritesheet.SetAnimation("SwordAttack", "North");
-    }
-    else if (attack_angle <= 338)
-    {
-        spritesheet.SetAnimation("SwordAttack", "Northeast");
-    }
+    spritesheet.SetAnimation("SwordAttack", Spritesheet::GetAnimationVariant(util::GetOctalDirection(attack_angle)));
 }
 
 void Avatar::SetStunned(util::Seconds duration)

@@ -405,9 +405,9 @@ void Game::StartAction(uint16_t player_id, network::PlayerAction action)
     }
 }
 
-void Game::ChangeEnemyAction(uint16_t enemy_id, network::EnemyAnimation action)
+void Game::ChangeEnemyAction(uint16_t enemy_id, network::EnemyAnimation action, util::Direction direction)
 {
-    enemies[enemy_id].ChangeAction(action);
+    enemies[enemy_id].ChangeAction(action, direction);
 }
 
 void Game::RemovePlayer(uint16_t player_id)

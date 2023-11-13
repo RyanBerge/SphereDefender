@@ -16,10 +16,11 @@ using std::cout, std::cerr, std::endl;
 namespace debug
 {
 
+DebugOverride<bool> StartInGame = { false, false };
 DebugOverride<int> PlayerMovementSpeed = { false, 100 };
+DebugOverride<sf::Vector2f> PlayerSpawnPoint = { false, sf::Vector2f{ 0, 0 }};
 DebugOverride<bool> StaticMap = { false, false };
 DebugOverride<int> StartingRegion = { false, 0 };
-DebugOverride<bool> StartInGame = { false, false };
 
 void LoadDebugConfig()
 {
@@ -49,6 +50,14 @@ void LoadDebugConfig()
         {
             debug::PlayerMovementSpeed.override = true;
             debug::PlayerMovementSpeed.value = speed_override["value"];
+        }
+
+        auto& spawn_override = json["player_spawn_point"];
+        if (spawn_override["override"])
+        {
+            debug::PlayerSpawnPoint.override = true;
+            debug::PlayerSpawnPoint.value.x = spawn_override["value"][0];
+            debug::PlayerSpawnPoint.value.y = spawn_override["value"][1];
         }
 
         auto& map_override = json["static_map"];

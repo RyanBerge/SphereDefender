@@ -424,7 +424,9 @@
   "animation_groups": [
     {
       "name": "None",
-      "animations": [ ]
+      "animations": [
+
+      ]
     },
     {
       "name": "South",
@@ -443,7 +445,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "South", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "Southeast",
@@ -462,7 +464,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "Southeast", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "East",
@@ -481,7 +483,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "East", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "Northeast",
@@ -500,7 +502,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "Northeast", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "North",
@@ -519,7 +521,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "North", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "Northwest",
@@ -538,7 +540,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "Northwest", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "West",
@@ -557,7 +559,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "West", "animation": "Idle" }
         }
-     ]
+      ]
     },
     {
       "name": "Southwest",
@@ -576,7 +578,7 @@
           "animation_speed": 18,
           "next_animation": { "group": "Southwest", "animation": "Idle" }
         }
-     ]
+      ]
     }
- ]
+  ]
 }

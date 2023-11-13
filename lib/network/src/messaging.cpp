@@ -893,9 +893,14 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
 
 bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action)
 {
+    return EnemyChangeAction(socket, enemy_id, action, util::Direction::None);
+}
+
+bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action, util::Direction direction)
+{
     Code code = ServerMessage::Code::EnemyChangeAction;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action);
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action) + sizeof(direction);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
@@ -905,6 +910,8 @@ bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, 
     offset += sizeof(enemy_id);
     std::memcpy(buffer + offset, &action, sizeof(action));
     offset += sizeof(action);
+    std::memcpy(buffer + offset, &direction, sizeof(direction));
+    offset += sizeof(direction);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
@@ -1518,10 +1525,11 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
     return true;
 }
 
-bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action)
+bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action, util::Direction& out_direction)
 {
     uint16_t id;
     EnemyAnimation action;
+    util::Direction direction;
 
     if (!read(socket, &id, sizeof(id)))
     {
@@ -1531,12 +1539,19 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
 
     if (!read(socket, &action, sizeof(action)))
     {
-        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
+        cerr << "Network: " << __func__ << " failed to read enemy animation." << endl;
+        return false;
+    }
+
+    if (!read(socket, &direction, sizeof(direction)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a direction." << endl;
         return false;
     }
 
     out_enemy_id = id;
     out_action = action;
+    out_direction = direction;
 
     return true;
 }

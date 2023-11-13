@@ -43,6 +43,25 @@ namespace util
         float weight;
     };
 
+    enum class Direction
+    {
+        None,
+        Left,
+        Right,
+        Up,
+        Down,
+        Forward,
+        Back,
+        North,
+        South,
+        East,
+        West,
+        Northeast,
+        Northwest,
+        Southeast,
+        Southwest
+    };
+
     using VectorCloud = std::array<WeightedVector, 12>;
 
     bool Contains(sf::FloatRect rect, sf::Vector2f point);
@@ -57,12 +76,14 @@ namespace util
     sf::Vector2f AngleToVector(util::AngleDegrees angle);
     util::AngleDegrees VectorToAngle(sf::Vector2f vector);
     sf::Vector2f RotateVector(sf::Vector2f input, util::AngleDegrees angle);
+    sf::Vector2f GetPerpendicular(sf::Vector2f input, util::Direction direction);
     sf::Vector2f TruncateVector(sf::Vector2f input, float magnitude);
     sf::Vector2f InvertVectorMagnitude(sf::Vector2f input, float max_magnitude);
     float DotProduct(sf::Vector2f v1, sf::Vector2f v2);
     util::AngleDegrees AngleBetween(sf::Vector2f v1, sf::Vector2f v2);
     VectorCloud CreateVectorCloud(sf::Vector2f primary);
     sf::Vector2f CollapseVectorCloud(VectorCloud cloud);
+    util::Direction GetOctalDirection(util::AngleDegrees angle);
 
     sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color color, int thickness);
 

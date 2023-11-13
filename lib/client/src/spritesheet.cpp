@@ -297,4 +297,55 @@ void Spritesheet::setFrame(unsigned frame)
     }
 }
 
+std::string Spritesheet::GetAnimationVariant(util::Direction direction)
+{
+    switch (direction)
+    {
+        case util::Direction::East:
+        {
+            return "East";
+        }
+        break;
+        case util::Direction::Southeast:
+        {
+            return "Southeast";
+        }
+        break;
+        case util::Direction::South:
+        {
+            return "South";
+        }
+        break;
+        case util::Direction::Southwest:
+        {
+            return "Southwest";
+        }
+        break;
+        case util::Direction::West:
+        {
+            return "West";
+        }
+        break;
+        case util::Direction::Northwest:
+        {
+            return "Northwest";
+        }
+        break;
+        case util::Direction::North:
+        {
+            return "North";
+        }
+        break;
+        case util::Direction::Northeast:
+        {
+            return "Northeast";
+        }
+        break;
+        default:
+        {
+            return "";
+        }
+    }
+}
+
 } // client

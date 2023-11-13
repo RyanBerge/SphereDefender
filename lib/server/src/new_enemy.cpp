@@ -190,6 +190,8 @@ void Enemy::setAction(Action action)
     knockback_state = KnockbackState::Start;
     leaping_state = LeapingState::Start;
     tackling_state = TacklingState::Start;
+    hopping_state = HoppingState::Start;
+    tail_swipe_state = TailSwipeState::Start;
 
     current_action = action;
 }
@@ -278,6 +280,16 @@ void Enemy::handleAction(sf::Time elapsed)
         case Action::Leaping:
         {
             handleLeaping(elapsed);
+        }
+        break;
+        case Action::Hopping:
+        {
+            handleHopping(elapsed);
+        }
+        break;
+        case Action::TailSwipe:
+        {
+            handleTailSwipe(elapsed);
         }
         break;
         case Action::None:
@@ -695,7 +707,6 @@ void Enemy::handleHunting(sf::Time elapsed)
 
     previous_behavior = current_behavior;
     hunting_timer += elapsed.asSeconds();
-    stalking_rest_timer += elapsed.asSeconds();
     const Player& target = GetPlayerById(aggro_target, PlayerList);
 
     switch (hunting_state)
@@ -723,7 +734,7 @@ void Enemy::handleHunting(sf::Time elapsed)
 
             if (definition.behaviors[Behavior::Stalking])
             {
-                if (distance <= definition.close_quarters_range)
+                if (distance <= definition.combat_range)
                 {
                     setBehavior(Behavior::Stalking);
                     return;
@@ -749,7 +760,7 @@ void Enemy::handleStalking(sf::Time elapsed)
     }
 
     previous_behavior = current_behavior;
-    stalking_rest_timer += elapsed.asSeconds();
+    stalking_timer += elapsed.asSeconds();
     const Player& target = GetPlayerById(aggro_target, PlayerList);
     float distance = util::Distance(data.position, target.Data.position);
 
@@ -757,92 +768,67 @@ void Enemy::handleStalking(sf::Time elapsed)
     {
         case StalkingState::Start:
         {
-            if (distance > definition.close_quarters_range * 1.2f)
+            is_moving = false;
+            [[fallthrough]];
+        }
+        case StalkingState::Choosing:
+        {
+            stalking_timer = 0;
+            if (distance > definition.combat_range * 1.2)
             {
-                setBehavior(Behavior::None);
+                setBehavior(definitions::Behavior::None);
                 return;
             }
 
-            if (util::GetRandomFloat(0, 1) <= aggression)
+            if (util::GetRandomFloat(0, 1) <= aggression && attack())
             {
-                if (attack())
-                {
-                    return;
-                }
+                return;
             }
 
-            float angle = util::VectorToAngle(data.position - target.Data.position);
-            constexpr util::AngleDegrees arc = 60;
-            sf::Vector2f goal;
-            bool collision = false;
-
-            for (int i = 0; i < 5; ++i)
+            if (distance <= definition.close_quarters_range)
             {
-                goal = util::GetRandomPositionInCone(target.Data.position, definition.close_quarters_range * 0.75f, definition.close_quarters_range, angle, arc);
-                sf::FloatRect projected_bounds = GetBounds(goal);
-                collision = false;
-                for (auto& obstacle : region->Obstacles)
-                {
-                    if (util::Intersects(obstacle, projected_bounds))
-                    {
-                        collision = true;
-                        break;
-                    }
-                }
-
-                if (!collision)
-                {
-                    break;
-                }
+                hop_direction = util::Direction::Back;
+                setAction(Action::TailSwipe);
+                return;
             }
 
-            stalking_state = StalkingState::Moving;
-            changeAnimation(EnemyAnimation::Move);
+            bool hop = false;
+            hop = util::GetRandomFloat(0, 1) > 0.5;
 
-            if (!collision)
+            if (hop)
             {
-                destination = goal;
-                stalking_rest_time = util::GetRandomFloat(0.7f, 1.7f);
-                is_walking = true;
-                is_moving = true;
+                float weight = util::GetRandomFloat(0, 1);
+                if (weight < 0.5)
+                {
+                    hop_direction = util::Direction::Left;
+                }
+                else
+                {
+                    hop_direction = util::Direction::Right;
+                }
+
+                setAction(definitions::Action::Hopping);
             }
             else
             {
-                if (!attack())
-                {
-                    setBehavior(Behavior::None);
-                }
-
-                is_moving = false;
-                is_walking = false;
-
-                return;
-            }
-            [[fallthrough]];
-        }
-        case StalkingState::Moving:
-        {
-            if (data.position == destination)
-            {
-                stalking_state = StalkingState::Resting;
                 changeAnimation(EnemyAnimation::Rest);
-                stalking_rest_timer = 0;
-                is_moving = false;
             }
 
-            distance = util::Distance(destination, data.position);
-            if (distance >= definition.leash_range)
-            {
-                setBehavior(Behavior::None);
-                return;
-            }
+            stalking_state = StalkingState::RestStart;
         }
         break;
+        case StalkingState::RestStart:
+        {
+            stalking_timer = 0;
+            stalking_rest_time = util::GetRandomFloat(0.7f, 1.7f);
+            stalking_state = StalkingState::Resting;
+            [[fallthrough]];
+        }
         case StalkingState::Resting:
         {
-            if (stalking_rest_timer >= stalking_rest_time)
+            if (distance <= definition.close_quarters_range || stalking_timer >= stalking_rest_time)
             {
-                stalking_state = StalkingState::Start;
+                stalking_state = StalkingState::Choosing;
             }
         }
         break;
@@ -852,6 +838,12 @@ void Enemy::handleStalking(sf::Time elapsed)
 void Enemy::handleFlocking(sf::Time elapsed)
 {
     (void)elapsed;
+    if (previous_behavior != Behavior::Flocking)
+    {
+        flocking_state = FlockingState::Start;
+    }
+
+    previous_behavior = current_behavior;
 
     switch (flocking_state)
     {
@@ -873,6 +865,12 @@ void Enemy::handleFlocking(sf::Time elapsed)
 
 void Enemy::handleSwarming(sf::Time elapsed)
 {
+    if (previous_behavior != Behavior::Swarming)
+    {
+        swarming_state = SwarmingState::Start;
+    }
+
+    previous_behavior = current_behavior;
     swarming_rest_timer += elapsed.asSeconds();
 
     const Player& target = GetPlayerById(aggro_target, PlayerList);
@@ -888,7 +886,7 @@ void Enemy::handleSwarming(sf::Time elapsed)
         case SwarmingState::Approaching:
         {
             destination = target.Data.position;
-            if (target_distance <= definition.close_quarters_range)
+            if (target_distance <= definition.combat_range)
             {
                 setAction(Action::Tackling);
                 swarming_state = SwarmingState::Followthrough;
@@ -897,7 +895,7 @@ void Enemy::handleSwarming(sf::Time elapsed)
         break;
         case SwarmingState::Followthrough:
         {
-            swarming_rest_point = (util::Normalize(current_velocity) * static_cast<float>(definition.close_quarters_range)) + data.position;
+            swarming_rest_point = (util::Normalize(current_velocity) * static_cast<float>(definition.combat_range)) + data.position;
             swarming_rest_timer = 0;
             current_max_speed = definition.base_movement_speed;
             swarming_rest_time = util::GetRandomFloat(definition.swarming_rest_time_min, definition.swarming_rest_time_max);
@@ -1076,11 +1074,121 @@ void Enemy::handleTackling(sf::Time elapsed)
     }
 }
 
+void Enemy::handleHopping(sf::Time elapsed)
+{
+    hopping_timer += elapsed.asSeconds();
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
+    sf::Vector2f target_direction = util::Normalize(target.Data.position - data.position);
+    float distance = util::Distance(data.position, target.Data.position);
+
+    switch (hopping_state)
+    {
+        case HoppingState::Start:
+        {
+            changeAnimation(EnemyAnimation::HopWindup, hop_direction);
+            hopping_state = HoppingState::Windup;
+            hopping_timer = 0;
+            [[fallthrough]];
+        }
+        case HoppingState::Windup:
+        {
+            if (hopping_timer >= definition.hop_windup_time)
+            {
+                if (hop_direction == util::Direction::Back)
+                {
+                    hop_vector = sf::Vector2f{-target_direction.x, -target_direction.y};
+                }
+                else
+                {
+                    util::AngleDegrees relative_angle = util::ToDegrees(std::acos((definition.hopping_distance * definition.hopping_distance) / (2 * distance * definition.hopping_distance)));
+                    if (hop_direction == util::Direction::Left)
+                    {
+                        relative_angle = -relative_angle;
+                    }
+
+                    util::AngleDegrees target_angle = util::VectorToAngle(target_direction);
+
+                    hop_vector = util::AngleToVector(relative_angle + target_angle);
+                }
+
+                hopping_timer = 0;
+                hopping_state = HoppingState::Hopping;
+                changeAnimation(EnemyAnimation::Hop, hop_direction);
+            }
+        }
+        break;
+        case HoppingState::Hopping:
+        {
+            float speed = definition.hopping_distance / definition.hop_time;
+            sf::Vector2f step = hop_vector * speed * elapsed.asSeconds();
+            takeStep(step);
+
+            if (hopping_timer >= definition.hop_time)
+            {
+                setAction(Action::None);
+            }
+        }
+        break;
+        case HoppingState::Resting:
+        {
+
+        }
+        break;
+    }
+}
+
+void Enemy::handleTailSwipe(sf::Time elapsed)
+{
+    tail_swipe_timer += elapsed.asSeconds();
+    const Player& target = GetPlayerById(aggro_target, PlayerList);
+    sf::Vector2f target_direction = util::Normalize(target.Data.position - data.position);
+
+    switch (tail_swipe_state)
+    {
+        case TailSwipeState::Start:
+        {
+            tail_swipe_state = TailSwipeState::Swipe;
+            tail_swipe_timer = 0;
+            changeAnimation(EnemyAnimation::TailSwipe, util::GetOctalDirection(util::VectorToAngle(target_direction)));
+            [[fallthrough]];
+        }
+        case TailSwipeState::Swipe:
+        {
+            sf::FloatRect attack_hitbox = definition.attack_hitbox;
+            attack_hitbox.left += data.position.x;
+            attack_hitbox.top += data.position.y;
+
+            // check for a hit
+            for (auto& player : PlayerList)
+            {
+                if (util::Intersects(player.GetBounds(), attack_hitbox))
+                {
+                    player.AddIncomingAttack(definitions::AttackEvent{definition.attacks[Action::TailSwipe].value(), data.position});
+                    definition.attacks[Action::TailSwipe].value().cooldown_timer = 0;
+                    setAction(Action::None);
+                    return;
+                }
+            }
+
+            if (tail_swipe_timer > definition.tail_swipe_time)
+            {
+                setAction(Action::None);
+            }
+        }
+        break;
+    }
+}
+
 void Enemy::changeAnimation(EnemyAnimation animation)
+{
+    changeAnimation(animation, util::Direction::None);
+}
+
+void Enemy::changeAnimation(EnemyAnimation animation, util::Direction direction)
 {
     for (auto& player : PlayerList)
     {
-        network::ServerMessage::EnemyChangeAction(*player.Socket, data.id, animation);
+        network::ServerMessage::EnemyChangeAction(*player.Socket, data.id, animation, direction);
     }
 }
 
