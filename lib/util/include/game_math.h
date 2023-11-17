@@ -19,6 +19,8 @@ namespace util
     using Milliseconds = int32_t;
     using Microseconds = int64_t;
 
+    using PixelsPerSecond = float;
+
     using AngleDegrees = float;
     using AngleRadians = float;
 

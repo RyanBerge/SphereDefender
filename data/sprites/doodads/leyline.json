@@ -98,16 +98,16 @@
       "origin": [ 253, 375 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "Glow",
+      "variants": [
         {
-          "name": "Glow",
+          "name": "Default",
           "start_frame": 0,
           "end_frame": 15,
           "animation_speed": 10,
-          "next_animation": { "group": "None", "animation": "Glow" }
+          "next_animation": { "animation": "Glow", "variant": "Default" }
         }
       ]
     }

@@ -20,30 +20,40 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
       "name": "None",
-      "animations": [
+      "variants": [
         {
-          "name": "None",
+          "name": "Default",
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "None" }
-        },
+          "next_animation": { "animation": "None", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Medpack",
+      "variants": [
         {
-          "name": "Medpack",
+          "name": "Default",
           "start_frame": 1,
           "end_frame": 1,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Medpack" }
-        },
+          "next_animation": { "animation": "Medpack", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Currency",
+      "variants": [
         {
-          "name": "Currency",
+          "name": "Default",
           "start_frame": 2,
           "end_frame": 2,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Currency" }
+          "next_animation": { "animation": "Currency", "variant": "Default" }
         }
       ]
     }

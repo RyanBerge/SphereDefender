@@ -404,7 +404,7 @@ util::Direction GetOctalDirection(util::AngleDegrees angle)
     {
         return util::Direction::North;
     }
-    else if (angle <= 338)
+    else
     {
         return util::Direction::Northeast;
     }

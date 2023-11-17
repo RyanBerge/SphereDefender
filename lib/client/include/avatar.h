@@ -28,7 +28,7 @@ public:
 
     void SetPosition(sf::Vector2f position);
     sf::Vector2f GetPosition();
-    sf::Vector2f GetPathingHitbox();
+    sf::Vector2f GetCollisionDimensions();
 
     void StartAttack(uint16_t attack_angle);
     void SetStunned(util::Seconds duration);

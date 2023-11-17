@@ -13,241 +13,277 @@
       "location": [ 0, 0 ],
       "size": [ 79, 42 ],
       "origin": [ 15, 21 ],
-      "attack_hitbox": { "x": 37, "y": 0, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 37, "y": 0, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 2,
       "location": [ 63, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 15, 15 ],
-      "attack_hitbox": { "x": 20, "y": 20, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 20, "y": 20, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 3,
       "location": [ 123, 0 ],
       "size": [ 42, 79 ],
       "origin": [ 21, 15 ],
-      "attack_hitbox": { "x": 0, "y": 37, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 0, "y": 37, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 4,
       "location": [ 126, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 47, 15 ],
-      "attack_hitbox": { "x": 0, "y": 8, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 0, "y": 8, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 5,
       "location": [ 0, 43 ],
       "size": [ 79, 42 ],
       "origin": [ 64, 21 ],
-      "attack_hitbox": { "x": 0, "y": 0, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 6,
       "location": [ 0, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 47, 47 ],
-      "attack_hitbox": { "x": 0, "y": 0, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 7,
       "location": [ 80, 0 ],
       "size": [ 42, 79 ],
       "origin": [ 21, 64 ],
-      "attack_hitbox": { "x": 0, "y": 0, "width": 42, "height": 12 }
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
     },
     {
       "index": 8,
       "location": [ 166, 0 ],
       "size": [ 62, 62 ],
       "origin": [ 15, 47 ],
-      "attack_hitbox": { "x": 20, "y": 0, "width": 42, "height": 42 }
+      "attack_hitboxes": [
+        { "x": 20, "y": 0, "width": 42, "height": 42 }
+      ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "TailSwipe",
+      "variants": [
         {
-          "name": "Rest",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        },
-        {
-          "name": "Move",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Move" }
-        },
-        {
-          "name": "Sniff",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Sniff" }
-        },
-        {
-          "name": "LeapWindup",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 1,
-          "next_animation": { "group": "None", "animation": "Leap" }
-        },
-        {
-          "name": "Leap",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 2,
-          "next_animation": { "group": "None", "animation": "LeapResting" }
-        },
-        {
-          "name": "LeapResting",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 1,
-          "next_animation": { "group": "None", "animation": "Move" }
-        },
-        {
-          "name": "HopWindup",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 8,
-          "next_animation": { "group": "None", "animation": "Hop" }
-        },
-        {
-          "name": "Hop",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 4,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        },
-        {
-          "name": "Stunned",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Stunned" }
-        },
-        {
-          "name": "Feed",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Feed" }
-        },
-        {
-          "name": "Death",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 1,
-          "next_animation": { "group": "None", "animation": "Dead" }
-        },
-        {
-          "name": "Dead",
-          "start_frame": 0,
-          "end_frame": 0,
-          "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Dead" }
-        }
-      ]
-    },
-    {
-      "name": "East",
-      "animations": [
-        {
-          "name": "TailSwipe",
+          "name": "East",
           "start_frame": 1,
           "end_frame": 1,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "Southeast",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "Southeast",
           "start_frame": 2,
           "end_frame": 2,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "South",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "South",
           "start_frame": 3,
           "end_frame": 3,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "Southwest",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "Southwest",
           "start_frame": 4,
           "end_frame": 4,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "West",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "West",
           "start_frame": 5,
           "end_frame": 5,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "Northwest",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "Northwest",
           "start_frame": 6,
           "end_frame": 6,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
-        }
-      ]
-    },
-    {
-      "name": "North",
-      "animations": [
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
         {
-          "name": "TailSwipe",
+          "name": "North",
           "start_frame": 7,
           "end_frame": 7,
           "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        },
+        {
+          "name": "Northeast",
+          "start_frame": 8,
+          "end_frame": 8,
+          "animation_speed": 0.5,
+          "next_animation": { "animation": "Rest", "variant": "Default" }
         }
       ]
     },
     {
-      "name": "Northeast",
-      "animations": [
+      "name": "Rest",
+      "variants": [
         {
-          "name": "TailSwipe",
-          "start_frame": 8,
-          "end_frame": 8,
-          "animation_speed": 0.5,
-          "next_animation": { "group": "None", "animation": "Rest" }
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Move",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Move", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Sniff",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "LeapWindup",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 1,
+          "next_animation": { "animation": "Leap", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Leap",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 2,
+          "next_animation": { "animation": "LeapResting", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "LeapResting",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 1,
+          "next_animation": { "animation": "Move", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "HopWindup",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 8,
+          "next_animation": { "animation": "Hop", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Hop",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 4,
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Stunned",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Rest", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Feed", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Death",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 1,
+          "next_animation": { "animation": "Dead", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Dead",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 1,
+          "next_animation": { "animation": "Dead", "variant": "Default" }
         }
       ]
     }

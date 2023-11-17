@@ -20,30 +20,40 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "Up",
+      "variants": [
         {
-          "name": "Up",
+          "name": "Default",
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Up" }
-        },
+          "next_animation": { "animation": "Up", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Hover",
+      "variants": [
         {
-          "name": "Hover",
+          "name": "Default",
           "start_frame": 1,
           "end_frame": 1,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Hover" }
-        },
+          "next_animation": { "animation": "Hover", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Down",
+      "variants": [
         {
-          "name": "Down",
+          "name": "Default",
           "start_frame": 2,
           "end_frame": 2,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Down" }
+          "next_animation": { "animation": "Down", "variant": "Default" }
         }
       ]
     }

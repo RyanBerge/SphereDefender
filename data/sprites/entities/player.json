@@ -1,6 +1,6 @@
 {
   "filename": "Player.png",
-  "pathing_hitbox": { "x": 36, "y": 36 },
+  "collision_dimensions": { "x": 36, "y": 36 },
   "frames": [
     {
       "index": 0,
@@ -419,164 +419,127 @@
       "size": [ 67, 68 ],
       "origin": [ 18, 18 ]
     }
-
  ],
-  "animation_groups": [
+ "animations": [
     {
-      "name": "None",
-      "animations": [
-
-      ]
-    },
-    {
-      "name": "South",
-      "animations": [
+      "name": "Idle",
+      "variants": [
         {
-          "name": "Idle",
+          "name": "South",
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "South", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "South" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 49,
-          "end_frame": 55,
-          "animation_speed": 18,
-          "next_animation": { "group": "South", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "Southeast",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "Southeast",
           "start_frame": 1,
           "end_frame": 1,
           "animation_speed": 0,
-          "next_animation": { "group": "Southeast", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "Southeast" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 56,
-          "end_frame": 62,
-          "animation_speed": 18,
-          "next_animation": { "group": "Southeast", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "East",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "East",
           "start_frame": 2,
           "end_frame": 2,
           "animation_speed": 0,
-          "next_animation": { "group": "East", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "East" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 8,
-          "end_frame": 14,
-          "animation_speed": 18,
-          "next_animation": { "group": "East", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "Northeast",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "Northeast",
           "start_frame": 3,
           "end_frame": 3,
           "animation_speed": 0,
-          "next_animation": { "group": "Northeast", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "Northeast" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 15,
-          "end_frame": 21,
-          "animation_speed": 18,
-          "next_animation": { "group": "Northeast", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "North",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "North",
           "start_frame": 4,
           "end_frame": 4,
           "animation_speed": 0,
-          "next_animation": { "group": "North", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "North" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 22,
-          "end_frame": 28,
-          "animation_speed": 18,
-          "next_animation": { "group": "North", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "Northwest",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "Northwest",
           "start_frame": 5,
           "end_frame": 5,
           "animation_speed": 0,
-          "next_animation": { "group": "Northwest", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "Northwest" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 29,
-          "end_frame": 35,
-          "animation_speed": 18,
-          "next_animation": { "group": "Northwest", "animation": "Idle" }
-        }
-      ]
-    },
-    {
-      "name": "West",
-      "animations": [
-        {
-          "name": "Idle",
+          "name": "West",
           "start_frame": 6,
           "end_frame": 6,
           "animation_speed": 0,
-          "next_animation": { "group": "West", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "West" }
         },
         {
-          "name": "SwordAttack",
-          "start_frame": 36,
-          "end_frame": 41,
-          "animation_speed": 18,
-          "next_animation": { "group": "West", "animation": "Idle" }
+          "name": "Southwest",
+          "start_frame": 7,
+          "end_frame": 7,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "Southwest" }
         }
       ]
     },
     {
-      "name": "Southwest",
-      "animations": [
+      "name": "SwordAttack",
+      "variants": [
         {
-          "name": "Idle",
-          "start_frame": 7,
-          "end_frame": 7,
-          "animation_speed": 0,
-          "next_animation": { "group": "Southwest", "animation": "Idle" }
+          "name": "South",
+          "start_frame": 49,
+          "end_frame": 55,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "South" }
         },
         {
-          "name": "SwordAttack",
+          "name": "Southeast",
+          "start_frame": 56,
+          "end_frame": 62,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Southeast" }
+        },
+        {
+          "name": "East",
+          "start_frame": 8,
+          "end_frame": 14,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "East" }
+        },
+        {
+          "name": "Northeast",
+          "start_frame": 15,
+          "end_frame": 21,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Northeast" }
+        },
+        {
+          "name": "North",
+          "start_frame": 22,
+          "end_frame": 28,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "North" }
+        },
+        {
+          "name": "Northwest",
+          "start_frame": 29,
+          "end_frame": 35,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Northwest" }
+        },
+        {
+          "name": "West",
+          "start_frame": 36,
+          "end_frame": 41,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "West" }
+        },
+        {
+          "name": "Southwest",
           "start_frame": 42,
           "end_frame": 48,
           "animation_speed": 18,
-          "next_animation": { "group": "Southwest", "animation": "Idle" }
+          "next_animation": { "animation": "Idle", "variant": "Southwest" }
         }
       ]
     }

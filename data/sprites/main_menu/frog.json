@@ -80,16 +80,16 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "Jump",
+      "variants": [
         {
-          "name": "Jump",
+          "name": "Default",
           "start_frame": 0,
           "end_frame": 12,
           "animation_speed": 10,
-          "next_animation": { "group": "None", "animation": "Jump" }
+          "next_animation": { "animation": "Jump", "variant": "Default" }
         }
       ]
     }

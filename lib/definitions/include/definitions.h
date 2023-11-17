@@ -105,6 +105,50 @@ struct EntityDefinition
 
 EntityDefinition GetEntityDefinition(EntityType type);
 
+using AnimationName = std::string;
+using FramesPerSecond = float;
+
+enum class AnimationVariant
+{
+    Default,
+    North, South, East, West,
+    Northeast, Northwest, Southeast, Southwest
+};
+
+AnimationVariant ToVariant(std::string variant);
+std::string ToString(AnimationVariant variant);
+
+struct AnimationIdentifier
+{
+    AnimationName name;
+    AnimationVariant variant;
+};
+
+struct AnimationData
+{
+    AnimationIdentifier identifier;
+    unsigned start_frame;
+    unsigned end_frame;
+    FramesPerSecond speed;
+    sf::Vector2f collision_dimensions;
+    AnimationIdentifier next;
+};
+
+struct Frame
+{
+    unsigned index;
+    sf::Vector2f origin; // The position in the frame to be considered the origin point, relative to the draw bounds
+    sf::FloatRect draw_bounds; // The bounds of the frame within the spritesheet
+    std::vector<sf::FloatRect> attack_hitboxes; // The attack hitboxes, if any, for this frame, relative origin
+};
+
+struct SpritesheetData
+{
+    std::string filepath;
+    std::vector<Frame> frames;
+    std::map<AnimationName, std::map<AnimationVariant, AnimationData>> animations;
+};
+
 enum class WeaponType
 {
     Sword, BurstGun, HitscanGun

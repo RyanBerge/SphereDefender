@@ -8,16 +8,16 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "Default",
+      "variants": [
         {
           "name": "Default",
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Default" }
+          "next_animation": { "animation": "Default", "variant": "Default" }
         }
       ]
     }

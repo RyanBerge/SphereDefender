@@ -91,10 +91,10 @@ void Game::Update(sf::Time elapsed)
             view_bounds.width = world_view.getSize().x;
             view_bounds.height = world_view.getSize().y;
 
-            float left_limit = region_map.Bounds.left - local_player.Avatar.GetPathingHitbox().x - (15 * current_zoom);
-            float right_limit = region_map.Bounds.left + region_map.Bounds.width + local_player.Avatar.GetPathingHitbox().x + (15 * current_zoom);
-            float top_limit = region_map.Bounds.top - local_player.Avatar.GetPathingHitbox().y - (15 * current_zoom);
-            float bottom_limit = region_map.Bounds.top + region_map.Bounds.height + local_player.Avatar.GetPathingHitbox().y + (15 * current_zoom);
+            float left_limit = region_map.Bounds.left - local_player.Avatar.GetCollisionDimensions().x - (15 * current_zoom);
+            float right_limit = region_map.Bounds.left + region_map.Bounds.width + local_player.Avatar.GetCollisionDimensions().x + (15 * current_zoom);
+            float top_limit = region_map.Bounds.top - local_player.Avatar.GetCollisionDimensions().y - (15 * current_zoom);
+            float bottom_limit = region_map.Bounds.top + region_map.Bounds.height + local_player.Avatar.GetCollisionDimensions().y + (15 * current_zoom);
 
             if (view_bounds.left < left_limit)
             {

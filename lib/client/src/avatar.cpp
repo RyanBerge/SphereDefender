@@ -27,8 +27,7 @@ Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
     (void)color;
     spritesheet.LoadAnimationData("entities/player.json");
-    spritesheet.CenterOrigin();
-    spritesheet.SetAnimation("Idle", "South");
+    spritesheet.SetAnimation("Idle", definitions::AnimationVariant::South);
 
     definitions::Weapon weapon = definitions::GetWeapon(definitions::WeaponType::Sword);
 
@@ -132,35 +131,35 @@ void Avatar::SetPosition(sf::Vector2f position)
 
     if (position.x - old_position.x == 0 && position.y - old_position.y > 0)
     {
-        spritesheet.SetAnimation("Idle", "South");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::South);
     }
     else if (position.x - old_position.x == 0 && position.y - old_position.y < 0)
     {
-        spritesheet.SetAnimation("Idle", "North");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::North);
     }
     else if (position.x - old_position.x < 0 && position.y - old_position.y == 0)
     {
-        spritesheet.SetAnimation("Idle", "West");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::West);
     }
     else if (position.x - old_position.x > 0 && position.y - old_position.y == 0)
     {
-        spritesheet.SetAnimation("Idle", "East");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::East);
     }
     else if (position.x - old_position.x > 0 && position.y - old_position.y > 0)
     {
-        spritesheet.SetAnimation("Idle", "Southeast");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southeast);
     }
     else if (position.x - old_position.x > 0 && position.y - old_position.y < 0)
     {
-        spritesheet.SetAnimation("Idle", "Northeast");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northeast);
     }
     else if (position.x - old_position.x < 0 && position.y - old_position.y > 0)
     {
-        spritesheet.SetAnimation("Idle", "Southwest");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southwest);
     }
     else if (position.x - old_position.x < 0 && position.y - old_position.y < 0)
     {
-        spritesheet.SetAnimation("Idle", "Northwest");
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northwest);
     }
 }
 
@@ -169,9 +168,9 @@ sf::Vector2f Avatar::GetPosition()
     return Data.position;
 }
 
-sf::Vector2f Avatar::GetPathingHitbox()
+sf::Vector2f Avatar::GetCollisionDimensions()
 {
-    return spritesheet.GetPathingHitbox();
+    return spritesheet.GetCollisionDimensions();
 }
 
 void Avatar::StartAttack(uint16_t attack_angle)

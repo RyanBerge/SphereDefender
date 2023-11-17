@@ -8,6 +8,8 @@
  *
  *************************************************************************************************/
 #pragma once
+
+#include "animation_tracker.h"
 #include "definitions.h"
 #include "messaging.h"
 #include "game_math.h"
@@ -88,6 +90,7 @@ private:
     Behavior current_behavior = Behavior::None;
     Action current_action = Action::None;
 
+    definitions::AnimationTracker animation_tracker;
     sf::Vector2f spawn_position;
     sf::Vector2f destination;
     bool is_moving = false;

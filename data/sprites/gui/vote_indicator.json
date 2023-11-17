@@ -14,23 +14,28 @@
       "origin": [ 0, 0 ]
     }
   ],
-  "animation_groups": [
+  "animations": [
     {
-      "name": "None",
-      "animations": [
+      "name": "Unconfirmed",
+      "variants": [
         {
-          "name": "Unconfirmed",
+          "name": "Default",
           "start_frame": 0,
           "end_frame": 0,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Unconfirmed" }
-        },
+          "next_animation": { "animation": "Unconfirmed", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Confirmed",
+      "variants": [
         {
-          "name": "Confirmed",
+          "name": "Default",
           "start_frame": 1,
           "end_frame": 1,
           "animation_speed": 0,
-          "next_animation": { "group": "None", "animation": "Confirmed" }
+          "next_animation": { "animation": "Confirmed", "variant": "Default" }
         }
       ]
     }

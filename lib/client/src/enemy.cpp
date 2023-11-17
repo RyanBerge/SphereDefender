@@ -28,7 +28,6 @@ Enemy::Enemy(definitions::EntityType type)
     std::string filename = definitions::GetEntityDefinition(type).animation_definition_file;
 
     spritesheet.LoadAnimationData("entities/" + filename);
-    spritesheet.CenterOrigin();
     spritesheet.SetAnimation("Move");
     spritesheet.SetDebugAnimationPrint(true);
 }

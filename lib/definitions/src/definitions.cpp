@@ -395,12 +395,12 @@ public:
                         }
                     }
 
-                    for (auto& j_animation_group : sprite_json["animation_groups"])
+                    for (auto& j_animation : sprite_json["animations"])
                     {
-                        for (auto& j_animation : j_animation_group["animations"])
+                        for (auto& j_variant : j_animation["variants"])
                         {
-                            int num_frames = j_animation["end_frame"].get<int>() - j_animation["start_frame"].get<int>() + 1;
-                            util::Seconds time = (1 / j_animation["animation_speed"].get<double>()) * num_frames;
+                            int num_frames = j_variant["end_frame"].get<int>() - j_variant["start_frame"].get<int>() + 1;
+                            util::Seconds time = (1 / j_variant["animation_speed"].get<double>()) * num_frames;
                             if (j_animation["name"] == "LeapWindup")
                             {
                                 entity.leap_windup_time = time;
@@ -460,6 +460,86 @@ EntityDefinition GetEntityDefinition(EntityType type)
 
     return manager.definition_map[type];
 }
+
+AnimationVariant ToVariant(std::string variant)
+{
+    static const std::map<std::string, AnimationVariant> variant_map = {
+        { "Default", AnimationVariant::Default },
+        { "North", AnimationVariant::North },
+        { "South", AnimationVariant::South },
+        { "East", AnimationVariant::East },
+        { "West", AnimationVariant::West },
+        { "Northeast", AnimationVariant::Northeast },
+        { "Northwest", AnimationVariant::Northwest },
+        { "Southeast", AnimationVariant::Southeast },
+        { "Southwest", AnimationVariant::Southwest }
+    };
+
+    if (variant_map.find(variant) != variant_map.end())
+    {
+        return variant_map.at(variant);
+    }
+    else
+    {
+        std::cerr << "No animation variant with name: " << variant << "\n";
+        return AnimationVariant::Default;
+    }
+}
+
+std::string ToString(AnimationVariant variant)
+{
+    switch (variant)
+    {
+        case AnimationVariant::Default:
+        {
+            return "Default";
+        }
+        break;
+        case AnimationVariant::North:
+        {
+            return "North";
+        }
+        break;
+        case AnimationVariant::South:
+        {
+            return "South";
+        }
+        break;
+        case AnimationVariant::East:
+        {
+            return "East";
+        }
+        break;
+        case AnimationVariant::West:
+        {
+            return "West";
+        }
+        break;
+        case AnimationVariant::Northeast:
+        {
+            return "Northeast";
+        }
+        break;
+        case AnimationVariant::Northwest:
+        {
+            return "Northwest";
+        }
+        break;
+        case AnimationVariant::Southeast:
+        {
+            return "Southeast";
+        }
+        break;
+        case AnimationVariant::Southwest:
+        {
+            return "Southwest";
+        }
+        break;
+    }
+
+    return "None";
+}
+
 
 Weapon GetWeapon(WeaponType type)
 {

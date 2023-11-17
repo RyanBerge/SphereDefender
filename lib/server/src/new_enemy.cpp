@@ -42,6 +42,8 @@ Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2
     definition = definitions::GetEntityDefinition(enemy_type);
     data.health = definition.base_health;
 
+    animation_tracker = definitions::AnimationTracker::ConstructAnimationTracker(enemy_type);
+
     current_speed = 0;
     aggro_target = PlayerList[0].Data.id;
     setBehavior(Behavior::None);
