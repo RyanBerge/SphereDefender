@@ -107,12 +107,12 @@ void Spritesheet::SetAnimation(AnimationName name)
 
 AnimationIdentifier Spritesheet::GetAnimation()
 {
-    return animation_tracker.GetAnimation().identifier;
+    return animation_tracker.GetCurrentAnimation().identifier;
 }
 
 sf::Vector2f Spritesheet::GetCollisionDimensions()
 {
-    return animation_tracker.GetAnimation().collision_dimensions;
+    return animation_tracker.GetCurrentAnimation().collision_dimensions;
 }
 
 void Spritesheet::SetPosition(float x, float y)
@@ -196,57 +196,6 @@ void Spritesheet::setFrame(bool initialize)
 void Spritesheet::setFrame()
 {
     setFrame(false);
-}
-
-AnimationVariant Spritesheet::GetAnimationVariant(util::Direction direction)
-{
-    switch (direction)
-    {
-        case util::Direction::East:
-        {
-            return AnimationVariant::East;
-        }
-        break;
-        case util::Direction::Southeast:
-        {
-            return AnimationVariant::Southeast;
-        }
-        break;
-        case util::Direction::South:
-        {
-            return AnimationVariant::South;
-        }
-        break;
-        case util::Direction::Southwest:
-        {
-            return AnimationVariant::Southwest;
-        }
-        break;
-        case util::Direction::West:
-        {
-            return AnimationVariant::West;
-        }
-        break;
-        case util::Direction::Northwest:
-        {
-            return AnimationVariant::Northwest;
-        }
-        break;
-        case util::Direction::North:
-        {
-            return AnimationVariant::North;
-        }
-        break;
-        case util::Direction::Northeast:
-        {
-            return AnimationVariant::Northeast;
-        }
-        break;
-        default:
-        {
-            return AnimationVariant::Default;
-        }
-    }
 }
 
 } // client

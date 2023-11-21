@@ -186,7 +186,7 @@ void Avatar::StartAttack(uint16_t attack_angle)
         return;
     }
 
-    spritesheet.SetAnimation("SwordAttack", Spritesheet::GetAnimationVariant(util::GetOctalDirection(attack_angle)));
+    spritesheet.SetAnimation("SwordAttack", definitions::GetAnimationVariant(util::GetOctalDirection(attack_angle)));
 }
 
 void Avatar::SetStunned(util::Seconds duration)

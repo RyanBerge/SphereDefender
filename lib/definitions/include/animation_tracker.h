@@ -26,7 +26,12 @@ public:
 
     std::string GetFilepath();
     definitions::Frame GetFrame();
-    definitions::AnimationData GetAnimation();
+    std::vector<sf::FloatRect> GetAttackHitboxes();
+    definitions::AnimationData GetCurrentAnimation();
+    definitions::AnimationData GetAnimation(AnimationName name);
+    definitions::AnimationData GetAnimation(AnimationIdentifier identifier);
+    util::Seconds GetAnimationTime(AnimationName name);
+    util::Seconds GetAnimationTime(AnimationIdentifier identifier);
     void SetAnimation(AnimationIdentifier identifier);
     void SetAnimation(AnimationName name, AnimationVariant variant);
     void SetAnimation(AnimationName name);

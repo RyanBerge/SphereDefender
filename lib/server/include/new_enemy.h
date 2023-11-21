@@ -64,8 +64,8 @@ private:
     void handleHopping(sf::Time elapsed);
     void handleTailSwipe(sf::Time elapsed);
 
-    void changeAnimation(network::EnemyAnimation animation);
-    void changeAnimation(network::EnemyAnimation animation, util::Direction direction);
+    void changeAnimation(definitions::AnimationName animation_name);
+    void changeAnimation(definitions::AnimationName animation_name, util::Direction direction);
     std::optional<uint16_t> playerInRange(float aggro_distance);
     bool aggroPlayer();
     sf::Vector2f getTargetConvoyPoint();
@@ -91,6 +91,7 @@ private:
     Action current_action = Action::None;
 
     definitions::AnimationTracker animation_tracker;
+    util::Seconds animation_time;
     sf::Vector2f spawn_position;
     sf::Vector2f destination;
     bool is_moving = false;
@@ -217,8 +218,7 @@ private:
     {
         Start,
         Windup,
-        Hopping,
-        Resting
+        Hopping
     };
 
     HoppingState hopping_state;

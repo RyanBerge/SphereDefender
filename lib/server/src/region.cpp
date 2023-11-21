@@ -209,16 +209,16 @@ void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position)
 
 void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf::Vector2f pack_position)
 {
-    if (PathingGraphs.find(type) == PathingGraphs.end())
-    {
-        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, definitions::GetEntityDefinition(type).hitbox);
-    }
-
     Enemy enemy(this, type, position, pack_position);
     Enemies.push_back(enemy);
     for (auto& player : PlayerList)
     {
         ServerMessage::AddEnemy(*player.Socket, enemy.GetData().id, type);
+    }
+
+    if (PathingGraphs.find(type) == PathingGraphs.end())
+    {
+        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, enemy.GetBounds().getSize());
     }
 }
 

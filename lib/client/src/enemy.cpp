@@ -77,82 +77,26 @@ void Enemy::UpdateData(network::EnemyData new_data)
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
 }
 
-void Enemy::ChangeAction(network::EnemyAnimation animation, util::Direction direction)
+void Enemy::ChangeAnimation(definitions::AnimationName animation_name, util::Direction direction)
 {
     if (!alive)
     {
         return;
     }
 
-    switch (animation)
+    if (animation_name == "TailSwipe")
     {
-        case network::EnemyAnimation::Rest:
-        {
-            spritesheet.SetAnimation("Rest");
-        }
-        break;
-        case network::EnemyAnimation::Move:
-        {
-            spritesheet.SetAnimation("Move");
-        }
-        break;
-        case network::EnemyAnimation::Feed:
-        {
-            spritesheet.SetAnimation("Feed");
-        }
-        break;
-        case network::EnemyAnimation::Knockback:
-        {
-            spritesheet.SetAnimation("Stunned");
-        }
-        break;
-        case network::EnemyAnimation::Stun:
-        {
-            spritesheet.SetAnimation("Stunned");
-        }
-        break;
-        case network::EnemyAnimation::Tackle:
-        {
-            spritesheet.SetAnimation("Tackle");
-        }
-        break;
-        case network::EnemyAnimation::Dead:
-        {
-            alive = false;
-            spritesheet.SetAnimation("Death");
-            despawn_timer = 0;
-        }
-        break;
-        case network::EnemyAnimation::Sniff:
-        {
-            spritesheet.SetAnimation("Sniff");
-        }
-        break;
-        case network::EnemyAnimation::LeapWindup:
-        {
-            spritesheet.SetAnimation("LeapWindup");
-        }
-        break;
-        case network::EnemyAnimation::Leap:
-        {
-            spritesheet.SetAnimation("Leap");
-        }
-        break;
-        case network::EnemyAnimation::HopWindup:
-        {
-            spritesheet.SetAnimation("HopWindup");
-        }
-        break;
-        case network::EnemyAnimation::Hop:
-        {
-            spritesheet.SetAnimation("Hop");
-        }
-        break;
-        case network::EnemyAnimation::TailSwipe:
-        {
-            spritesheet.SetAnimation("TailSwipe", Spritesheet::GetAnimationVariant(direction));
-        }
-        break;
+        spritesheet.SetAnimation(animation_name, definitions::GetAnimationVariant(direction));
+    }
+    else
+    {
+        spritesheet.SetAnimation(animation_name);
+    }
+
+    if (animation_name == "Death")
+    {
+        alive = false;
+        despawn_timer = 0;
     }
 }
 

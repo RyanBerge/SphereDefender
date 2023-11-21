@@ -56,9 +56,35 @@ Frame AnimationTracker::GetFrame()
     return spritesheet_data.frames[current_frame];
 }
 
-AnimationData AnimationTracker::GetAnimation()
+std::vector<sf::FloatRect> AnimationTracker::GetAttackHitboxes()
+{
+    return spritesheet_data.frames[current_frame].attack_hitboxes;
+}
+
+AnimationData AnimationTracker::GetCurrentAnimation()
 {
     return current_animation;
+}
+
+definitions::AnimationData AnimationTracker::GetAnimation(AnimationName name)
+{
+    return GetAnimation(AnimationIdentifier{name, AnimationVariant::Default});
+}
+
+definitions::AnimationData AnimationTracker::GetAnimation(AnimationIdentifier identifier)
+{
+    return spritesheet_data.animations[identifier.name][identifier.variant];
+}
+
+util::Seconds AnimationTracker::GetAnimationTime(AnimationName name)
+{
+    return GetAnimationTime(AnimationIdentifier{name, AnimationVariant::Default});
+}
+
+util::Seconds AnimationTracker::GetAnimationTime(AnimationIdentifier identifier)
+{
+    AnimationData animation = spritesheet_data.animations[identifier.name][identifier.variant];
+    return (animation.end_frame - animation.start_frame + 1) / animation.speed;
 }
 
 void AnimationTracker::SetAnimation(AnimationIdentifier identifier)
@@ -175,6 +201,9 @@ AnimationTracker AnimationTracker::ConstructAnimationTracker(std::string filepat
                     hitbox.top = j_hitbox["y"];
                     hitbox.width = j_hitbox["width"];
                     hitbox.height = j_hitbox["height"];
+
+                    hitbox.left -= origin.x;
+                    hitbox.top -= origin.y;
 
                     frame.attack_hitboxes.push_back(hitbox);
                 }

@@ -26,6 +26,7 @@ namespace server {
 namespace {
     constexpr int MEDPACK_HEAL_VALUE = 60;
     constexpr float KNOCKBACK_UNITS_PER_SECOND = 350;
+    constexpr util::Seconds INVULNERABILITY_WINDOW = 2;
 
     bool checkForCollisions(sf::FloatRect target, std::vector<sf::FloatRect>& obstacles, sf::FloatRect bounds)
     {
@@ -58,6 +59,11 @@ void Player::Update(sf::Time elapsed, Region& region)
     projectile_timer += elapsed.asSeconds();
     attack_timer += elapsed.asSeconds();
     movement_override_timer += elapsed.asSeconds();
+
+    for (auto& [id, timer] : invulnerability_timers)
+    {
+        timer += elapsed.asSeconds();
+    }
 
     processIncomingAttacks();
     handleMovement(elapsed, region);
@@ -424,6 +430,19 @@ void Player::processIncomingAttacks()
     {
         definitions::AttackEvent event = attack_events.front();
         attack_events.pop();
+
+        if (invulnerability_timers.find(event.source_id) == invulnerability_timers.end())
+        {
+            invulnerability_timers[event.source_id] = 0;
+        }
+        else if (invulnerability_timers[event.source_id] < invulnerability_windows[event.source_id])
+        {
+            return;
+        }
+
+        invulnerability_timers[event.source_id] = 0;
+        invulnerability_windows[event.source_id] = INVULNERABILITY_WINDOW;
+
         Damage(event.attack.damage);
         movement_override_time = event.attack.knockback_distance / KNOCKBACK_UNITS_PER_SECOND;
         movement_override_timer = 0;
@@ -431,6 +450,7 @@ void Player::processIncomingAttacks()
         {
             movement_override = true;
             movement_override_vector = util::Normalize(Data.position - event.origin) * KNOCKBACK_UNITS_PER_SECOND;
+            velocity = sf::Vector2f{0, 0};
             network::PlayerAction action;
             action.type = network::PlayerActionType::Stunned;
             action.duration = movement_override_time;

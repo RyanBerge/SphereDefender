@@ -86,6 +86,9 @@ private:
     util::AngleDegrees current_attack_angle;
     util::Seconds attack_timer = 0;
 
+    std::map<uint16_t, util::Seconds> invulnerability_timers;
+    std::map<uint16_t, float> invulnerability_windows;
+
     std::queue<definitions::AttackEvent> attack_events;
 };
 

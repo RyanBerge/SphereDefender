@@ -62,6 +62,7 @@ struct AttackDefinition
 
 struct AttackEvent
 {
+    uint16_t source_id;
     AttackDefinition attack;
     sf::Vector2f origin;
 };
@@ -78,7 +79,6 @@ struct EntityDefinition
     std::map<Behavior, bool> behaviors;
     std::map<Action, bool> actions;
     std::map<Action, std::optional<AttackDefinition>> attacks;
-    sf::Vector2f hitbox;
     int steering_force;
     int repulsion_force;
     int repulsion_radius;
@@ -94,13 +94,6 @@ struct EntityDefinition
     int close_quarters_range;
     int leash_range;
     float base_aggression;
-    util::Seconds leap_windup_time;
-    util::Seconds leap_time;
-    util::Seconds leap_rest_time;
-    util::Seconds hop_windup_time;
-    util::Seconds hop_time;
-    util::Seconds tail_swipe_time;
-    sf::FloatRect attack_hitbox;
 };
 
 EntityDefinition GetEntityDefinition(EntityType type);
@@ -117,6 +110,7 @@ enum class AnimationVariant
 
 AnimationVariant ToVariant(std::string variant);
 std::string ToString(AnimationVariant variant);
+AnimationVariant GetAnimationVariant(util::Direction direction);
 
 struct AnimationIdentifier
 {
@@ -139,7 +133,7 @@ struct Frame
     unsigned index;
     sf::Vector2f origin; // The position in the frame to be considered the origin point, relative to the draw bounds
     sf::FloatRect draw_bounds; // The bounds of the frame within the spritesheet
-    std::vector<sf::FloatRect> attack_hitboxes; // The attack hitboxes, if any, for this frame, relative origin
+    std::vector<sf::FloatRect> attack_hitboxes; // The attack hitboxes, if any, for this frame, relative to the origin
 };
 
 struct SpritesheetData

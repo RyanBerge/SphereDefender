@@ -361,78 +361,6 @@ public:
                 }
 
                 std::string type = entity_file.path().filename().string().substr(0, entity_file.path().filename().string().find_first_of('.'));
-
-                std::filesystem::path sprite_path("../data/sprites/entities/" + type + ".json");
-                if (!std::filesystem::exists(sprite_path))
-                {
-                    cerr << "Error loading entities: could not open file: " << sprite_path << endl;
-                    return;
-                }
-
-                try
-                {
-                    std::ifstream sprite_file(sprite_path);
-                    nlohmann::json sprite_json;
-                    sprite_file >> sprite_json;
-
-                    entity.hitbox.x = sprite_json["pathing_hitbox"]["x"];
-                    entity.hitbox.y = sprite_json["pathing_hitbox"]["y"];
-
-                    for (auto& frame : sprite_json["frames"])
-                    {
-                        if (frame.find("attack_hitbox") != frame.end())
-                        {
-                            sf::FloatRect hitbox;
-                            hitbox.left = frame["attack_hitbox"]["x"];
-                            hitbox.top = frame["attack_hitbox"]["y"];
-                            hitbox.width = frame["attack_hitbox"]["width"];
-                            hitbox.height = frame["attack_hitbox"]["height"];
-
-                            hitbox.left -= (int)frame["origin"][0];
-                            hitbox.top -= (int)frame["origin"][1];
-
-                            entity.attack_hitbox = hitbox;
-                        }
-                    }
-
-                    for (auto& j_animation : sprite_json["animations"])
-                    {
-                        for (auto& j_variant : j_animation["variants"])
-                        {
-                            int num_frames = j_variant["end_frame"].get<int>() - j_variant["start_frame"].get<int>() + 1;
-                            util::Seconds time = (1 / j_variant["animation_speed"].get<double>()) * num_frames;
-                            if (j_animation["name"] == "LeapWindup")
-                            {
-                                entity.leap_windup_time = time;
-                            }
-                            else if (j_animation["name"] == "Leap")
-                            {
-                                entity.leap_time = time;
-                            }
-                            else if (j_animation["name"] == "LeapResting")
-                            {
-                                entity.leap_rest_time = time;
-                            }
-                            else if (j_animation["name"] == "HopWindup")
-                            {
-                                entity.hop_windup_time = time;
-                            }
-                            else if (j_animation["name"] == "Hop")
-                            {
-                                entity.hop_time = time;
-                            }
-                            else if (j_animation["name"] == "TailSwipe")
-                            {
-                                entity.tail_swipe_time = time;
-                            }
-                        }
-                    }
-                }
-                catch (const std::exception& e)
-                {
-                    cerr << "Failed to parse sprite file: " << sprite_path << endl;
-                }
-
                 if (type == "bat")
                 {
                     definition_map[EntityType::Bat] = entity;
@@ -538,6 +466,57 @@ std::string ToString(AnimationVariant variant)
     }
 
     return "None";
+}
+
+AnimationVariant GetAnimationVariant(util::Direction direction)
+{
+    switch (direction)
+    {
+        case util::Direction::East:
+        {
+            return AnimationVariant::East;
+        }
+        break;
+        case util::Direction::Southeast:
+        {
+            return AnimationVariant::Southeast;
+        }
+        break;
+        case util::Direction::South:
+        {
+            return AnimationVariant::South;
+        }
+        break;
+        case util::Direction::Southwest:
+        {
+            return AnimationVariant::Southwest;
+        }
+        break;
+        case util::Direction::West:
+        {
+            return AnimationVariant::West;
+        }
+        break;
+        case util::Direction::Northwest:
+        {
+            return AnimationVariant::Northwest;
+        }
+        break;
+        case util::Direction::North:
+        {
+            return AnimationVariant::North;
+        }
+        break;
+        case util::Direction::Northeast:
+        {
+            return AnimationVariant::Northeast;
+        }
+        break;
+        default:
+        {
+            return AnimationVariant::Default;
+        }
+    }
 }
 
 

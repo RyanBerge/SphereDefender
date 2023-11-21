@@ -21,15 +21,13 @@ class Enemy
 public:
     Enemy();
     Enemy(definitions::EntityType type);
-    //Enemy(const Enemy& other) = delete;
-    //Enemy& operator=(const Enemy&) = delete;
 
     void Update(sf::Time elapsed);
     void Draw();
 
     network::EnemyData GetData();
     void UpdateData(network::EnemyData new_data);
-    void ChangeAction(network::EnemyAnimation action, util::Direction direction);
+    void ChangeAnimation(definitions::AnimationName animation_name, util::Direction direction);
 
 private:
     Spritesheet spritesheet;

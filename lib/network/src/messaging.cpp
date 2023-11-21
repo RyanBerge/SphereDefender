@@ -118,6 +118,150 @@ bool readString(sf::TcpSocket& socket, std::string& out_string)
     return true;
 }
 
+enum class SerializedAnimation
+{
+    None, Rest, Move, Feed, Knockback, Stun, Tackle, Death,
+    Sniff, LeapWindup, Leap, HopWindup, Hop, TailSwipe
+};
+
+SerializedAnimation getSerializedAnimation(std::string name)
+{
+    if (name == "Rest")
+    {
+        return SerializedAnimation::Rest;
+    }
+    else if (name == "Move")
+    {
+        return SerializedAnimation::Move;
+    }
+    else if (name == "Feed")
+    {
+        return SerializedAnimation::Feed;
+    }
+    else if (name == "Knockback")
+    {
+        return SerializedAnimation::Knockback;
+    }
+    else if (name == "Stun")
+    {
+        return SerializedAnimation::Stun;
+    }
+    else if (name == "Tackle")
+    {
+        return SerializedAnimation::Tackle;
+    }
+    else if (name == "Death")
+    {
+        return SerializedAnimation::Death;
+    }
+    else if (name == "Sniff")
+    {
+        return SerializedAnimation::Sniff;
+    }
+    else if (name == "LeapWindup")
+    {
+        return SerializedAnimation::LeapWindup;
+    }
+    else if (name == "Leap")
+    {
+        return SerializedAnimation::Leap;
+    }
+    else if (name == "HopWindup")
+    {
+        return SerializedAnimation::HopWindup;
+    }
+    else if (name == "Hop")
+    {
+        return SerializedAnimation::Hop;
+    }
+    else if (name == "TailSwipe")
+    {
+        return SerializedAnimation::TailSwipe;
+    }
+
+    cerr << "Animation name not found: " << name << "\n";
+    return SerializedAnimation::None;
+}
+
+definitions::AnimationName getAnimationName(SerializedAnimation type)
+{
+    switch (type)
+    {
+        case SerializedAnimation::None:
+        {
+            return "None";
+        }
+        break;
+        case SerializedAnimation::Rest:
+        {
+            return "Rest";
+        }
+        break;
+        case SerializedAnimation::Move:
+        {
+            return "Move";
+        }
+        break;
+        case SerializedAnimation::Feed:
+        {
+            return "Feed";
+        }
+        break;
+        case SerializedAnimation::Knockback:
+        {
+            return "Knockback";
+        }
+        break;
+        case SerializedAnimation::Stun:
+        {
+            return "Stun";
+        }
+        break;
+        case SerializedAnimation::Tackle:
+        {
+            return "Tackle";
+        }
+        break;
+        case SerializedAnimation::Death:
+        {
+            return "Death";
+        }
+        break;
+        case SerializedAnimation::Sniff:
+        {
+            return "Sniff";
+        }
+        break;
+        case SerializedAnimation::LeapWindup:
+        {
+            return "LeapWindup";
+        }
+        break;
+        case SerializedAnimation::Leap:
+        {
+            return "Leap";
+        }
+        break;
+        case SerializedAnimation::HopWindup:
+        {
+            return "HopWindup";
+        }
+        break;
+        case SerializedAnimation::Hop:
+        {
+            return "Hop";
+        }
+        break;
+        case SerializedAnimation::TailSwipe:
+        {
+            return "TailSwipe";
+        }
+        break;
+    }
+
+    return "None";
+}
+
 } // anonymous namespace
 
 // ====================================================== Client Message ======================================================
@@ -891,16 +1035,18 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
     return true;
 }
 
-bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action)
+bool ServerMessage::ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name)
 {
-    return EnemyChangeAction(socket, enemy_id, action, util::Direction::None);
+    return ChangeEnemyAnimation(socket, enemy_id, name, util::Direction::None);
 }
 
-bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action, util::Direction direction)
+bool ServerMessage::ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction)
 {
-    Code code = ServerMessage::Code::EnemyChangeAction;
+    Code code = ServerMessage::Code::ChangeEnemyAnimation;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action) + sizeof(direction);
+    SerializedAnimation animation = getSerializedAnimation(name);
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(animation) + sizeof(direction);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
@@ -908,8 +1054,8 @@ bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, 
     offset += sizeof(code);
     std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
     offset += sizeof(enemy_id);
-    std::memcpy(buffer + offset, &action, sizeof(action));
-    offset += sizeof(action);
+    std::memcpy(buffer + offset, &animation, sizeof(animation));
+    offset += sizeof(animation);
     std::memcpy(buffer + offset, &direction, sizeof(direction));
     offset += sizeof(direction);
 
@@ -1525,10 +1671,10 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
     return true;
 }
 
-bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action, util::Direction& out_direction)
+bool ServerMessage::DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction)
 {
     uint16_t id;
-    EnemyAnimation action;
+    SerializedAnimation animation;
     util::Direction direction;
 
     if (!read(socket, &id, sizeof(id)))
@@ -1537,7 +1683,7 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
-    if (!read(socket, &action, sizeof(action)))
+    if (!read(socket, &animation, sizeof(animation)))
     {
         cerr << "Network: " << __func__ << " failed to read enemy animation." << endl;
         return false;
@@ -1549,8 +1695,10 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
+    definitions::AnimationName name = getAnimationName(animation);
+
     out_enemy_id = id;
-    out_action = action;
+    out_name = name;
     out_direction = direction;
 
     return true;

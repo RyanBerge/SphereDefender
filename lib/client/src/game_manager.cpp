@@ -422,14 +422,14 @@ void GameManager::checkMessages()
                 }
             }
             break;
-            case ServerMessage::Code::EnemyChangeAction:
+            case ServerMessage::Code::ChangeEnemyAnimation:
             {
                 uint16_t enemy_id;
-                network::EnemyAnimation action;
+                definitions::AnimationName animation_name;
                 util::Direction direction;
-                if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action, direction))
+                if (ServerMessage::DecodeChangeEnemyAnimation(resources::GetServerSocket(), enemy_id, animation_name, direction))
                 {
-                    Game.ChangeEnemyAction(enemy_id, action, direction);
+                    Game.ChangeEnemyAnimation(enemy_id, animation_name, direction);
                 }
             }
             break;

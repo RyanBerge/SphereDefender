@@ -29,23 +29,6 @@ enum class PlayerActionType
     Stunned
 };
 
-enum class EnemyAnimation
-{
-    Rest,
-    Move,
-    Feed,
-    Knockback,
-    Stun,
-    Tackle,
-    Dead,
-    Sniff,
-    LeapWindup,
-    Leap,
-    HopWindup,
-    Hop,
-    TailSwipe
-};
-
 struct PlayerAction
 {
     PlayerActionType type;
@@ -123,7 +106,7 @@ public:
 
         SetGuiPause,
         PlayerStartAction,
-        EnemyChangeAction,
+        ChangeEnemyAnimation,
         ChangeItem,
         PlayerStates,
         AddEnemy,
@@ -156,8 +139,8 @@ public:
     static bool SetZone(sf::TcpSocket& socket, definitions::Zone zone);
     static bool SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
-    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action);
-    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAnimation action, util::Direction direction);
+    static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name);
+    static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction);
     static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type);
@@ -181,7 +164,7 @@ public:
     static bool DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone);
     static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
-    static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAnimation& out_action, util::Direction& out_direction);
+    static bool DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction);
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type);

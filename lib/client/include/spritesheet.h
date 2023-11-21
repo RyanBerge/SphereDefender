@@ -46,8 +46,6 @@ public:
     void SetVisible(bool visible);
     bool IsVisible();
 
-    static definitions::AnimationVariant GetAnimationVariant(util::Direction direction);
-
 private:
     sf::Sprite sprite;
     std::shared_ptr<sf::Texture> texture;
