@@ -121,7 +121,7 @@ bool readString(sf::TcpSocket& socket, std::string& out_string)
 enum class SerializedAnimation
 {
     None, Rest, Move, Feed, Knockback, Stun, Tackle, Death,
-    Sniff, LeapWindup, Leap, HopWindup, Hop, TailSwipe
+    Sniff, LeapWindup, Leap, LeapResting, HopWindup, Hop, TailSwipe
 };
 
 SerializedAnimation getSerializedAnimation(std::string name)
@@ -166,6 +166,10 @@ SerializedAnimation getSerializedAnimation(std::string name)
     {
         return SerializedAnimation::Leap;
     }
+    else if (name == "LeapResting")
+    {
+        return SerializedAnimation::LeapResting;
+    }
     else if (name == "HopWindup")
     {
         return SerializedAnimation::HopWindup;
@@ -179,7 +183,7 @@ SerializedAnimation getSerializedAnimation(std::string name)
         return SerializedAnimation::TailSwipe;
     }
 
-    cerr << "Animation name not found: " << name << "\n";
+    cerr << "Animation name not found for serialization: " << name << "\n";
     return SerializedAnimation::None;
 }
 
@@ -240,6 +244,11 @@ definitions::AnimationName getAnimationName(SerializedAnimation type)
         case SerializedAnimation::Leap:
         {
             return "Leap";
+        }
+        break;
+        case SerializedAnimation::LeapResting:
+        {
+            return "LeapResting";
         }
         break;
         case SerializedAnimation::HopWindup:

@@ -36,8 +36,7 @@ public:
     Action GetAction();
     const sf::FloatRect GetBounds();
     const sf::FloatRect GetBounds(sf::Vector2f position);
-    const sf::FloatRect GetProjectedBounds(util::Seconds future);
-    const sf::FloatRect GetProjectedBounds(util::Seconds future, sf::Vector2f velocity);
+    const sf::Vector2f GetPathingSize();
     int GetSiphonRate();
 
     bool Despawn = false;
@@ -148,6 +147,7 @@ private:
     StalkingState stalking_state = StalkingState::Start;
     util::Seconds stalking_timer = 0;
     util::Seconds stalking_rest_time;
+    util::Seconds hopping_cooldown_timer = 0;
 
     enum class FlockingState
     {

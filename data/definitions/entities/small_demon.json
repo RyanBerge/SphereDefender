@@ -6,16 +6,17 @@
   "attacks": [
     {
       "name": "leap",
-      "range": 120,
-      "damage": 30,
-      "cooldown": 3,
+      "range": 200,
+      "minimum_range": 140,
+      "damage": 10,
+      "cooldown": 8,
       "knockback_distance": 35
     },
     {
       "name": "tail swipe",
-      "range": 100,
-      "damage": 30,
-      "cooldown": 3,
+      "range": 180,
+      "damage": 10,
+      "cooldown": 5,
       "knockback_distance": 35
     }
   ],
@@ -38,9 +39,10 @@
     "rest_max": 4
   },
   "hopping_distance": 35,
+  "hopping_cooldown": 2,
   "aggro_range": 500,
   "combat_range": 160,
   "close_quarters_range": 130,
   "leash_range": 500,
-  "base_aggression": 0
+  "base_aggression": 0.5
 }

@@ -218,7 +218,7 @@ void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf:
 
     if (PathingGraphs.find(type) == PathingGraphs.end())
     {
-        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, enemy.GetBounds().getSize());
+        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, enemy.GetPathingSize());
     }
 }
 

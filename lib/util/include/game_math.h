@@ -24,6 +24,8 @@ namespace util
     using AngleDegrees = float;
     using AngleRadians = float;
 
+    using DistanceUnits = float;
+
     constexpr double pi = 3.141592653589793238462643383279502884L;
     constexpr float sqrt_2 = 1.42;
 

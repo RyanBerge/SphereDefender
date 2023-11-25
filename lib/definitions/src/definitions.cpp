@@ -266,6 +266,10 @@ public:
                 {
                     entity.hopping_distance = json["hopping_distance"];
                 }
+                if (json.find("hopping_cooldown") != json.end())
+                {
+                    entity.hopping_cooldown = json["hopping_cooldown"];
+                }
                 entity.aggro_range = json["aggro_range"];
                 entity.combat_range = json["combat_range"];
                 entity.close_quarters_range = json["close_quarters_range"];
@@ -313,6 +317,11 @@ public:
                     AttackDefinition attack_definition;
                     attack_definition.damage = j_attack["damage"];
                     attack_definition.range = j_attack["range"];
+                    attack_definition.minimum_range = 0;
+                    if (j_attack.find("minimum_range") != j_attack.end())
+                    {
+                        attack_definition.minimum_range = j_attack["minimum_range"];
+                    }
                     attack_definition.cooldown = j_attack["cooldown"];
                     attack_definition.cooldown_timer = 0;
                     if (j_attack.find("duration") != j_attack.end())

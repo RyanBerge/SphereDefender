@@ -224,6 +224,14 @@ AnimationTracker AnimationTracker::ConstructAnimationTracker(std::string filepat
                 animation.start_frame = j_variant["start_frame"];
                 animation.end_frame = j_variant["end_frame"];
                 animation.speed = j_variant["animation_speed"];
+                if (j_variant.find("hitbox_frames") != j_variant.end())
+                {
+                    for (auto frame_index : j_variant["hitbox_frames"])
+                    {
+                        int index = static_cast<int>(frame_index);
+                        animation.hitbox_frames.push_back(index);
+                    }
+                }
                 animation.next.name = j_variant["next_animation"]["animation"];
                 animation.next.variant = ToVariant(j_variant["next_animation"]["variant"]);
 

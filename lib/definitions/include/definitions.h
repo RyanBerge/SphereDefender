@@ -52,12 +52,13 @@ enum class Action
 
 struct AttackDefinition
 {
-    float range;
+    util::DistanceUnits range;
+    util::DistanceUnits minimum_range;
     float damage;
     util::Seconds cooldown;
     util::Seconds cooldown_timer;
     util::Seconds duration;
-    float knockback_distance;
+    util::DistanceUnits knockback_distance;
 };
 
 struct AttackEvent
@@ -89,6 +90,7 @@ struct EntityDefinition
     util::Seconds swarming_rest_time_min;
     util::Seconds swarming_rest_time_max;
     int hopping_distance;
+    util::Seconds hopping_cooldown;
     int aggro_range;
     int combat_range;
     int close_quarters_range;
@@ -124,6 +126,7 @@ struct AnimationData
     unsigned start_frame;
     unsigned end_frame;
     FramesPerSecond speed;
+    std::vector<unsigned> hitbox_frames;
     sf::Vector2f collision_dimensions;
     AnimationIdentifier next;
 };

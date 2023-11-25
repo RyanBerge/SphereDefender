@@ -8,8 +8,27 @@
       "size": [ 30, 30 ],
       "origin": [ 15, 15 ]
     },
+
     {
       "index": 1,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 37, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 2,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 37, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 3,
       "location": [ 0, 0 ],
       "size": [ 79, 42 ],
       "origin": [ 15, 21 ],
@@ -17,8 +36,27 @@
         { "x": 37, "y": 0, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 2,
+      "index": 4,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 20, "y": 20, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 5,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 20, "y": 20, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 6,
       "location": [ 63, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 15, 15 ],
@@ -26,8 +64,27 @@
         { "x": 20, "y": 20, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 3,
+      "index": 7,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 37, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 8,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 37, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 9,
       "location": [ 123, 0 ],
       "size": [ 42, 79 ],
       "origin": [ 21, 15 ],
@@ -35,8 +92,27 @@
         { "x": 0, "y": 37, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 4,
+      "index": 10,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 8, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 11,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 8, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 12,
       "location": [ 126, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 47, 15 ],
@@ -44,8 +120,27 @@
         { "x": 0, "y": 8, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 5,
+      "index": 13,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 14,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 15,
       "location": [ 0, 43 ],
       "size": [ 79, 42 ],
       "origin": [ 64, 21 ],
@@ -53,8 +148,27 @@
         { "x": 0, "y": 0, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 6,
+      "index": 16,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 17,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 18,
       "location": [ 0, 86 ],
       "size": [ 62, 62 ],
       "origin": [ 47, 47 ],
@@ -62,8 +176,27 @@
         { "x": 0, "y": 0, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 7,
+      "index": 19,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 20,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 0, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 21,
       "location": [ 80, 0 ],
       "size": [ 42, 79 ],
       "origin": [ 21, 64 ],
@@ -71,8 +204,27 @@
         { "x": 0, "y": 0, "width": 42, "height": 42 }
       ]
     },
+
     {
-      "index": 8,
+      "index": 22,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 20, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 23,
+      "location": [ 189, 86 ],
+      "size": [ 30, 30 ],
+      "origin": [ 15, 15 ],
+      "attack_hitboxes": [
+        { "x": 20, "y": 0, "width": 42, "height": 42 }
+      ]
+    },
+    {
+      "index": 24,
       "location": [ 166, 0 ],
       "size": [ 62, 62 ],
       "origin": [ 15, 47 ],
@@ -80,6 +232,7 @@
         { "x": 20, "y": 0, "width": 42, "height": 42 }
       ]
     }
+
   ],
   "animations": [
     {
@@ -88,57 +241,65 @@
         {
           "name": "East",
           "start_frame": 1,
-          "end_frame": 1,
-          "animation_speed": 0.5,
+          "end_frame": 3,
+          "animation_speed": 5,
+          "hitbox_frames": [ 3 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "Southeast",
-          "start_frame": 2,
-          "end_frame": 2,
-          "animation_speed": 0.5,
+          "start_frame": 4,
+          "end_frame": 6,
+          "animation_speed": 5,
+          "hitbox_frames": [ 6 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "South",
-          "start_frame": 3,
-          "end_frame": 3,
-          "animation_speed": 0.5,
+          "start_frame": 7,
+          "end_frame": 9,
+          "animation_speed": 5,
+          "hitbox_frames": [ 9 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "Southwest",
-          "start_frame": 4,
-          "end_frame": 4,
-          "animation_speed": 0.5,
+          "start_frame": 10,
+          "end_frame": 12,
+          "animation_speed": 5,
+          "hitbox_frames": [ 12 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "West",
-          "start_frame": 5,
-          "end_frame": 5,
-          "animation_speed": 0.5,
+          "start_frame": 13,
+          "end_frame": 15,
+          "animation_speed": 5,
+          "hitbox_frames": [ 15 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "Northwest",
-          "start_frame": 6,
-          "end_frame": 6,
-          "animation_speed": 0.5,
+          "start_frame": 16,
+          "end_frame": 18,
+          "animation_speed": 5,
+          "hitbox_frames": [ 18 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "North",
-          "start_frame": 7,
-          "end_frame": 7,
-          "animation_speed": 0.5,
+          "start_frame": 19,
+          "end_frame": 21,
+          "animation_speed": 5,
+          "hitbox_frames": [ 21 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         },
         {
           "name": "Northeast",
-          "start_frame": 8,
-          "end_frame": 8,
-          "animation_speed": 0.5,
+          "start_frame": 22,
+          "end_frame": 24,
+          "animation_speed": 5,
+          "hitbox_frames": [ 24 ],
           "next_animation": { "animation": "Rest", "variant": "Default" }
         }
       ]
