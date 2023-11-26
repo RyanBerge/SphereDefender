@@ -325,6 +325,11 @@ sf::Vector2f TruncateVector(sf::Vector2f input, float magnitude)
     return sf::Vector2f{input.x * (magnitude / mag), input.y * (magnitude / mag)};
 }
 
+float Magnitude(sf::Vector2f vector)
+{
+    return std::hypot(vector.x, vector.y);
+}
+
 sf::Vector2f InvertVectorMagnitude(sf::Vector2f input, float max_magnitude)
 {
     float mag = std::hypot(input.x, input.y);

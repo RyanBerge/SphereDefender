@@ -329,6 +329,10 @@ public:
                         attack_definition.duration = j_attack["duration"];
                     }
                     attack_definition.knockback_distance = j_attack["knockback_distance"];
+                    if (j_attack.find("travel_distance") != j_attack.end())
+                    {
+                        attack_definition.travel_distance = j_attack["travel_distance"];
+                    }
 
                     std::string name = j_attack["name"];
                     if (name == "tackle")

@@ -82,6 +82,7 @@ namespace util
     sf::Vector2f RotateVector(sf::Vector2f input, util::AngleDegrees angle);
     sf::Vector2f GetPerpendicular(sf::Vector2f input, util::Direction direction);
     sf::Vector2f TruncateVector(sf::Vector2f input, float magnitude);
+    float Magnitude(sf::Vector2f vector);
     sf::Vector2f InvertVectorMagnitude(sf::Vector2f input, float max_magnitude);
     float DotProduct(sf::Vector2f v1, sf::Vector2f v2);
     util::AngleDegrees AngleBetween(sf::Vector2f v1, sf::Vector2f v2);

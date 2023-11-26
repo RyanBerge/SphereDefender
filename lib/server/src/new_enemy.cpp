@@ -21,9 +21,11 @@
 using std::cout, std::endl;
 using server::global::PlayerList;
 
-constexpr bool DISPLAY_PATHS = false;
-
 namespace server {
+namespace {
+    constexpr bool DISPLAY_PATHS = false;
+    constexpr util::PixelsPerSecond NUDGE_SPEED = 10;
+}
 
 Enemy::Enemy(Region* region_ptr, definitions::EntityType enemy_type, sf::Vector2f position) : Enemy{region_ptr, enemy_type, position, position} { }
 
@@ -299,6 +301,8 @@ void Enemy::handleAction(sf::Time elapsed)
         }
         break;
     }
+
+    nudge(elapsed);
 }
 
 void Enemy::handleBehavior(sf::Time elapsed)
@@ -425,6 +429,30 @@ void Enemy::walk(sf::Time elapsed)
     {
         data.position = goal;
     }
+}
+
+void Enemy::nudge(sf::Time elapsed)
+{
+    sf::Vector2f aggragate_direction{0, 0};
+
+    for (auto& enemy : region->Enemies)
+    {
+        if (enemy.data.id == data.id)
+        {
+            continue;
+        }
+
+        if (util::Intersects(GetBounds(), enemy.GetBounds()))
+        {
+            sf::Vector2f vector = data.position - enemy.data.position;
+            aggragate_direction += util::InvertVectorMagnitude(vector, util::Magnitude(vector * 1.2f));
+        }
+    }
+
+    aggragate_direction = util::Normalize(aggragate_direction);
+
+    sf::Vector2f step = aggragate_direction * NUDGE_SPEED * elapsed.asSeconds();
+    takeStep(step);
 }
 
 bool Enemy::takeStep(sf::Vector2f step)
@@ -720,6 +748,7 @@ void Enemy::handleHunting(sf::Time elapsed)
             destination = target.Data.position;
             is_moving = true;
             is_walking = false;
+            combat_range = definition.combat_range * util::GetRandomFloat(0.9, 1.3);
             [[fallthrough]];
         }
         case HuntingState::Moving:
@@ -735,7 +764,7 @@ void Enemy::handleHunting(sf::Time elapsed)
 
             if (definition.behaviors[Behavior::Stalking])
             {
-                if (distance <= definition.combat_range)
+                if (distance <= combat_range)
                 {
                     setBehavior(Behavior::Stalking);
                     return;
@@ -797,7 +826,7 @@ void Enemy::handleStalking(sf::Time elapsed)
             }
 
             bool hop = false;
-            hop = util::GetRandomFloat(0, 1) > 0.8;
+            hop = util::GetRandomFloat(0, 1) > 0.3;
 
             if (util::GetRandomFloat(0, 1) <= aggression)
             {
@@ -959,7 +988,9 @@ void Enemy::handleLeaping(sf::Time elapsed)
                 animation_time = animation_tracker.GetAnimationTime("LeapResting");
             }
 
-            sf::Vector2f step = leaping_direction * definition.base_movement_speed * 4.0f * elapsed.asSeconds();
+            util::PixelsPerSecond travel_speed = definition.attacks[Action::Leaping].value().travel_distance / animation_time;
+
+            sf::Vector2f step = leaping_direction * travel_speed * elapsed.asSeconds();
             bool collision = takeStep(step);
 
             // check for a hit

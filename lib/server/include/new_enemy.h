@@ -72,6 +72,7 @@ private:
 
     void move(sf::Time elapsed);
     void walk(sf::Time elapsed);
+    void nudge(sf::Time elapsed);
     bool takeStep(sf::Vector2f step);
     bool checkStuck(sf::Time elapsed);
     sf::Vector2f getGoal();
@@ -101,6 +102,7 @@ private:
     float current_max_speed = 0;
     int aggro_range;
     uint16_t aggro_target;
+    util::DistanceUnits combat_range;
 
     std::map<uint16_t, util::Seconds> invulnerability_timers;
     std::map<uint16_t, float> invulnerability_windows;

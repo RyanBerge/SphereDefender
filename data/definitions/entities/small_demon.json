@@ -10,11 +10,12 @@
       "minimum_range": 140,
       "damage": 10,
       "cooldown": 8,
-      "knockback_distance": 35
+      "knockback_distance": 35,
+      "travel_distance": 240
     },
     {
       "name": "tail swipe",
-      "range": 180,
+      "range": 150,
       "damage": 10,
       "cooldown": 5,
       "knockback_distance": 35
@@ -41,8 +42,8 @@
   "hopping_distance": 35,
   "hopping_cooldown": 2,
   "aggro_range": 500,
-  "combat_range": 160,
-  "close_quarters_range": 130,
+  "combat_range": 170,
+  "close_quarters_range": 120,
   "leash_range": 500,
-  "base_aggression": 0.5
+  "base_aggression": 0.1
 }

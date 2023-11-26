@@ -59,6 +59,7 @@ struct AttackDefinition
     util::Seconds cooldown_timer;
     util::Seconds duration;
     util::DistanceUnits knockback_distance;
+    util::DistanceUnits travel_distance;
 };
 
 struct AttackEvent

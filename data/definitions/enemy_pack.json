@@ -34,8 +34,8 @@
         },
         {
           "type": "bat",
-          "min": 4,
-          "max": 6,
+          "min": 0,
+          "max": 0,
           "zone_scaling": [
             0, 1, 1, 2, 2, 3
           ]
