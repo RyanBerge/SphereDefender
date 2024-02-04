@@ -11,24 +11,39 @@
   "animations": [
     {
       "name": "Up",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Up"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Up", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Hover",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Hover"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Hover", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Down",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Down"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Down", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

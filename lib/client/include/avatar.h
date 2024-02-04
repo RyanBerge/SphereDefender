@@ -14,7 +14,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "spritesheet.h"
 #include "entity_data.h"
-#include "types.h"
+#include "game_math.h"
 
 namespace client {
 
@@ -28,22 +28,25 @@ public:
 
     void SetPosition(sf::Vector2f position);
     sf::Vector2f GetPosition();
-    sf::FloatRect GetGlobalBounds();
+    sf::Vector2f GetCollisionDimensions();
 
     void StartAttack(uint16_t attack_angle);
+    void SetStunned(util::Seconds duration);
     void UpdateHealth(uint8_t health);
 
     network::PlayerData Data;
     bool Attacking = false;
 
 private:
-    sf::CircleShape sphere;
-    sf::RectangleShape sword;
+    Spritesheet spritesheet;
     sf::RectangleShape gun;
     Spritesheet gunshot;
 
     float starting_attack_angle;
     util::Seconds attack_timer;
+    bool stunned = false;
+    util::Seconds stun_duration;
+    util::Seconds stun_timer;
 
 };
 

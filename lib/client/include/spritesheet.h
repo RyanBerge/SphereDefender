@@ -11,8 +11,11 @@
 #pragma once
 
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include "animation_tracker.h"
+#include "definitions.h"
 #include <memory>
 #include <map>
 
@@ -31,53 +34,36 @@ public:
     sf::Sprite& GetSprite();
     void LoadAnimationData(std::string filename);
     void SetShadow(bool shadows_on);
-    void SetAnimation(std::string animation_name);
+    void SetAnimation(definitions::AnimationIdentifier identifier);
+    void SetAnimation(definitions::AnimationName name, definitions::AnimationVariant variant);
+    void SetAnimation(definitions::AnimationName name);
+    definitions::AnimationIdentifier GetAnimation();
+    sf::Vector2f GetCollisionDimensions();
     void SetPosition(float x, float y);
     void SetPosition(sf::Vector2f position);
-    void CenterOrigin();
+    void SetDebugAnimationPrint(bool print);
     void SetTiling(bool tiled);
     void SetVisible(bool visible);
     bool IsVisible();
 
 private:
-    struct Frame
-    {
-        sf::IntRect bounds;
-        sf::Vector2f origin;
-    };
-
-    struct Animation
-    {
-        std::string name;
-        unsigned start;
-        unsigned end;
-        float speed;
-        std::string next;
-    };
-
-    struct AnimationData
-    {
-        std::string filepath;
-        std::vector<Frame> frames;
-        std::map<std::string, Animation> animations;
-    };
-
     sf::Sprite sprite;
     std::shared_ptr<sf::Texture> texture;
-    AnimationData animation_data;
+    definitions::AnimationTracker animation_tracker;
 
     bool casts_shadow = false;
     sf::Sprite shadow;
     std::shared_ptr<sf::Texture> shadow_texture;
 
-    Animation current_animation{};
-    unsigned current_frame = 0;
-    float animation_timer = 0;
+    unsigned current_frame_index = UINT_MAX;
+    bool debug_animation_print = false;
+    sf::Text animation_text;
 
     bool is_visible = true;
 
     bool loadTexture(std::string filename);
-    void setFrame(unsigned frame);
+    void setFrame();
+    void setFrame(bool initialize);
 };
 
 } // client

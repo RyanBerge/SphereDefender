@@ -23,31 +23,51 @@
   "animations": [
     {
       "name": "Up",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Up"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Up", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Hover",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "Hover"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Hover", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Down",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "Down"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Down", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Disabled",
-      "start_frame": 2,
-      "end_frame": 2,
-      "animation_speed": 0,
-      "next_animation": "Disabled"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Disabled", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

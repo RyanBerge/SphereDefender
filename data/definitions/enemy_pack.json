@@ -1,23 +1,24 @@
 {
   "packs": [
     {
-      "type": "demon",
+      "name": "demon",
+      "difficulty": 0,
       "enemies": [
         {
           "type": "small_demon",
-          "min": 3,
-          "max": 5,
-          "zone_scaling": [
-            0, 2, 4, 6, 8, 10
-          ]
-        },
+          "min": 2,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "name": "bat",
+      "difficulty": 0,
+      "enemies": [
         {
           "type": "bat",
-          "min": 0,
-          "max": 2,
-          "zone_scaling": [
-            0, 1, 1, 2, 2, 3
-          ]
+          "min": 5,
+          "max": 5
         }
       ]
     }

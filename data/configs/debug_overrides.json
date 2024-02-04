@@ -1,18 +1,22 @@
 {
   "start_in_game": {
-    "override": false,
+    "override": true,
     "value": true
   },
   "player_movement_speed": {
-    "override": true,
+    "override": false,
     "value": 500
+  },
+  "player_spawn_point": {
+    "override": false,
+    "value": [ 1500, 100 ]
   },
   "static_map": {
     "override": true,
     "value": true
   },
   "starting_region": {
-    "override": true,
-    "value": 5
+    "override": false,
+    "value": 1
   }
 }

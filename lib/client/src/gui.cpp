@@ -23,9 +23,25 @@ using network::ClientMessage;
 namespace client {
 namespace {
     constexpr int INTERACTION_DISTANCE = 75;
+    constexpr util::Seconds MISSING_HEALTH_DELAY = 0.4f;
+    constexpr int HEALTHBAR_SCALE_RATE = 75; // pixels per second
 }
 
 Gui::Gui() { }
+
+void Gui::Update(sf::Time elapsed)
+{
+    missing_health_timer += elapsed.asSeconds();
+
+    if (healthbar_missing.getScale().y > 0 && missing_health_timer >= MISSING_HEALTH_DELAY)
+    {
+        healthbar_missing.setScale(sf::Vector2f{1, healthbar_missing.getScale().y - ((HEALTHBAR_SCALE_RATE * elapsed.asSeconds()) / 100)});
+        if (healthbar_missing.getScale().y < 0)
+        {
+            healthbar_missing.setScale(sf::Vector2f{1, 0});
+        }
+    }
+}
 
 void Gui::Draw()
 {
@@ -50,6 +66,7 @@ void Gui::Draw()
         if (!InDialog)
         {
             resources::GetWindow().draw(healthbar);
+            resources::GetWindow().draw(healthbar_missing);
             healthbar_frame.Draw();
             inventory_item.Draw();
         }
@@ -143,6 +160,10 @@ void Gui::Load(definitions::Zone zone)
     healthbar.setOrigin(sf::Vector2f{0, healthbar.getSize().y});
     healthbar.setPosition(sf::Vector2f{window_resolution.x * 0.05f, window_resolution.y * 0.95f});
     healthbar.setFillColor(sf::Color::Green);
+
+    healthbar_missing = healthbar;
+    healthbar_missing.setFillColor(sf::Color::White);
+    healthbar_missing.setScale(sf::Vector2f{1, 0});
 
     healthbar_frame.LoadAnimationData("gui/healthbar.json");
     healthbar_frame.GetSprite().setOrigin(sf::Vector2f{0, healthbar.getSize().y});
@@ -282,8 +303,17 @@ void Gui::SetEnabled(bool new_enabled)
 
 void Gui::UpdateHealth(uint8_t value)
 {
+    if (Health == value)
+    {
+        return;
+    }
+
+    healthbar_missing.setScale(sf::Vector2f{1, healthbar_missing.getScale().y + (static_cast<float>(Health - value) / 100.0f)});
+    healthbar_missing.setPosition(healthbar_missing.getPosition().x, healthbar.getPosition().y - value);
     Health = value;
     healthbar.setScale(sf::Vector2f{1, static_cast<float>(Health) / 100});
+
+    missing_health_timer = 0;
 }
 
 void Gui::UpdateBatteryBar(float battery_level)

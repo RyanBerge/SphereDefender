@@ -23,24 +23,39 @@
   "animations": [
     {
       "name": "None",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "None"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "None", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Medpack",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "Medpack"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Medpack", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Currency",
-      "start_frame": 2,
-      "end_frame": 2,
-      "animation_speed": 0,
-      "next_animation": "Currency"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Currency", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

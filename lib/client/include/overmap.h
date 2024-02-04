@@ -11,7 +11,7 @@
 
 #include "cursor_button.h"
 #include "toggle_button.h"
-#include "region_definitions.h"
+#include "definitions.h"
 #include "pathfinding.h"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"

@@ -8,6 +8,8 @@
  *************************************************************************************************/
 #pragma once
 
+#include "SFML/System/Vector2.hpp"
+
 namespace debug
 {
 
@@ -20,6 +22,7 @@ struct DebugOverride
 
 extern DebugOverride<bool> StartInGame;
 extern DebugOverride<int> PlayerMovementSpeed;
+extern DebugOverride<sf::Vector2f> PlayerSpawnPoint;
 extern DebugOverride<bool> StaticMap;
 extern DebugOverride<int> StartingRegion;
 

@@ -1,0 +1,49 @@
+{
+  "name": "Demon",
+  "behaviors": [
+    "wandering", "feeding", "hunting", "stalking"
+  ],
+  "attacks": [
+    {
+      "name": "leap",
+      "range": 200,
+      "minimum_range": 140,
+      "damage": 10,
+      "cooldown": 8,
+      "knockback_distance": 35,
+      "travel_distance": 240
+    },
+    {
+      "name": "tail swipe",
+      "range": 150,
+      "damage": 10,
+      "cooldown": 5,
+      "knockback_distance": 35
+    }
+  ],
+  "base_health": 100,
+  "movement_speed": 70,
+  "walking_speed" : 40,
+  "feeding_range": 5,
+  "siphon_rate": 3,
+  "steering_force": 440,
+  "repulsion_force": 550,
+  "repulsion_radius": 30,
+  "acceleration": 100,
+  "deceleration": 50,
+  "wander_behavior": {
+    "rest_min": 1,
+    "rest_max": 3
+  },
+  "swarming_behavior": {
+    "rest_min": 4,
+    "rest_max": 4
+  },
+  "hopping_distance": 35,
+  "hopping_cooldown": 2,
+  "aggro_range": 500,
+  "combat_range": 170,
+  "close_quarters_range": 120,
+  "leash_range": 500,
+  "base_aggression": 0.1
+}

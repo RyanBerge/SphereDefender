@@ -11,6 +11,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <chrono>
 
 using std::cout, std::endl;
 
@@ -20,6 +21,20 @@ bool Contains(sf::FloatRect rect, sf::Vector2f point)
 {
     return point.x > rect.left && point.x < rect.left + rect.width &&
            point.y > rect.top && point.y < rect.top + rect.height;
+}
+
+bool Contains(const std::vector<sf::FloatRect>& rects, sf::Vector2f point)
+{
+    for (auto& rect : rects)
+    {
+        if (point.x > rect.left && point.x < rect.left + rect.width &&
+            point.y > rect.top && point.y < rect.top + rect.height)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool Intersects(sf::FloatRect rect, LineSegment line)
@@ -251,14 +266,154 @@ sf::Vector2f Normalize(sf::Vector2f vector)
     return sf::Vector2f{vector.x / magnitude, vector.y / magnitude};
 }
 
-sf::Vector2f AngleToVector(double angle)
+AngleDegrees ToDegrees(AngleRadians angle)
 {
-    return Normalize(sf::Vector2f{static_cast<float>(std::cos(angle * util::pi / 180)), static_cast<float>(std::sin(angle * util::pi / 180))});
+    return angle * (180 / pi);
 }
 
-double VectorToAngle(sf::Vector2f vector)
+AngleRadians ToRadians(AngleDegrees angle)
 {
-    return std::atan2(vector.y, vector.x) * 180 / util::pi;
+    return angle * (pi / 180);
+}
+
+sf::Vector2f AngleToVector(AngleDegrees angle)
+{
+    return Normalize(sf::Vector2f{static_cast<float>(std::cos(angle * pi / 180)), static_cast<float>(std::sin(angle * pi / 180))});
+}
+
+AngleDegrees VectorToAngle(sf::Vector2f vector)
+{
+    return std::atan2(vector.y, vector.x) * 180 / pi;
+}
+
+sf::Vector2f RotateVector(sf::Vector2f input, AngleDegrees angle)
+{
+    float sin = std::sin(ToRadians(angle));
+    float cos = std::cos(ToRadians(angle));
+
+    sf::Vector2f vector;
+    vector.x = (cos * input.x) - (sin * input.y);
+    vector.y = (sin * input.x) + (cos * input.y);
+
+    return vector;
+}
+
+sf::Vector2f GetPerpendicular(sf::Vector2f input, util::Direction direction)
+{
+    if (direction == util::Direction::Left)
+    {
+        return sf::Vector2f{-input.y, input.x};
+    }
+    else if (direction == util::Direction::Right)
+    {
+        return sf::Vector2f{input.y, -input.x};
+    }
+    else
+    {
+        std::cerr << "Invalid direction input.\n";
+        return input;
+    }
+}
+
+sf::Vector2f TruncateVector(sf::Vector2f input, float magnitude)
+{
+    float mag = std::hypot(input.x, input.y);
+    if (mag < magnitude)
+    {
+        return input;
+    }
+
+    return sf::Vector2f{input.x * (magnitude / mag), input.y * (magnitude / mag)};
+}
+
+float Magnitude(sf::Vector2f vector)
+{
+    return std::hypot(vector.x, vector.y);
+}
+
+sf::Vector2f InvertVectorMagnitude(sf::Vector2f input, float max_magnitude)
+{
+    float mag = std::hypot(input.x, input.y);
+    float new_mag = max_magnitude - mag;
+
+    return sf::Vector2f{input.x * (new_mag / mag), input.y * (new_mag / mag)};
+}
+
+float DotProduct(sf::Vector2f v1, sf::Vector2f v2)
+{
+    return (v1.x * v2.x + v1.y * v2.y);
+}
+
+AngleDegrees AngleBetween(sf::Vector2f v1, sf::Vector2f v2)
+{
+    float dot = DotProduct(v1, v2);
+    return ToDegrees(std::acos(dot / (std::hypot(v1.x, v1.y) * std::hypot(v2.x, v2.y))));
+}
+
+VectorCloud CreateVectorCloud(sf::Vector2f primary)
+{
+    VectorCloud cloud;
+    for (unsigned i = 0; i < cloud.size(); ++i)
+    {
+        sf::Vector2f vector = primary;
+        vector = RotateVector(vector, i * 30);
+        cloud[i] = WeightedVector{vector, DotProduct(primary, vector)};
+    }
+
+    return cloud;
+}
+
+sf::Vector2f CollapseVectorCloud(VectorCloud cloud)
+{
+    unsigned index = 0;
+    float largest_weight = cloud[index].weight;
+    for (unsigned i = 1; i < cloud.size(); ++i)
+    {
+        if (cloud[i].weight > largest_weight)
+        {
+            largest_weight = cloud[i].weight;
+            index = i;
+        }
+    }
+
+    return cloud[index].vector;
+}
+
+util::Direction GetOctalDirection(util::AngleDegrees angle)
+{
+    angle = std::fmod(angle + 360, 360);
+    if (angle <= 23 || angle >= 338)
+    {
+        return util::Direction::East;
+    }
+    else if (angle <= 68)
+    {
+        return util::Direction::Southeast;
+    }
+    else if (angle <= 113)
+    {
+        return util::Direction::South;
+    }
+    else if (angle <= 158)
+    {
+        return util::Direction::Southwest;
+    }
+    else if (angle <= 203)
+    {
+        return util::Direction::West;
+    }
+    else if (angle <= 248)
+    {
+        return util::Direction::Northwest;
+    }
+    else if (angle <= 293)
+    {
+        return util::Direction::North;
+    }
+    else
+    {
+        return util::Direction::Northeast;
+    }
 }
 
 sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color color, int thickness)
@@ -273,29 +428,36 @@ sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color
     return rect;
 }
 
-namespace {
-    std::random_device random_device;
-    std::mt19937 random_generator{random_device()};
-}
+std::mt19937 RandomGenerator{static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count() % INT_MAX)};
 
 int GetRandomInt(int min, int max)
 {
     std::uniform_int_distribution<int> distribution(min, max);
-    return distribution(random_generator);
+    return distribution(RandomGenerator);
 }
 
 float GetRandomFloat(float min, float max)
 {
     std::uniform_real_distribution<float> distribution(min, max);
-    return distribution(random_generator);
+    return distribution(RandomGenerator);
 }
 
-sf::Vector2f GetRandomPositionFromPoint(sf::Vector2f point, float max_distance)
+sf::Vector2f GetRandomPositionInCone(sf::Vector2f point, float min_distance, float max_distance, AngleDegrees angle, AngleDegrees angle_arc)
 {
-    float angle = GetRandomFloat(0, util::pi * 2);
-    float distance = GetRandomFloat(0, max_distance);
+    float direction = GetRandomFloat(ToRadians(angle - (angle_arc / 2)), ToRadians(angle + (angle_arc / 2)));
+    float distance = GetRandomFloat(min_distance, max_distance);
 
-    return sf::Vector2f{distance * std::cos(angle) + point.x, distance * std::sin(angle) + point.y};
+    return sf::Vector2f{distance * std::cos(direction) + point.x, distance * std::sin(direction) + point.y};
+}
+
+sf::Vector2f GetRandomPositionFromPoint(sf::Vector2f point, float min_distance, float max_distance)
+{
+    return GetRandomPositionInCone(point, min_distance, max_distance, 0, 360);
 }
 
 } // util
+
+std::ostream &operator<<(std::ostream &output, const sf::Vector2f& vector) {
+    output << "(" << vector.x << ", " << vector.y << ")";
+    return output;
+}

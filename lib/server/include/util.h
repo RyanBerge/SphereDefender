@@ -8,7 +8,7 @@
  *************************************************************************************************/
 #pragma once
 
-#include "enemy.h"
+#include "new_enemy.h"
 #include "player.h"
 
 namespace server

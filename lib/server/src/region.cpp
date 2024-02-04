@@ -8,7 +8,7 @@
  *
  *************************************************************************************************/
 #include "region.h"
-#include "region_definitions.h"
+#include "definitions.h"
 #include "game_math.h"
 #include "global_state.h"
 #include <algorithm>
@@ -20,19 +20,13 @@ using server::global::PlayerList;
 
 using std::cout, std::cerr, std::endl;
 
-namespace {
-    constexpr int BASE_SPAWN_INTERVAL = 4;
-    constexpr float SPAWN_ACCELERATION_PER_PLAYER = 0.1;
-    constexpr float MINIMUM_SPAWN_INTERVAL = 0.8;
-}
-
 namespace server {
 
 Region::Region() { }
 
-Region::Region(definitions::RegionType region_name, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionType region_type, int player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
-    definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_name);
+    definition = definitions::GetRegionDefinition(region_type);
 
     Bounds = definition.bounds;
     Convoy = definition.convoy;
@@ -45,18 +39,14 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
     auto convoy_collisions = Convoy.GetCollisions();
     Obstacles.insert(Obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
 
-    spawn_enemies = definition.leyline;
+    Leyline = definition.leyline;
 
     if (definition.leyline)
     {
         battery_charge_rate = 5;
     }
 
-    spawn_interval = BASE_SPAWN_INTERVAL;
-
-    last_spawn = 0;
-
-    if (region_name == definitions::RegionType::MenuEvent)
+    if (region_type == definitions::RegionType::MenuEvent)
     {
         global::Paused = true;
         global::MenuEvent = true;
@@ -69,17 +59,7 @@ Region::Region(definitions::RegionType region_name, unsigned player_count, float
 
     for (auto& pack : definition.enemy_packs)
     {
-        for (auto& spawn : pack.spawns)
-        {
-            int count = util::GetRandomInt(spawn.min, spawn.max) + spawn.zone_scaling[region_difficulty];
-
-            for (int i = 0; i < count; ++i)
-            {
-                Enemy enemy(false);
-                enemy.Data.position = util::GetRandomPositionFromPoint(pack.position, 30 * count);
-                Enemies.push_back(enemy);
-            }
-        }
+        spawnPack(pack);
     }
 }
 
@@ -94,47 +74,16 @@ void Region::Update(sf::Time elapsed)
 
     for (auto& enemy : Enemies)
     {
-        enemy.Update(elapsed, Convoy, Obstacles);
-    }
-
-    int siphon_rate = 0;
-    for (auto& enemy : Enemies)
-    {
-        if (enemy.GetBehavior() == Enemy::Behavior::Feeding)
-        {
-            siphon_rate += enemy.GetSiphonRate();
-        }
-    }
-
-    if (region_age < 6)
-    {
-        BatteryLevel -= siphon_rate * elapsed.asSeconds();
-    }
-    else
-    {
-        BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
-        if (spawn_enemies && (last_spawn == 0 || region_age >= last_spawn + spawn_interval))
-        {
-            spawnEnemy();
-        }
-    }
-
-    if (BatteryLevel < 0)
-    {
-        BatteryLevel = 0;
-    }
-
-    if (BatteryLevel > 1000)
-    {
-        BatteryLevel = 1000;
+        enemy.Update(elapsed);
     }
 
     handleProjectiles(elapsed);
-}
+    updateBattery(elapsed);
 
-void Region::Cull()
-{
-    Enemies.remove_if([](Enemy& enemy){ return enemy.Despawn; });
+    if (definition.leyline)
+    {
+        spawnWave(elapsed);
+    }
 }
 
 namespace {
@@ -169,7 +118,7 @@ WinningLink getWinnerValue(definitions::MenuEventOption option)
     throw (std::runtime_error("Winner link not found?"));
 }
 
-}
+} // Anonymous namespace
 
 bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action)
 {
@@ -208,25 +157,92 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
     return false;
 }
 
-void Region::spawnEnemy()
+void Region::updateBattery(sf::Time elapsed)
 {
-    static std::random_device random_device;
-    static std::mt19937 random_generator{random_device()};
-    static std::uniform_int_distribution<> distribution_x(450, 550);
-    static std::uniform_int_distribution<> distribution_y(-200, 300);
-
-    Enemy enemy;
-
-    enemy.Data.position.x = distribution_x(random_generator);
-    enemy.Data.position.y = distribution_y(random_generator);
-    //enemy.Data.position = sf::Vector2f{900, 0};
-
-    Enemies.push_back(enemy);
-    last_spawn = region_age;
-    spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;
-    if (spawn_interval < MINIMUM_SPAWN_INTERVAL)
+    int siphon_rate = 0;
+    for (auto& enemy : Enemies)
     {
-        spawn_interval = MINIMUM_SPAWN_INTERVAL;
+        if (enemy.GetBehavior() == definitions::Behavior::Feeding)
+        {
+            siphon_rate += enemy.GetSiphonRate();
+        }
+    }
+
+    if (region_age < 6)
+    {
+        BatteryLevel -= siphon_rate * elapsed.asSeconds();
+    }
+    else
+    {
+        BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
+    }
+
+    if (BatteryLevel < 0)
+    {
+        BatteryLevel = 0;
+    }
+
+    if (BatteryLevel > 1000)
+    {
+        BatteryLevel = 1000;
+    }
+}
+
+bool Region::spawnWave(sf::Time elapsed)
+{
+    constexpr util::Seconds SPAWN_INTERVAL = 15;
+    age_timer += elapsed.asSeconds();
+
+    if (age_timer < SPAWN_INTERVAL)
+    {
+        return false;
+    }
+
+    age_timer = 0;
+
+    for (int i = 0; i < num_players; ++i)
+    {
+        // TODO: Vary pack difficulty for partial region difficulties; like difficulty 1.4 should be a 60% chance for difficulty 1 and 40% for difficulty 2
+        definitions::EnemyPack pack = definitions::GetEnemyPackByDifficulty(region_difficulty);
+        pack.position.x = util::GetRandomFloat(definition.spawn_zone.left, definition.spawn_zone.left + definition.spawn_zone.width);
+        pack.position.y = util::GetRandomFloat(definition.spawn_zone.top, definition.spawn_zone.top + definition.spawn_zone.height);
+
+        spawnPack(pack);
+    }
+
+    return true;
+}
+
+void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position)
+{
+    spawnEnemy(type, position, position);
+}
+
+void Region::spawnPack(definitions::EnemyPack pack)
+{
+    for (auto& spawn : pack.spawns)
+    {
+        int count = util::GetRandomInt(spawn.min, spawn.max);
+
+        for (int i = 0; i < count; ++i)
+        {
+            spawnEnemy(spawn.type, util::GetRandomPositionFromPoint(pack.position, 0, 60), pack.position);
+        }
+    }
+}
+
+void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf::Vector2f pack_position)
+{
+    Enemy enemy(this, type, position, pack_position);
+    Enemies.push_back(enemy);
+    for (auto& player : PlayerList)
+    {
+        ServerMessage::AddEnemy(*player.Socket, enemy.GetData().id, type);
+    }
+
+    if (PathingGraphs.find(type) == PathingGraphs.end())
+    {
+        PathingGraphs[type] = util::CreatePathingGraph(Obstacles, enemy.GetPathingSize());
     }
 }
 

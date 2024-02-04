@@ -10,7 +10,7 @@
 #pragma once
 
 #include <SFML/Graphics/RectangleShape.hpp>
-#include "region_definitions.h"
+#include "definitions.h"
 #include "spritesheet.h"
 
 namespace client

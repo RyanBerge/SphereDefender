@@ -101,10 +101,15 @@
   "animations": [
     {
       "name": "Glow",
-      "start_frame": 0,
-      "end_frame": 15,
-      "animation_speed": 10,
-      "next_animation": "Glow"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 15,
+          "animation_speed": 10,
+          "next_animation": { "animation": "Glow", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

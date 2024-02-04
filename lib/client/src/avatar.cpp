@@ -25,30 +25,20 @@ Avatar::Avatar() { }
 
 Avatar::Avatar(sf::Color color, network::PlayerData data) : Data{data}
 {
-    definitions::PlayerDefinition player_definition = definitions::PlayerDefinition::Get();
-    sphere.setRadius(player_definition.radius);
-    sphere.setFillColor(color);
-    sphere.setOutlineColor(sf::Color::Black);
-    sphere.setOutlineThickness(1);
-    sphere.setOrigin(sphere.getLocalBounds().width / 2, sphere.getLocalBounds().height / 2);
+    (void)color;
+    spritesheet.LoadAnimationData("entities/player.json");
+    spritesheet.SetAnimation("Idle", definitions::AnimationVariant::South);
 
     definitions::Weapon weapon = definitions::GetWeapon(definitions::WeaponType::Sword);
-
-    sword.setSize(sf::Vector2f(weapon.length, 4));
-    sword.setOrigin(sf::Vector2f(weapon.offset, 2));
-    sword.setFillColor(sf::Color::Red);
-    sword.setPosition(sphere.getPosition());
 
     weapon = definitions::GetWeapon(definitions::WeaponType::BurstGun);
 
     gun.setSize(sf::Vector2f(weapon.length, 4));
     gun.setOrigin(sf::Vector2f(weapon.offset, 2));
     gun.setFillColor(sf::Color::Black);
-    gun.setPosition(sphere.getPosition());
 
     gunshot.LoadAnimationData("player/gunfire.json");
     gunshot.GetSprite().setOrigin(sf::Vector2f(weapon.offset - weapon.length, gunshot.GetSprite().getGlobalBounds().height / 2));
-    gunshot.SetPosition(sphere.getPosition().x, sphere.getPosition().y);
 }
 
 void Avatar::Update(sf::Time elapsed)
@@ -59,6 +49,9 @@ void Avatar::Update(sf::Time elapsed)
     }
 
     attack_timer += elapsed.asSeconds();
+    stun_timer += elapsed.asSeconds();
+
+    spritesheet.Update(elapsed);
 
     if (Data.health > 0)
     {
@@ -68,16 +61,7 @@ void Avatar::Update(sf::Time elapsed)
             {
                 case definitions::WeaponType::Sword:
                 {
-                    sword.setPosition(sphere.getPosition());
-                    sword.rotate(360 * elapsed.asSeconds());
-
-                    float rotation_delta = sword.getRotation() - starting_attack_angle;
-                    if (rotation_delta < 0)
-                    {
-                        rotation_delta += 360;
-                    }
-
-                    if (rotation_delta > 90)
+                    if (spritesheet.GetAnimation().name != "SwordAttack")
                     {
                         Attacking = false;
                     }
@@ -86,8 +70,8 @@ void Avatar::Update(sf::Time elapsed)
                 case definitions::WeaponType::HitscanGun:
                 case definitions::WeaponType::BurstGun:
                 {
-                    gun.setPosition(sphere.getPosition());
-                    gunshot.SetPosition(sphere.getPosition());
+                    gun.setPosition(spritesheet.GetSprite().getPosition());
+                    gunshot.SetPosition(spritesheet.GetSprite().getPosition());
                     if (attack_timer * 1000 > GUN_TIMER)
                     {
                         Attacking = false;
@@ -95,6 +79,11 @@ void Avatar::Update(sf::Time elapsed)
                 }
                 break;
             }
+        }
+
+        if (stunned && stun_timer >= stun_duration)
+        {
+            stunned = false;
         }
     }
 }
@@ -109,7 +98,6 @@ void Avatar::Draw()
             {
                 case network::PlayerClass::Melee:
                 {
-                    resources::GetWindow().draw(sword);
                 }
                 break;
                 case network::PlayerClass::Ranged:
@@ -121,14 +109,58 @@ void Avatar::Draw()
             }
         }
 
-        resources::GetWindow().draw(sphere);
+        spritesheet.Draw();
     }
 }
 
 void Avatar::SetPosition(sf::Vector2f position)
 {
+    sf::Vector2f old_position = Data.position;
     Data.position = position;
-    sphere.setPosition(position);
+    spritesheet.SetPosition(position);
+
+    if (spritesheet.GetAnimation().name != "Idle")
+    {
+        return;
+    }
+
+    if (stunned)
+    {
+        return;
+    }
+
+    if (position.x - old_position.x == 0 && position.y - old_position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::South);
+    }
+    else if (position.x - old_position.x == 0 && position.y - old_position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::North);
+    }
+    else if (position.x - old_position.x < 0 && position.y - old_position.y == 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::West);
+    }
+    else if (position.x - old_position.x > 0 && position.y - old_position.y == 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::East);
+    }
+    else if (position.x - old_position.x > 0 && position.y - old_position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southeast);
+    }
+    else if (position.x - old_position.x > 0 && position.y - old_position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northeast);
+    }
+    else if (position.x - old_position.x < 0 && position.y - old_position.y > 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southwest);
+    }
+    else if (position.x - old_position.x < 0 && position.y - old_position.y < 0)
+    {
+        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northwest);
+    }
 }
 
 sf::Vector2f Avatar::GetPosition()
@@ -136,19 +168,32 @@ sf::Vector2f Avatar::GetPosition()
     return Data.position;
 }
 
-sf::FloatRect Avatar::GetGlobalBounds()
+sf::Vector2f Avatar::GetCollisionDimensions()
 {
-    return sphere.getGlobalBounds();
+    return spritesheet.GetCollisionDimensions();
 }
 
 void Avatar::StartAttack(uint16_t attack_angle)
 {
     starting_attack_angle = attack_angle;
-    sword.setRotation(starting_attack_angle);
     gun.setRotation(starting_attack_angle);
     gunshot.GetSprite().setRotation(starting_attack_angle);
     attack_timer = 0;
     Attacking = true;
+
+    if (Data.properties.player_class != network::PlayerClass::Melee)
+    {
+        return;
+    }
+
+    spritesheet.SetAnimation("SwordAttack", definitions::GetAnimationVariant(util::GetOctalDirection(attack_angle)));
+}
+
+void Avatar::SetStunned(util::Seconds duration)
+{
+    stunned = true;
+    stun_duration = duration + 0.05f;
+    stun_timer = 0;
 }
 
 void Avatar::UpdateHealth(uint8_t health)

@@ -13,7 +13,8 @@
 #include <string>
 #include <array>
 #include "entity_data.h"
-#include "region_definitions.h"
+#include "definitions.h"
+#include "pathfinding.h"
 
 namespace network {
 
@@ -22,33 +23,17 @@ enum class GuiType : uint8_t
     Overmap, MenuEvent
 };
 
-struct PlayerActionFlags
+enum class PlayerActionType
 {
-    bool start_attack: 1;
-};
-
-struct EnemyActionFlags
-{
-    bool move: 1;
-    bool feed: 1;
-    bool knockback: 1;
-    bool stunned: 1;
-    bool start_attack: 1;
-    bool dead: 1;
-    bool sniffing: 1;
-    bool leaping: 1;
+    Attack,
+    Stunned
 };
 
 struct PlayerAction
 {
-    PlayerActionFlags flags;
-    uint16_t attack_angle;
-};
-
-struct EnemyAction
-{
-    EnemyActionFlags flags;
-    sf::Vector2f attack_vector;
+    PlayerActionType type;
+    uint16_t action_angle;
+    util::Seconds duration;
 };
 
 class ClientMessage
@@ -121,9 +106,10 @@ public:
 
         SetGuiPause,
         PlayerStartAction,
-        EnemyChangeAction,
+        ChangeEnemyAnimation,
         ChangeItem,
         PlayerStates,
+        AddEnemy,
         EnemyUpdate,
         BatteryUpdate,
         ProjectileUpdate,
@@ -133,6 +119,9 @@ public:
         CastVote,
         SetMenuEvent,
         AdvanceMenuEvent,
+
+        // Debugging messages
+        DisplayPath,
 
         Error = 0xFF
     };
@@ -150,9 +139,11 @@ public:
     static bool SetZone(sf::TcpSocket& socket, definitions::Zone zone);
     static bool SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
-    static bool EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action);
+    static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name);
+    static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction);
     static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
+    static bool AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
@@ -162,6 +153,7 @@ public:
     static bool CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm);
     static bool SetMenuEvent(sf::TcpSocket& socket, uint16_t event_id);
     static bool AdvanceMenuEvent(sf::TcpSocket& socket, uint16_t advance_value, bool finish);
+    static bool DisplayPath(sf::TcpSocket& socket, util::PathingGraph graph, std::list<sf::Vector2f> path);
 
     static bool DecodePlayerId(sf::TcpSocket& socket, uint16_t& out_id);
     static bool DecodePlayerJoined(sf::TcpSocket& socket, PlayerData& out_player);
@@ -172,9 +164,10 @@ public:
     static bool DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone);
     static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
-    static bool DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action);
+    static bool DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction);
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
+    static bool DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
@@ -184,6 +177,7 @@ public:
     static bool DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm);
     static bool DecodeSetMenuEvent(sf::TcpSocket& socket, uint16_t& out_event_id);
     static bool DecodeAdvanceMenuEvent(sf::TcpSocket& socket, uint16_t& out_advance_value, bool& out_finish);
+    static bool DecodeDisplayPath(sf::TcpSocket& socket, std::vector<sf::Vector2f>& out_graph, std::vector<sf::Vector2f>& out_path);
 };
 
 } // network

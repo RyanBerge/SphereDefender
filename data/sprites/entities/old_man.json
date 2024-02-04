@@ -29,31 +29,51 @@
   "animations": [
     {
       "name": "Default",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Default"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Default", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "AvailableDialog",
-      "start_frame": 1,
-      "end_frame": 1,
-      "animation_speed": 0,
-      "next_animation": "AvailableDialog"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "AvailableDialog", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "AvailableDialogAndFocus",
-      "start_frame": 2,
-      "end_frame": 2,
-      "animation_speed": 0,
-      "next_animation": "AvailableDialogAndFocus"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "animation": "AvailableDialogAndFocus", "variant": "Default" }
+        }
+      ]
     },
     {
       "name": "Focus",
-      "start_frame": 3,
-      "end_frame": 3,
-      "animation_speed": 0,
-      "next_animation": "Focus"
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Focus", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

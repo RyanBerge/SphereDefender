@@ -1,0 +1,547 @@
+{
+  "filename": "Player.png",
+  "collision_dimensions": { "x": 36, "y": 36 },
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 1,
+      "location": [ 36, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 2,
+      "location": [ 72, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 3,
+      "location": [ 108, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 4,
+      "location": [ 144, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 5,
+      "location": [ 180, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 6,
+      "location": [ 216, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 7,
+      "location": [ 252, 0 ],
+      "size": [ 36, 36 ],
+      "origin": [ 18, 18 ]
+    },
+
+
+    {
+      "index": 8,
+      "location": [ 0, 37 ],
+      "size": [ 42, 60 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 9,
+      "location": [ 74, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 10,
+      "location": [ 148, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 11,
+      "location": [ 222, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 12,
+      "location": [ 296, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 13,
+      "location": [ 370, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+    {
+      "index": 14,
+      "location": [ 444, 37 ],
+      "size": [ 73, 81 ],
+      "origin": [ 18, 42 ]
+    },
+
+
+
+    {
+      "index": 15,
+      "location": [ 0, 126 ],
+      "size": [ 36, 61 ],
+      "origin": [ 18, 43 ]
+    },
+    {
+      "index": 16,
+      "location": [ 74, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    }
+    ,
+    {
+      "index": 17,
+      "location": [148, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    }
+    ,
+    {
+      "index": 18,
+      "location": [ 221, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    }
+    ,
+    {
+      "index": 19,
+      "location": [ 296, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    }
+    ,
+    {
+      "index": 20,
+      "location": [ 370, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    },
+    {
+      "index": 21,
+      "location": [ 444, 119 ],
+      "size": [ 68, 68 ],
+      "origin": [ 18, 50 ]
+    },
+
+
+
+    {
+      "index": 22,
+      "location": [ 0, 219 ],
+      "size": [ 60, 42 ],
+      "origin": [ 42, 24 ]
+    },
+    {
+      "index": 23,
+      "location": [ 81, 188 ],
+      "size": [ 74, 73 ],
+      "origin": [ 35, 55 ]
+    }
+    ,
+    {
+      "index": 24,
+      "location": [166, 188 ],
+      "size": [ 63, 73 ],
+      "origin": [ 24, 55 ]
+    }
+    ,
+    {
+      "index": 25,
+      "location": [ 246, 188 ],
+      "size": [ 57, 73 ],
+      "origin": [ 18, 55 ]
+    }
+    ,
+    {
+      "index": 26,
+      "location": [ 320, 188 ],
+      "size": [ 57, 73 ],
+      "origin": [ 18, 55 ]
+    }
+    ,
+    {
+      "index": 27,
+      "location": [ 394, 188 ],
+      "size": [ 57, 73 ],
+      "origin": [ 18, 55 ]
+    },
+    {
+      "index": 28,
+      "location": [ 468, 188 ],
+      "size": [ 57, 73 ],
+      "origin": [ 18, 55 ]
+    },
+
+
+
+
+    {
+      "index": 29,
+      "location": [ 0, 295 ],
+      "size": [ 61, 36 ],
+      "origin": [ 43, 18 ]
+    },
+    {
+      "index": 30,
+      "location": [ 62, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+    {
+      "index": 31,
+      "location": [ 131, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+    {
+      "index": 32,
+      "location": [ 200, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+    {
+      "index": 33,
+      "location": [ 269, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+    {
+      "index": 34,
+      "location": [ 338, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+    {
+      "index": 35,
+      "location": [ 407, 263 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 50 ]
+    },
+
+
+
+
+    {
+      "index": 36,
+      "location": [ 0, 353 ],
+      "size": [ 42, 60 ],
+      "origin": [ 24, 18 ]
+    },
+    {
+      "index": 37,
+      "location": [ 42, 332 ],
+      "size": [ 73, 76 ],
+      "origin": [ 55, 39 ]
+    },
+    {
+      "index": 37,
+      "location": [ 117, 332 ],
+      "size": [ 73, 64 ],
+      "origin": [ 55, 39 ]
+    },
+    {
+      "index": 38,
+      "location": [ 191, 332 ],
+      "size": [ 73, 57 ],
+      "origin": [ 55, 39 ]
+    },
+    {
+      "index": 39,
+      "location": [ 265, 332 ],
+      "size": [ 73, 57 ],
+      "origin": [ 55, 39 ]
+    },
+    {
+      "index": 40,
+      "location": [ 339, 332 ],
+      "size": [ 73, 57 ],
+      "origin": [ 55, 39 ]
+    },
+    {
+      "index": 41,
+      "location": [ 413, 332 ],
+      "size": [ 73, 57 ],
+      "origin": [ 55, 39 ]
+    },
+
+
+
+    {
+      "index": 42,
+      "location": [ 0, 414 ],
+      "size": [ 36, 61 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 43,
+      "location": [ 42, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+    {
+      "index": 44,
+      "location": [ 116, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+    {
+      "index": 45,
+      "location": [ 189, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+    {
+      "index": 46,
+      "location": [ 264, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+    {
+      "index": 47,
+      "location": [ 338, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+    {
+      "index": 48,
+      "location": [ 412, 414 ],
+      "size": [ 68, 68 ],
+      "origin": [ 50, 18 ]
+    },
+
+
+
+    {
+      "index": 49,
+      "location": [ 0, 483 ],
+      "size": [ 60, 42 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 50,
+      "location": [ 61, 483 ],
+      "size": [ 70, 73 ],
+      "origin": [ 39, 18 ]
+    },
+    {
+      "index": 51,
+      "location": [ 143, 483 ],
+      "size": [ 62, 73 ],
+      "origin": [ 39, 18 ]
+    },
+    {
+      "index": 52,
+      "location": [ 217, 483 ],
+      "size": [ 57, 73 ],
+      "origin": [ 39, 18 ]
+    },
+    {
+      "index": 53,
+      "location": [ 291, 483 ],
+      "size": [ 57, 73 ],
+      "origin": [ 39, 18 ]
+    },
+    {
+      "index": 54,
+      "location": [ 365, 483 ],
+      "size": [ 57, 73 ],
+      "origin": [ 39, 18 ]
+    },
+    {
+      "index": 55,
+      "location": [ 439, 483 ],
+      "size": [ 57, 73 ],
+      "origin": [ 39, 18 ]
+    },
+
+
+
+    {
+      "index": 56,
+      "location": [ 0, 557 ],
+      "size": [ 61, 36 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 57,
+      "location": [ 74, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 58,
+      "location": [ 148, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 59,
+      "location": [ 221, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 60,
+      "location": [ 296, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 61,
+      "location": [ 370, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    },
+    {
+      "index": 62,
+      "location": [ 444, 557 ],
+      "size": [ 67, 68 ],
+      "origin": [ 18, 18 ]
+    }
+ ],
+ "animations": [
+    {
+      "name": "Idle",
+      "variants": [
+        {
+          "name": "South",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "South" }
+        },
+        {
+          "name": "Southeast",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "Southeast" }
+        },
+        {
+          "name": "East",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "East" }
+        },
+        {
+          "name": "Northeast",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "Northeast" }
+        },
+        {
+          "name": "North",
+          "start_frame": 4,
+          "end_frame": 4,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "North" }
+        },
+        {
+          "name": "Northwest",
+          "start_frame": 5,
+          "end_frame": 5,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "Northwest" }
+        },
+        {
+          "name": "West",
+          "start_frame": 6,
+          "end_frame": 6,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "West" }
+        },
+        {
+          "name": "Southwest",
+          "start_frame": 7,
+          "end_frame": 7,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Idle", "variant": "Southwest" }
+        }
+      ]
+    },
+    {
+      "name": "SwordAttack",
+      "variants": [
+        {
+          "name": "South",
+          "start_frame": 49,
+          "end_frame": 55,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "South" }
+        },
+        {
+          "name": "Southeast",
+          "start_frame": 56,
+          "end_frame": 62,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Southeast" }
+        },
+        {
+          "name": "East",
+          "start_frame": 8,
+          "end_frame": 14,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "East" }
+        },
+        {
+          "name": "Northeast",
+          "start_frame": 15,
+          "end_frame": 21,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Northeast" }
+        },
+        {
+          "name": "North",
+          "start_frame": 22,
+          "end_frame": 28,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "North" }
+        },
+        {
+          "name": "Northwest",
+          "start_frame": 29,
+          "end_frame": 35,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Northwest" }
+        },
+        {
+          "name": "West",
+          "start_frame": 36,
+          "end_frame": 41,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "West" }
+        },
+        {
+          "name": "Southwest",
+          "start_frame": 42,
+          "end_frame": 48,
+          "animation_speed": 18,
+          "next_animation": { "animation": "Idle", "variant": "Southwest" }
+        }
+      ]
+    }
+  ]
+}

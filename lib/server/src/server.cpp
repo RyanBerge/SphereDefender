@@ -92,6 +92,11 @@ void Server::update()
         }
     }
 
+    if (PlayerList.size() == 0)
+    {
+        return;
+    }
+
     sf::Time elapsed = clock.restart();
 
     if (game_state == GameState::Game)
@@ -133,7 +138,6 @@ void Server::update()
         {
             broadcastStates();
             broadcast_delta = 0;
-            region.Cull();
         }
     }
 }
@@ -264,14 +268,24 @@ void Server::startGame()
 
     for (size_t i = 0; i < PlayerList.size(); ++i)
     {
+        sf::Vector2f spawn_point{0, 0};
+#ifndef NDEBUG
+        if (debug::PlayerSpawnPoint.override)
+        {
+            spawn_point = debug::PlayerSpawnPoint.value;
+        }
+#endif
         // TODO: Magic numbers for distance
         sf::Vector2f spawn_position(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+        spawn_position += spawn_point;
         ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
         PlayerList[i].Data.position = spawn_position;
     }
 
     current_region = debug::StartingRegion.value;
-    region = Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
+
+    region.~Region();
+    new(&region)Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -317,8 +331,7 @@ definitions::Zone Server::generateZone()
     }
     std::set<int> deleted_node_set;
 
-    srand(std::time(nullptr));
-    std::random_shuffle(full_node_set.begin(), full_node_set.end());
+    std::shuffle(full_node_set.begin(), full_node_set.end(), util::RandomGenerator);
     for (int i = 0; i < num_deleted_nodes; ++i)
     {
         deleted_node_set.insert(full_node_set[i]);
@@ -935,7 +948,8 @@ void Server::loadingComplete(Player& player)
         {
             if (node.id == current_region)
             {
-                region = Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
+                region.~Region();
+                new(&region)Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
                 break;
             }
         }
@@ -945,9 +959,17 @@ void Server::loadingComplete(Player& player)
 
         for (size_t i = 0; i < PlayerList.size(); ++i)
         {
+            sf::Vector2f spawn_point = region.Convoy.Position;
+            spawn_point.x += 200;
+#ifndef NDEBUG
+            if (debug::PlayerSpawnPoint.override)
+            {
+                spawn_point = debug::PlayerSpawnPoint.value;
+            }
+#endif
             // TODO: Magic numbers for distance
-            sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i)) + region.Convoy.Position;
-            spawn_position.x += 200;
+            sf::Vector2f spawn_position = sf::Vector2f(50 * std::sin(angle * i), 50 * std::cos(angle * i));
+            spawn_position += spawn_point;
             ServerMessage::AllPlayersLoaded(*PlayerList[i].Socket, spawn_position);
             PlayerList[i].Data.position = spawn_position;
         }
@@ -1021,14 +1043,15 @@ void Server::startPlayerAction(Player& player)
         return;
     }
 
-    if (action.flags.start_attack)
+    bool permitted = true;
+    if (action.type == network::PlayerActionType::Attack)
     {
-        player.StartAttack(action.attack_angle);
+        permitted = player.StartAttack(action.action_angle);
     }
 
-    for (auto& p : PlayerList)
+    if (permitted)
     {
-        if (p.Data.id != player.Data.id)
+        for (auto& p : PlayerList)
         {
             ServerMessage::PlayerStartAction(*p.Socket, player.Data.id, action);
         }
@@ -1124,7 +1147,7 @@ void Server::broadcastStates()
 
     for (auto& enemy : region.Enemies)
     {
-        enemy_list.push_back(enemy.Data);
+        enemy_list.push_back(enemy.GetData());
     }
 
     for (auto& projectile : region.Projectiles)

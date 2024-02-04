@@ -1,0 +1,39 @@
+{
+  "name": "Bat",
+  "behaviors": [
+    "flocking", "swarming", "feeding"
+  ],
+  "attacks": [
+    {
+      "name": "tackle",
+      "range": 60,
+      "damage": 5,
+      "cooldown": 3,
+      "duration": 0.7,
+      "knockback_distance": 5
+    }
+  ],
+  "base_health": 50,
+  "movement_speed": 60,
+  "walking_speed" : 40,
+  "feeding_range": 5,
+  "siphon_rate": 3,
+  "steering_force": 240,
+  "repulsion_force": 350,
+  "repulsion_radius": 25,
+  "acceleration": 100,
+  "deceleration": 65,
+  "wander_behavior": {
+    "rest_min": 1,
+    "rest_max": 3
+  },
+  "swarming_behavior": {
+    "rest_min": 6,
+    "rest_max": 6
+  },
+  "aggro_range": 500,
+  "combat_range": 75,
+  "close_quarters_range": 180,
+  "leash_range": 500,
+  "base_aggression": 0.7
+}

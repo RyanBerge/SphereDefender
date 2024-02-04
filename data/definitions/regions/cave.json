@@ -52,6 +52,33 @@
         "width": 1600,
         "height": 600
       }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 1000,
+        "y": -150,
+        "width": 50,
+        "height": 25
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 1125,
+        "y": -175,
+        "width": 50,
+        "height": 25
+      }
+    },
+    {
+      "type": "large_rock",
+      "bounds": {
+        "x": 1075,
+        "y": -300,
+        "width": 50,
+        "height": 25
+      }
     }
   ],
   "npcs": [ ],

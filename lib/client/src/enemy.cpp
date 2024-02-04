@@ -21,11 +21,15 @@ namespace {
     util::Seconds DESPAWN_TIMER = 3;
 }
 
-Enemy::Enemy()
+Enemy::Enemy() : Enemy(definitions::EntityType::Bat) { }
+
+Enemy::Enemy(definitions::EntityType type)
 {
-    spritesheet.LoadAnimationData("entities/small_demon.json");
-    spritesheet.CenterOrigin();
+    std::string filename = definitions::GetEntityDefinition(type).animation_definition_file;
+
+    spritesheet.LoadAnimationData("entities/" + filename);
     spritesheet.SetAnimation("Move");
+    spritesheet.SetDebugAnimationPrint(true);
 }
 
 void Enemy::Update(sf::Time elapsed)
@@ -47,13 +51,16 @@ void Enemy::Update(sf::Time elapsed)
 
     if (!alive && despawn_timer > DESPAWN_TIMER)
     {
-        Despawn = true;
+        despawn = true;
     }
 }
 
 void Enemy::Draw()
 {
-    spritesheet.Draw();
+    if (!despawn)
+    {
+        spritesheet.Draw();
+    }
 }
 
 void Enemy::UpdateData(network::EnemyData new_data)
@@ -70,45 +77,25 @@ void Enemy::UpdateData(network::EnemyData new_data)
     spritesheet.GetSprite().setScale(sf::Vector2f{1 + data.charge / 100, 1 + data.charge / 100});
 }
 
-void Enemy::ChangeAction(network::EnemyAction action)
+void Enemy::ChangeAnimation(definitions::AnimationName animation_name, util::Direction direction)
 {
     if (!alive)
     {
         return;
     }
 
-    if (action.flags.move)
+    if (animation_name == "TailSwipe")
     {
-        spritesheet.SetAnimation("Move");
+        spritesheet.SetAnimation(animation_name, definitions::GetAnimationVariant(direction));
     }
-    else if (action.flags.sniffing)
+    else
     {
-        spritesheet.SetAnimation("Sniff");
+        spritesheet.SetAnimation(animation_name);
     }
-    else if (action.flags.feed)
-    {
-        spritesheet.SetAnimation("Feed");
-    }
-    else if (action.flags.leaping)
-    {
-        spritesheet.SetAnimation("Leap");
-    }
-    else if (action.flags.knockback)
-    {
-        spritesheet.SetAnimation("Stunned");
-    }
-    else if (action.flags.stunned)
-    {
-        spritesheet.SetAnimation("Stunned");
-    }
-    else if (action.flags.start_attack)
-    {
 
-    }
-    else if (action.flags.dead)
+    if (animation_name == "Death")
     {
         alive = false;
-        spritesheet.SetAnimation("Death");
         despawn_timer = 0;
     }
 }

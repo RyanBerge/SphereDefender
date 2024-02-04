@@ -15,7 +15,7 @@ Enemy& GetEnemyById(uint16_t id, std::list<Enemy>& enemies)
 {
     for (auto& enemy : enemies)
     {
-        if (enemy.Data.id == id)
+        if (enemy.GetData().id == id)
         {
             return enemy;
         }
@@ -34,7 +34,7 @@ Player& GetPlayerById(uint16_t id, std::vector<Player>& players)
         }
     }
 
-    throw std::runtime_error("Player Id not found.");
+    throw std::runtime_error("Player Id not found: " + std::to_string(id));
 }
 
 } // namespace server

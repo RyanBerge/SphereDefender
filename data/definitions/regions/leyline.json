@@ -16,6 +16,12 @@
       "y": 0
     }
   },
+  "wave_spawn_zone": {
+    "x": 450,
+    "y": -200,
+    "width": 100,
+    "height": 500
+  },
   "obstacles": [
     {
       "type": "large_rock",

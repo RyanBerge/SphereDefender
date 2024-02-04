@@ -10,11 +10,16 @@
   ],
   "animations": [
     {
-      "name": "Static",
-      "start_frame": 0,
-      "end_frame": 0,
-      "animation_speed": 0,
-      "next_animation": "Static"
+      "name": "Default",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Default", "variant": "Default" }
+        }
+      ]
     }
   ]
 }

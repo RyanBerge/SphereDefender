@@ -40,13 +40,14 @@ public:
 
     void SetZone(definitions::Zone zone);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
+    void AddEnemy(uint16_t enemy_id, definitions::EntityType type);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);
     void SetPaused(bool paused, network::GuiType gui_type);
     void SetPlayerActionsEnabled(bool enable);
     void StartAction(uint16_t player_id, network::PlayerAction action);
-    void ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action);
+    void ChangeEnemyAnimation(uint16_t enemy_id, definitions::AnimationName animation_name, util::Direction direction);
     void ChangeItem(definitions::ItemType item);
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(uint16_t region_id);
@@ -56,6 +57,8 @@ public:
     void UpdateStash(std::array<definitions::ItemType, 24> items);
     void DisplayGatherPlayers(uint16_t player_id, bool start);
     void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
+
+    void DisplayDebugPath(std::vector<sf::Vector2f> graph, std::vector<sf::Vector2f> path);
 
     RegionMap region_map;
     bool IsPaused = false;
@@ -115,6 +118,11 @@ private:
     void onMouseWheel(sf::Event event);
 
     std::map<sf::Event::EventType, uint64_t> event_id_map;
+
+    bool display_debug_path = false;
+    std::vector<sf::Text> debug_graph_nodes;
+    //std::vector<sf::CircleShape> debug_graph_nodes;
+    std::vector<sf::CircleShape> debug_path_nodes;
 };
 
 } // client

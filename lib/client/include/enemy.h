@@ -11,7 +11,7 @@
 
 #include "messaging.h"
 #include "spritesheet.h"
-#include "types.h"
+#include "game_math.h"
 
 namespace client
 {
@@ -20,21 +20,21 @@ class Enemy
 {
 public:
     Enemy();
+    Enemy(definitions::EntityType type);
 
     void Update(sf::Time elapsed);
     void Draw();
 
     network::EnemyData GetData();
     void UpdateData(network::EnemyData new_data);
-    void ChangeAction(network::EnemyAction action);
-
-    bool Despawn = false;
+    void ChangeAnimation(definitions::AnimationName animation_name, util::Direction direction);
 
 private:
     Spritesheet spritesheet;
     network::EnemyData data;
 
     bool alive = true;
+    bool despawn = false;
     util::Seconds despawn_timer;
 
     bool attacking;

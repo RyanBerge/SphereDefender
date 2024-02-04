@@ -17,6 +17,11 @@
 
 using std::cout, std::cerr, std::endl;
 
+using definitions::AnimationName;
+using definitions::AnimationVariant;
+using definitions::AnimationIdentifier;
+using definitions::Frame;
+
 namespace client {
 
 Spritesheet::Spritesheet()
@@ -27,32 +32,27 @@ Spritesheet::Spritesheet(std::string filename) : Spritesheet(filename, false) { 
 
 Spritesheet::Spritesheet(std::string filename, bool tiled)
 {
-    Frame frame = {sf::IntRect(0, 0, 0, 0), sf::Vector2f{0, 0}};
-    Animation animation{"Default", 0, 0, 0, "Default"};
-
-    animation_data.frames.push_back(frame);
-    animation_data.animations[animation.name] = animation;
-
     LoadAnimationData(filename);
     SetTiling(tiled);
 }
 
+void Spritesheet::LoadAnimationData(std::string filename)
+{
+    animation_tracker = definitions::AnimationTracker::ConstructAnimationTracker("../data/sprites/" + filename);
+    loadTexture(animation_tracker.GetFilepath());
+    setFrame(true);
+
+    animation_text.setFont(*resources::FontManager::GetFont("Vera"));
+    animation_text.setCharacterSize(12);
+    animation_text.setFillColor(sf::Color::White);
+    animation_text.setOutlineColor(sf::Color::Black);
+    animation_text.setOutlineThickness(1);
+}
+
 void Spritesheet::Update(sf::Time elapsed)
 {
-    animation_timer += elapsed.asSeconds();
-    if (current_animation.speed != 0 && animation_timer >= 1 / current_animation.speed)
-    {
-        animation_timer -= 1 / current_animation.speed;
-        if (current_frame == current_animation.end)
-        {
-            current_animation = animation_data.animations[current_animation.next];
-            setFrame(current_animation.start);
-        }
-        else
-        {
-            setFrame(current_frame + 1);
-        }
-    }
+    animation_tracker.Update(elapsed);
+    setFrame();
 }
 
 void Spritesheet::Draw()
@@ -65,74 +65,22 @@ void Spritesheet::Draw()
         }
 
         resources::GetWindow().draw(sprite);
-    }
-}
 
-void Spritesheet::LoadAnimationData(std::string filename)
-{
-    std::filesystem::path path("../data/sprites/" + filename);
-    if (!std::filesystem::exists(path))
-    {
-        cerr << "Could not open animation file: " << path << endl;
-        return;
-    }
-
-    try
-    {
-        std::ifstream file(path);
-        nlohmann::json j;
-        file >> j;
-
-        animation_data.frames = std::vector<Frame>(j["frames"].size());
-        loadTexture(j["filename"]);
-
-        for (auto& object : j["frames"])
+        if (debug_animation_print)
         {
-            Frame frame;
-
-            sf::IntRect rect;
-            rect.left = object["location"][0];
-            rect.top = object["location"][1];
-            rect.width = object["size"][0];
-            rect.height = object["size"][1];
-
-            sf::Vector2f origin;
-            origin.x = object["origin"][0];
-            origin.y = object["origin"][1];
-
-            frame.bounds = rect;
-            frame.origin = origin;
-            animation_data.frames[object["index"]] = frame;
+            resources::GetWindow().draw(animation_text);
         }
-
-        for (auto& object : j["animations"])
-        {
-            Animation animation;
-            animation.name = object["name"];
-            animation.start = object["start_frame"];
-            animation.end = object["end_frame"];
-            animation.speed = object["animation_speed"];
-            animation.next = object["next_animation"];
-
-            animation_data.animations[animation.name] = animation;
-        }
-
-        SetAnimation(animation_data.animations.begin()->first);
-    }
-    catch(const std::exception& e)
-    {
-        cerr << "Failed to parse animation data file: " << path << endl;
     }
 }
 
 void Spritesheet::SetShadow(bool shadows_on)
 {
     casts_shadow = shadows_on;
-    shadow_texture = resources::CreateShadow(animation_data.filepath, *texture);
+    shadow_texture = resources::CreateShadow(animation_tracker.GetFilepath(), *texture);
     shadow.setTexture(*shadow_texture);
     shadow.setColor(sf::Color{0, 0, 0, 75});
 
-    setFrame(current_frame);
+    setFrame(true);
 }
 
 sf::Sprite& Spritesheet::GetSprite()
@@ -140,28 +88,41 @@ sf::Sprite& Spritesheet::GetSprite()
     return sprite;
 }
 
-void Spritesheet::SetAnimation(std::string animation_name)
+void Spritesheet::SetAnimation(AnimationIdentifier identifier)
 {
-    if (current_animation.name == animation_name)
-    {
-        return;
-    }
+    animation_tracker.SetAnimation(identifier);
+    animation_text.setString(identifier.name);
+    setFrame();
+}
 
-    if (animation_data.animations.find(animation_name) != animation_data.animations.end())
-    {
-        current_animation = animation_data.animations[animation_name];
-        setFrame(current_animation.start);
-        animation_timer = 0;
-    }
-    else
-    {
-        cerr << "Animation not found: " << animation_name << endl;
-    }
+void Spritesheet::SetAnimation(AnimationName name, AnimationVariant variant)
+{
+    SetAnimation(AnimationIdentifier{name, variant});
+}
+
+void Spritesheet::SetAnimation(AnimationName name)
+{
+    SetAnimation(AnimationIdentifier{name, AnimationVariant::Default});
+}
+
+AnimationIdentifier Spritesheet::GetAnimation()
+{
+    return animation_tracker.GetCurrentAnimation().identifier;
+}
+
+sf::Vector2f Spritesheet::GetCollisionDimensions()
+{
+    return animation_tracker.GetCurrentAnimation().collision_dimensions;
 }
 
 void Spritesheet::SetPosition(float x, float y)
 {
     sprite.setPosition(x, y);
+
+    if (debug_animation_print)
+    {
+        animation_text.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top - animation_text.getGlobalBounds().height * 2);
+    }
 
     if (casts_shadow)
     {
@@ -174,12 +135,9 @@ void Spritesheet::SetPosition(sf::Vector2f position)
     SetPosition(position.x, position.y);
 }
 
-void Spritesheet::CenterOrigin()
+void Spritesheet::SetDebugAnimationPrint(bool print)
 {
-    if (animation_data.frames.empty())
-    {
-        sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
-    }
+    debug_animation_print = print;
 }
 
 void Spritesheet::SetTiling(bool tiled)
@@ -213,29 +171,31 @@ bool Spritesheet::loadTexture(std::string filename)
         return false;
     }
 
-    //texture->setSmooth(true);
-
     sprite.setTexture(*texture);
     return true;
 }
 
-void Spritesheet::setFrame(unsigned frame)
+void Spritesheet::setFrame(bool initialize)
 {
-    if (animation_data.frames.size() <= frame)
-    {
-        cerr << "Could not set frame: " << frame << endl;
-        return;
-    }
+    definitions::Frame new_frame = animation_tracker.GetFrame();
 
-    current_frame = frame;
-    sprite.setTextureRect(animation_data.frames[current_frame].bounds);
-    sprite.setOrigin(animation_data.frames[current_frame].origin);
-
-    if (casts_shadow)
+    if (initialize || new_frame.index != current_frame_index)
     {
-        shadow.setTextureRect(animation_data.frames[current_frame].bounds);
-        shadow.setOrigin(animation_data.frames[current_frame].origin);
+        current_frame_index = new_frame.index;
+        sprite.setTextureRect(static_cast<sf::IntRect>(new_frame.draw_bounds));
+        sprite.setOrigin(new_frame.origin);
+
+        if (casts_shadow)
+        {
+            shadow.setTextureRect(static_cast<sf::IntRect>(static_cast<sf::IntRect>(new_frame.draw_bounds)));
+            shadow.setOrigin(new_frame.origin);
+        }
     }
+}
+
+void Spritesheet::setFrame()
+{
+    setFrame(false);
 }
 
 } // client

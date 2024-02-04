@@ -10,7 +10,7 @@
 
 #include "player.h"
 #include "game_math.h"
-#include "entity_definitions.h"
+#include "definitions.h"
 #include "util.h"
 #include "messaging.h"
 #include "global_state.h"
@@ -20,10 +20,13 @@
 
 using std::cout, std::endl;
 using network::ClientMessage, network::ServerMessage;
+using server::global::PlayerList;
 
 namespace server {
 namespace {
     constexpr int MEDPACK_HEAL_VALUE = 60;
+    constexpr float KNOCKBACK_UNITS_PER_SECOND = 350;
+    constexpr util::Seconds INVULNERABILITY_WINDOW = 2;
 
     bool checkForCollisions(sf::FloatRect target, std::vector<sf::FloatRect>& obstacles, sf::FloatRect bounds)
     {
@@ -54,38 +57,16 @@ void Player::Update(sf::Time elapsed, Region& region)
     }
 
     projectile_timer += elapsed.asSeconds();
+    attack_timer += elapsed.asSeconds();
+    movement_override_timer += elapsed.asSeconds();
 
-    sf::Vector2f new_position = Data.position + velocity * elapsed.asSeconds();
-    bool collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
-
-    if (collision)
+    for (auto& [id, timer] : invulnerability_timers)
     {
-        collision = false;
-        sf::Vector2f partial{new_position.x, Data.position.y};
-        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
-
-        if (!collision)
-        {
-            new_position = partial;
-        }
+        timer += elapsed.asSeconds();
     }
 
-    if (collision)
-    {
-        collision = false;
-        sf::Vector2f partial{Data.position.x, new_position.y};
-        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
-
-        if (!collision)
-        {
-            new_position = partial;
-        }
-    }
-
-    if (!collision)
-    {
-        Data.position = new_position;
-    }
+    processIncomingAttacks();
+    handleMovement(elapsed, region);
 
     if (Attacking)
     {
@@ -95,6 +76,11 @@ void Player::Update(sf::Time elapsed, Region& region)
 
 void Player::UpdatePlayerState(sf::Vector2i movement_vector)
 {
+    if (movement_override)
+    {
+        return;
+    }
+
     double hyp = std::hypot(movement_vector.x, movement_vector.y);
 
     if (hyp == 0)
@@ -109,12 +95,25 @@ void Player::UpdatePlayerState(sf::Vector2i movement_vector)
     }
 }
 
-void Player::StartAttack(uint16_t attack_angle)
+bool Player::StartAttack(uint16_t attack_angle)
 {
+    if (movement_override)
+    {
+        return false;
+    }
+
     starting_attack_angle = attack_angle;
     current_attack_angle = starting_attack_angle;
+    if (Data.properties.player_class == network::PlayerClass::Melee)
+    {
+        current_attack_angle = (starting_attack_angle - (definitions::GetWeapon(Data.properties.weapon_type).arc / 2)) - 5;
+    }
+
     projectile_timer = 0;
+    attack_timer = 0;
     Attacking = true;
+
+    return true;
 }
 
 sf::FloatRect Player::GetBounds()
@@ -125,10 +124,11 @@ sf::FloatRect Player::GetBounds()
 util::LineSegment Player::GetSwordLocation()
 {
     util::LineSegment sword;
-    sword.p1.x = -weapon.offset * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
-    sword.p1.y = -weapon.offset * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
-    sword.p2.x = (-weapon.offset + weapon.length) * std::cos(current_attack_angle * util::pi / 180) + Data.position.x;
-    sword.p2.y = (-weapon.offset + weapon.length) * std::sin(current_attack_angle * util::pi / 180) + Data.position.y;
+
+    sword.p1.x = weapon.offset * std::cos(util::ToRadians(starting_attack_angle)) + Data.position.x;
+    sword.p1.y = weapon.offset * std::sin(util::ToRadians(starting_attack_angle)) + Data.position.y;
+    sword.p2.x = weapon.length * std::cos(util::ToRadians(current_attack_angle)) + sword.p1.x;
+    sword.p2.y = weapon.length * std::sin(util::ToRadians(current_attack_angle)) + sword.p1.y;
     return sword;
 }
 
@@ -220,18 +220,48 @@ definitions::ItemType Player::ChangeItem(definitions::ItemType item)
     return temp;
 }
 
+void Player::AddIncomingAttack(definitions::AttackEvent attack)
+{
+    attack_events.push(attack);
+}
+
+void Player::handleMovement(sf::Time elapsed, Region& region)
+{
+    sf::Vector2f step = velocity * elapsed.asSeconds();
+
+    if (movement_override)
+    {
+        if (movement_override_timer >= movement_override_time)
+        {
+            movement_override = false;
+        }
+        else
+        {
+            step = movement_override_vector * elapsed.asSeconds();
+        }
+    }
+
+    takeStep(step, region);
+}
+
 void Player::handleAttack(sf::Time elapsed, Region& region)
 {
     switch (Data.properties.weapon_type)
     {
         case definitions::WeaponType::Sword:
         {
-            current_attack_angle = std::fmod(current_attack_angle + weapon.arc_speed * elapsed.asSeconds(), 360);
-            float rotation_delta = std::fmod(current_attack_angle - starting_attack_angle + 360, 360);
+            current_attack_angle += weapon.arc_speed * elapsed.asSeconds();
 
-            if (rotation_delta > weapon.arc)
+            if (attack_timer >= weapon.animation_time)
             {
                 Attacking = false;
+                attack_timer = 0;
+                return;
+            }
+            else if (attack_timer >= static_cast<float>(weapon.arc) / weapon.arc_speed)
+            {
+                // Only deal damage during the swinging part
+                return;
             }
 
             util::LineSegment sword = GetSwordLocation();
@@ -240,9 +270,9 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
             {
                 sf::FloatRect bounds = enemy.GetBounds();
 
-                if (util::Contains(bounds, sword.p1) || util::Contains(bounds, sword.p2))
+                if (util::Intersects(bounds, sword))
                 {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
+                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.GetData().position - Data.position, weapon.invulnerability_window);
                 }
             }
         }
@@ -279,7 +309,7 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
                 }
             }
 
-            uint16_t target_enemy_id = region.Enemies.front().Data.id;
+            uint16_t target_enemy_id = region.Enemies.front().GetData().id;
             bool enemy_hit = false;
             for (auto& enemy : region.Enemies)
             {
@@ -291,13 +321,13 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
                         collision = true;
                         point = temp;
                         enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
+                        target_enemy_id = enemy.GetData().id;
                     }
                     else if (util::Distance(Data.position, temp) < util::Distance(Data.position, point))
                     {
                         point = temp;
                         enemy_hit = true;
-                        target_enemy_id = enemy.Data.id;
+                        target_enemy_id = enemy.GetData().id;
                     }
                 }
             }
@@ -305,19 +335,135 @@ void Player::handleAttack(sf::Time elapsed, Region& region)
             if (enemy_hit)
             {
                 Enemy& enemy = GetEnemyById(target_enemy_id, region.Enemies);
-                if (enemy.Data.health <= 10)
-                {
-                    enemy.Data.health = 0;
-                }
-                else
-                {
-                    enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.Data.position - Data.position, weapon.invulnerability_window);
-                }
+                enemy.WeaponHit(Data.id, weapon.damage, weapon.knockback, enemy.GetData().position - Data.position, weapon.invulnerability_window);
             }
 
             Attacking = false;
         }
         break;
+    }
+}
+
+void Player::takeStep(sf::Vector2f step, Region& region)
+{
+    bool collision = false;
+    sf::Vector2f new_position = Data.position;
+    if (!Attacking)
+    {
+        new_position = Data.position + step;
+        collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{new_position.x, Data.position.y};
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
+
+        if (!collision)
+        {
+            new_position = partial;
+        }
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{Data.position.x, new_position.y};
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
+
+        if (!collision)
+        {
+            new_position = partial;
+        }
+    }
+
+    if (!collision)
+    {
+        Data.position = new_position;
+    }
+}
+
+void Player::step(sf::Time elapsed, Region& region)
+{
+    bool collision = false;
+    sf::Vector2f new_position = Data.position;
+    if (!Attacking)
+    {
+        new_position = Data.position + velocity * elapsed.asSeconds();
+        collision = checkForCollisions(getBoundingBox(new_position), region.Obstacles, region.Bounds);
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{new_position.x, Data.position.y};
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
+
+        if (!collision)
+        {
+            new_position = partial;
+        }
+    }
+
+    if (collision)
+    {
+        collision = false;
+        sf::Vector2f partial{Data.position.x, new_position.y};
+        collision = checkForCollisions(getBoundingBox(partial), region.Obstacles, region.Bounds);
+
+        if (!collision)
+        {
+            new_position = partial;
+        }
+    }
+
+    if (!collision)
+    {
+        Data.position = new_position;
+    }
+}
+
+void Player::processIncomingAttacks()
+{
+    while (!attack_events.empty())
+    {
+        definitions::AttackEvent event = attack_events.front();
+        attack_events.pop();
+
+        if (invulnerability_timers.find(event.source_id) == invulnerability_timers.end())
+        {
+            invulnerability_timers[event.source_id] = 0;
+        }
+        else if (invulnerability_timers[event.source_id] < invulnerability_windows[event.source_id])
+        {
+            return;
+        }
+
+        invulnerability_timers[event.source_id] = 0;
+        invulnerability_windows[event.source_id] = INVULNERABILITY_WINDOW;
+
+        Damage(event.attack.damage);
+        movement_override_time = event.attack.knockback_distance / KNOCKBACK_UNITS_PER_SECOND;
+        movement_override_timer = 0;
+        if (event.attack.knockback_distance != 0)
+        {
+            movement_override = true;
+            movement_override_vector = util::Normalize(Data.position - event.origin) * KNOCKBACK_UNITS_PER_SECOND;
+            velocity = sf::Vector2f{0, 0};
+            network::PlayerAction action;
+            action.type = network::PlayerActionType::Stunned;
+            action.duration = movement_override_time;
+            startPlayerAction(action);
+        }
+    }
+}
+
+void Player::startPlayerAction(network::PlayerAction action)
+{
+    for (auto& p : PlayerList)
+    {
+        ServerMessage::PlayerStartAction(*p.Socket, Data.id, action);
     }
 }
 

@@ -37,6 +37,8 @@ void Game::Update(sf::Time elapsed)
 {
     if (loaded)
     {
+        gui.Update(elapsed);
+
         if (local_player.ActionsDisabled() && !gui.DisableActions() && !inCutscene())
         {
             local_player.SetActionsEnabled(true);
@@ -56,10 +58,6 @@ void Game::Update(sf::Time elapsed)
         region_map.Update(elapsed);
 
         gui.MarkInteractables(local_player.GetPosition(), region_map.GetInteractablePositions());
-
-        std::erase_if(enemies, [](const auto& element) {
-            return element.second.Despawn;
-        });
 
         if (current_zoom != target_zoom)
         {
@@ -93,10 +91,10 @@ void Game::Update(sf::Time elapsed)
             view_bounds.width = world_view.getSize().x;
             view_bounds.height = world_view.getSize().y;
 
-            float left_limit = region_map.Bounds.left - local_player.Avatar.GetGlobalBounds().width - (15 * current_zoom);
-            float right_limit = region_map.Bounds.left + region_map.Bounds.width + local_player.Avatar.GetGlobalBounds().width + (15 * current_zoom);
-            float top_limit = region_map.Bounds.top - local_player.Avatar.GetGlobalBounds().height - (15 * current_zoom);
-            float bottom_limit = region_map.Bounds.top + region_map.Bounds.height + local_player.Avatar.GetGlobalBounds().height + (15 * current_zoom);
+            float left_limit = region_map.Bounds.left - local_player.Avatar.GetCollisionDimensions().x - (15 * current_zoom);
+            float right_limit = region_map.Bounds.left + region_map.Bounds.width + local_player.Avatar.GetCollisionDimensions().x + (15 * current_zoom);
+            float top_limit = region_map.Bounds.top - local_player.Avatar.GetCollisionDimensions().y - (15 * current_zoom);
+            float bottom_limit = region_map.Bounds.top + region_map.Bounds.height + local_player.Avatar.GetCollisionDimensions().y + (15 * current_zoom);
 
             if (view_bounds.left < left_limit)
             {
@@ -145,6 +143,19 @@ void Game::Draw()
             for (auto& avatar : avatars)
             {
                 avatar.second.Draw();
+            }
+        }
+
+        if (display_debug_path)
+        {
+            for (auto& node : debug_graph_nodes)
+            {
+                resources::GetWindow().draw(node);
+            }
+
+            for (auto& node : debug_path_nodes)
+            {
+                resources::GetWindow().draw(node);
             }
         }
 
@@ -297,11 +308,27 @@ void Game::UpdatePlayerStates(std::vector<network::PlayerData> player_list)
     }
 }
 
+void Game::AddEnemy(uint16_t enemy_id, definitions::EntityType type)
+{
+    if (enemies.find(enemy_id) == enemies.end())
+    {
+        enemies.emplace(enemy_id, Enemy(type));
+    }
+}
+
 void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
 {
     for (auto& enemy : enemy_list)
     {
-        enemies[enemy.id].UpdateData(enemy);
+        if (enemies.find(enemy.id) == enemies.end())
+        {
+            //enemies[enemy.id] = Enemy(enemy.type);
+            enemies.emplace(enemy.id, Enemy(enemy.type));
+        }
+        else
+        {
+            enemies[enemy.id].UpdateData(enemy);
+        }
     }
 }
 
@@ -350,21 +377,37 @@ void Game::SetPlayerActionsEnabled(bool enable)
 
 void Game::StartAction(uint16_t player_id, network::PlayerAction action)
 {
-    if (local_player.Avatar.Data.id == player_id)
+    switch (action.type)
     {
-    }
-    else
-    {
-        if (action.flags.start_attack)
+        case network::PlayerActionType::Attack:
         {
-            avatars[player_id].StartAttack(action.attack_angle);
+            if (local_player.Avatar.Data.id == player_id)
+            {
+                local_player.Avatar.StartAttack(action.action_angle);
+            }
+            else
+            {
+                avatars[player_id].StartAttack(action.action_angle);
+            }
+        }
+        break;
+        case network::PlayerActionType::Stunned:
+        {
+            if (local_player.Avatar.Data.id == player_id)
+            {
+                local_player.Avatar.SetStunned(action.duration);
+            }
+            else
+            {
+                avatars[player_id].SetStunned(action.duration);
+            }
         }
     }
 }
 
-void Game::ChangeEnemyAction(uint16_t enemy_id, network::EnemyAction action)
+void Game::ChangeEnemyAnimation(uint16_t enemy_id, definitions::AnimationName animation_name, util::Direction direction)
 {
-    enemies[enemy_id].ChangeAction(action);
+    enemies[enemy_id].ChangeAnimation(animation_name, direction);
 }
 
 void Game::RemovePlayer(uint16_t player_id)
@@ -430,6 +473,41 @@ void Game::DisplayGatherPlayers(uint16_t player_id, bool start)
 void Game::DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed)
 {
     gui.DisplayVote(player_id, vote, confirmed);
+}
+
+void Game::DisplayDebugPath(std::vector<sf::Vector2f> graph, std::vector<sf::Vector2f> path)
+{
+    display_debug_path = true;
+    debug_graph_nodes.clear();
+    debug_path_nodes.clear();
+
+    //for (auto& node : graph)
+    for (unsigned i = 0; i < graph.size(); ++i)
+    {
+        sf::Text number;
+        number.setFont(*resources::FontManager::GetFont("Vera"));
+        number.setFillColor(sf::Color::Red);
+        number.setOutlineColor(sf::Color::Black);
+        number.setOutlineThickness(2);
+        number.setCharacterSize(16);
+        number.setString(std::to_string(i));
+        //number.setRadius(4);
+        number.setPosition(graph[i]);
+        number.setOrigin(number.getLocalBounds().left + number.getLocalBounds().width / 2, number.getLocalBounds().top + number.getLocalBounds().height / 2);
+        debug_graph_nodes.push_back(number);
+    }
+
+    //debug_graph_nodes[13].setFillColor(sf::Color::Yellow);
+
+    for (auto& node : path)
+    {
+        sf::CircleShape dot;
+        dot.setFillColor(sf::Color::Blue);
+        dot.setRadius(5);
+        dot.setPosition(node);
+        dot.setOrigin(dot.getLocalBounds().left + dot.getLocalBounds().width / 2, dot.getLocalBounds().top + dot.getLocalBounds().height / 2);
+        debug_path_nodes.push_back(dot);
+    }
 }
 
 void Game::updateScroll(sf::Time elapsed)

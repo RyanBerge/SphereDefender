@@ -422,13 +422,14 @@ void GameManager::checkMessages()
                 }
             }
             break;
-            case ServerMessage::Code::EnemyChangeAction:
+            case ServerMessage::Code::ChangeEnemyAnimation:
             {
                 uint16_t enemy_id;
-                network::EnemyAction action;
-                if (ServerMessage::DecodeEnemyChangeAction(resources::GetServerSocket(), enemy_id, action))
+                definitions::AnimationName animation_name;
+                util::Direction direction;
+                if (ServerMessage::DecodeChangeEnemyAnimation(resources::GetServerSocket(), enemy_id, animation_name, direction))
                 {
-                    Game.ChangeEnemyAction(enemy_id, action);
+                    Game.ChangeEnemyAnimation(enemy_id, animation_name, direction);
                 }
             }
             break;
@@ -447,6 +448,16 @@ void GameManager::checkMessages()
                 if (ServerMessage::DecodePlayerStates(resources::GetServerSocket(), player_list))
                 {
                     Game.UpdatePlayerStates(player_list);
+                }
+            }
+            break;
+            case ServerMessage::Code::AddEnemy:
+            {
+                uint16_t enemy_id;
+                definitions::EntityType type;
+                if (ServerMessage::DecodeAddEnemy(resources::GetServerSocket(), enemy_id, type))
+                {
+                    Game.AddEnemy(enemy_id, type);
                 }
             }
             break;
@@ -555,6 +566,23 @@ void GameManager::checkMessages()
                     if (State == GameState::Game)
                     {
                         Game.AdvanceMenuEvent(advance_value, finish);
+                    }
+                    else
+                    {
+                        cerr << "Code received during an inappropriate game state: " << static_cast<int>(code) << "\n";
+                    }
+                }
+            }
+            break;
+            case ServerMessage::Code::DisplayPath:
+            {
+                std::vector<sf::Vector2f> graph;
+                std::vector<sf::Vector2f> path;
+                if (ServerMessage::DecodeDisplayPath(resources::GetServerSocket(), graph, path))
+                {
+                    if (State == GameState::Game)
+                    {
+                        Game.DisplayDebugPath(graph, path);
                     }
                     else
                     {

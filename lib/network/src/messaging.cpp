@@ -118,6 +118,159 @@ bool readString(sf::TcpSocket& socket, std::string& out_string)
     return true;
 }
 
+enum class SerializedAnimation
+{
+    None, Rest, Move, Feed, Knockback, Stun, Tackle, Death,
+    Sniff, LeapWindup, Leap, LeapResting, HopWindup, Hop, TailSwipe
+};
+
+SerializedAnimation getSerializedAnimation(std::string name)
+{
+    if (name == "Rest")
+    {
+        return SerializedAnimation::Rest;
+    }
+    else if (name == "Move")
+    {
+        return SerializedAnimation::Move;
+    }
+    else if (name == "Feed")
+    {
+        return SerializedAnimation::Feed;
+    }
+    else if (name == "Knockback")
+    {
+        return SerializedAnimation::Knockback;
+    }
+    else if (name == "Stun")
+    {
+        return SerializedAnimation::Stun;
+    }
+    else if (name == "Tackle")
+    {
+        return SerializedAnimation::Tackle;
+    }
+    else if (name == "Death")
+    {
+        return SerializedAnimation::Death;
+    }
+    else if (name == "Sniff")
+    {
+        return SerializedAnimation::Sniff;
+    }
+    else if (name == "LeapWindup")
+    {
+        return SerializedAnimation::LeapWindup;
+    }
+    else if (name == "Leap")
+    {
+        return SerializedAnimation::Leap;
+    }
+    else if (name == "LeapResting")
+    {
+        return SerializedAnimation::LeapResting;
+    }
+    else if (name == "HopWindup")
+    {
+        return SerializedAnimation::HopWindup;
+    }
+    else if (name == "Hop")
+    {
+        return SerializedAnimation::Hop;
+    }
+    else if (name == "TailSwipe")
+    {
+        return SerializedAnimation::TailSwipe;
+    }
+
+    cerr << "Animation name not found for serialization: " << name << "\n";
+    return SerializedAnimation::None;
+}
+
+definitions::AnimationName getAnimationName(SerializedAnimation type)
+{
+    switch (type)
+    {
+        case SerializedAnimation::None:
+        {
+            return "None";
+        }
+        break;
+        case SerializedAnimation::Rest:
+        {
+            return "Rest";
+        }
+        break;
+        case SerializedAnimation::Move:
+        {
+            return "Move";
+        }
+        break;
+        case SerializedAnimation::Feed:
+        {
+            return "Feed";
+        }
+        break;
+        case SerializedAnimation::Knockback:
+        {
+            return "Knockback";
+        }
+        break;
+        case SerializedAnimation::Stun:
+        {
+            return "Stun";
+        }
+        break;
+        case SerializedAnimation::Tackle:
+        {
+            return "Tackle";
+        }
+        break;
+        case SerializedAnimation::Death:
+        {
+            return "Death";
+        }
+        break;
+        case SerializedAnimation::Sniff:
+        {
+            return "Sniff";
+        }
+        break;
+        case SerializedAnimation::LeapWindup:
+        {
+            return "LeapWindup";
+        }
+        break;
+        case SerializedAnimation::Leap:
+        {
+            return "Leap";
+        }
+        break;
+        case SerializedAnimation::LeapResting:
+        {
+            return "LeapResting";
+        }
+        break;
+        case SerializedAnimation::HopWindup:
+        {
+            return "HopWindup";
+        }
+        break;
+        case SerializedAnimation::Hop:
+        {
+            return "Hop";
+        }
+        break;
+        case SerializedAnimation::TailSwipe:
+        {
+            return "TailSwipe";
+        }
+        break;
+    }
+
+    return "None";
+}
+
 } // anonymous namespace
 
 // ====================================================== Client Message ======================================================
@@ -284,34 +437,21 @@ bool ClientMessage::StartAction(sf::TcpSocket& socket, PlayerAction action)
 {
     Code code = ClientMessage::Code::StartAction;
 
-    size_t buffer_size = sizeof(code) + sizeof(action.flags);
-    if (action.flags.start_attack)
-    {
-        buffer_size += sizeof(action.attack_angle);
-    }
-
-    uint8_t* buffer = new uint8_t[buffer_size];
+    constexpr size_t buffer_size = sizeof(code) + sizeof(action);
+    uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
-    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
-    offset += sizeof(action.flags);
-
-    if (action.flags.start_attack)
-    {
-        std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
-        offset += sizeof(action.attack_angle);
-    }
+    std::memcpy(buffer + offset, &action, sizeof(action));
+    offset += sizeof(action);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
         cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
@@ -497,19 +637,10 @@ bool ClientMessage::DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_a
 {
     PlayerAction temp_action;
 
-    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
+    if (!read(socket, &temp_action, sizeof(temp_action)))
     {
         cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
-    }
-
-    if (temp_action.flags.start_attack)
-    {
-        if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack angle." << endl;
-            return false;
-        }
     }
 
     out_action = temp_action;
@@ -893,75 +1024,56 @@ bool ServerMessage::PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id,
 {
     Code code = ServerMessage::Code::PlayerStartAction;
 
-    size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(action.flags);
-    if (action.flags.start_attack)
-    {
-        buffer_size += sizeof(action.attack_angle);
-    }
-
-    uint8_t* buffer = new uint8_t[buffer_size];
+    constexpr size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(action);
+    uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
     std::memcpy(buffer + offset, &player_id, sizeof(player_id));
     offset += sizeof(player_id);
-    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
-    offset += sizeof(action.flags);
-
-    if (action.flags.start_attack)
-    {
-        std::memcpy(buffer + offset, &action.attack_angle, sizeof(action.attack_angle));
-        offset += sizeof(action.attack_angle);
-    }
+    std::memcpy(buffer + offset, &action, sizeof(action));
+    offset += sizeof(action);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
         cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
-bool ServerMessage::EnemyChangeAction(sf::TcpSocket& socket, uint16_t enemy_id, EnemyAction action)
+bool ServerMessage::ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name)
 {
-    Code code = ServerMessage::Code::EnemyChangeAction;
+    return ChangeEnemyAnimation(socket, enemy_id, name, util::Direction::None);
+}
 
-    size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(action.flags);
-    if (action.flags.start_attack)
-    {
-        buffer_size += sizeof(action.attack_vector.x) + sizeof(action.attack_vector.y);
-    }
+bool ServerMessage::ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction)
+{
+    Code code = ServerMessage::Code::ChangeEnemyAnimation;
 
-    uint8_t* buffer = new uint8_t[buffer_size];
+    SerializedAnimation animation = getSerializedAnimation(name);
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(animation) + sizeof(direction);
+    uint8_t buffer[buffer_size];
 
     int offset = 0;
     std::memcpy(buffer, &code, sizeof(code));
     offset += sizeof(code);
     std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
     offset += sizeof(enemy_id);
-    std::memcpy(buffer + offset, &action.flags, sizeof(action.flags));
-    offset += sizeof(action.flags);
-
-    if (action.flags.start_attack)
-    {
-        std::memcpy(buffer + offset, &action.attack_vector.x, sizeof(action.attack_vector.x));
-        offset += sizeof(action.attack_vector.x);
-        std::memcpy(buffer + offset, &action.attack_vector.y, sizeof(action.attack_vector.y));
-        offset += sizeof(action.attack_vector.y);
-    }
+    std::memcpy(buffer + offset, &animation, sizeof(animation));
+    offset += sizeof(animation);
+    std::memcpy(buffer + offset, &direction, sizeof(direction));
+    offset += sizeof(direction);
 
     if (!writeBuffer(socket, buffer, buffer_size))
     {
         cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
-        delete[] buffer;
         return false;
     }
 
-    delete[] buffer;
     return true;
 }
 
@@ -987,16 +1099,37 @@ bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::ItemType item
     return true;
 }
 
+bool ServerMessage::AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type)
+{
+    Code code = ServerMessage::Code::AddEnemy;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(enemy_id) + sizeof(type);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &enemy_id, sizeof(enemy_id));
+    offset += sizeof(enemy_id);
+    std::memcpy(buffer + offset, &type, sizeof(type));
+    offset += sizeof(type);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
 {
     Code code = ServerMessage::Code::EnemyUpdate;
 
     uint16_t num_enemies = static_cast<uint16_t>(enemies.size());
 
-    size_t enemy_data_size = sizeof(EnemyData::id) + sizeof(EnemyData::position.x) + sizeof(EnemyData::position.y);
-    enemy_data_size += sizeof(EnemyData::health) + sizeof(EnemyData::charge);
-    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (enemy_data_size * num_enemies);
-
+    size_t buffer_size = sizeof(code) + sizeof(num_enemies) + (sizeof(EnemyData) * num_enemies);
     uint8_t* buffer = new uint8_t[buffer_size];
 
     int offset = 0;
@@ -1007,16 +1140,8 @@ bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> en
 
     for (auto& enemy : enemies)
     {
-        std::memcpy(buffer + offset, &enemy.id, sizeof(enemy.id));
-        offset += sizeof(enemy.id);
-        std::memcpy(buffer + offset, &enemy.position.x, sizeof(enemy.position.x));
-        offset += sizeof(enemy.position.x);
-        std::memcpy(buffer + offset, &enemy.position.y, sizeof(enemy.position.y));
-        offset += sizeof(enemy.position.y);
-        std::memcpy(buffer + offset, &enemy.health, sizeof(enemy.health));
-        offset += sizeof(enemy.health);
-        std::memcpy(buffer + offset, &enemy.charge, sizeof(enemy.charge));
-        offset += sizeof(enemy.charge);
+        std::memcpy(buffer + offset, &enemy, sizeof(enemy));
+        offset += sizeof(enemy);
     }
 
     if (!writeBuffer(socket, buffer, buffer_size))
@@ -1229,6 +1354,48 @@ bool ServerMessage::AdvanceMenuEvent(sf::TcpSocket& socket, uint16_t page_id, bo
         return false;
     }
 
+    return true;
+}
+
+bool ServerMessage::DisplayPath(sf::TcpSocket& socket, util::PathingGraph graph, std::list<sf::Vector2f> path)
+{
+    Code code = ServerMessage::Code::DisplayPath;
+
+    uint16_t num_graph_nodes = graph.nodes.size();
+    uint16_t num_path_nodes = path.size();
+
+    size_t buffer_size = sizeof(code) + sizeof(num_graph_nodes) + (sizeof(sf::Vector2f) * num_graph_nodes) + sizeof(num_path_nodes) + (sizeof(sf::Vector2f) * num_path_nodes);
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+
+    std::memcpy(buffer + offset, &num_graph_nodes, sizeof(num_graph_nodes));
+    offset += sizeof(num_graph_nodes);
+    for (unsigned i = 0; i < num_graph_nodes; ++i)
+    {
+        sf::Vector2f node = graph.nodes[i].position;
+        std::memcpy(buffer + offset, &node, sizeof(node));
+        offset += sizeof(node);
+    }
+
+    std::memcpy(buffer + offset, &num_path_nodes, sizeof(num_path_nodes));
+    offset += sizeof(num_path_nodes);
+    for (auto& node : path)
+    {
+        std::memcpy(buffer + offset, &node, sizeof(node));
+        offset += sizeof(node);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
     return true;
 }
 
@@ -1501,19 +1668,10 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
-    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
+    if (!read(socket, &temp_action, sizeof(temp_action)))
     {
         cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
-    }
-
-    if (temp_action.flags.start_attack)
-    {
-        if (!read(socket, &temp_action.attack_angle, sizeof(temp_action.attack_angle)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack angle." << endl;
-            return false;
-        }
     }
 
     out_player_id = id;
@@ -1522,10 +1680,11 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
     return true;
 }
 
-bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out_enemy_id, EnemyAction& out_action)
+bool ServerMessage::DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction)
 {
     uint16_t id;
-    EnemyAction temp_action;
+    SerializedAnimation animation;
+    util::Direction direction;
 
     if (!read(socket, &id, sizeof(id)))
     {
@@ -1533,29 +1692,23 @@ bool ServerMessage::DecodeEnemyChangeAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
-    if (!read(socket, &temp_action.flags, sizeof(temp_action.flags)))
+    if (!read(socket, &animation, sizeof(animation)))
     {
-        cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
+        cerr << "Network: " << __func__ << " failed to read enemy animation." << endl;
         return false;
     }
 
-    if (temp_action.flags.start_attack)
+    if (!read(socket, &direction, sizeof(direction)))
     {
-        if (!read(socket, &temp_action.attack_vector.x, sizeof(temp_action.attack_vector.x)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack vector x." << endl;
-            return false;
-        }
-
-        if (!read(socket, &temp_action.attack_vector.y, sizeof(temp_action.attack_vector.y)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an attack vector y." << endl;
-            return false;
-        }
+        cerr << "Network: " << __func__ << " failed to read a direction." << endl;
+        return false;
     }
 
+    definitions::AnimationName name = getAnimationName(animation);
+
     out_enemy_id = id;
-    out_action = temp_action;
+    out_name = name;
+    out_direction = direction;
 
     return true;
 }
@@ -1574,6 +1727,28 @@ bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemTyp
     return true;
 }
 
+bool ServerMessage::DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type)
+{
+    uint16_t enemy_id;
+    definitions::EntityType type;
+
+    if (!read(socket, &enemy_id, sizeof(enemy_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read enemy id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &type, sizeof(type)))
+    {
+        cerr << "Network: " << __func__ << " failed to read enemy type." << endl;
+        return false;
+    }
+
+    out_enemy_id = enemy_id;
+    out_type = type;
+    return true;
+}
+
 bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies)
 {
     uint16_t num_enemies;
@@ -1589,33 +1764,9 @@ bool ServerMessage::DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyDa
     {
         EnemyData data;
 
-        if (!read(socket, &data.id, sizeof(data.id)))
+        if (!read(socket, &data, sizeof(data)))
         {
-            cerr << "Network: " << __func__ << " failed to read an enemy id." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.x, sizeof(data.position.x)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy position.x." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.position.y, sizeof(data.position.y)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy position.y." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.health, sizeof(data.health)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy health." << endl;
-            return false;
-        }
-
-        if (!read(socket, &data.charge, sizeof(data.charge)))
-        {
-            cerr << "Network: " << __func__ << " failed to read an enemy charge." << endl;
+            cerr << "Network: " << __func__ << " failed to read an enemy data." << endl;
             return false;
         }
 
@@ -1798,6 +1949,56 @@ bool ServerMessage::DecodeAdvanceMenuEvent(sf::TcpSocket& socket, uint16_t& out_
 
     out_page_id = page_id;
     out_finish = finish;
+    return true;
+}
+
+bool ServerMessage::DecodeDisplayPath(sf::TcpSocket& socket, std::vector<sf::Vector2f>& out_graph, std::vector<sf::Vector2f>& out_path)
+{
+    std::vector<sf::Vector2f> graph;
+    std::vector<sf::Vector2f> path;
+
+    uint16_t graph_size;
+    uint16_t path_size;
+
+    if (!read(socket, &graph_size, sizeof(graph_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a graph size value." << endl;
+        return false;
+    }
+
+    for (unsigned i = 0; i < graph_size; ++i)
+    {
+        sf::Vector2f node;
+        if (!read(socket, &node, sizeof(node)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a graph node." << endl;
+            return false;
+        }
+
+        graph.push_back(node);
+    }
+
+    if (!read(socket, &path_size, sizeof(path_size)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a path size value." << endl;
+        return false;
+    }
+
+    for (unsigned i = 0; i < path_size; ++i)
+    {
+        sf::Vector2f node;
+        if (!read(socket, &node, sizeof(node)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a graph node." << endl;
+            return false;
+        }
+
+        path.push_back(node);
+    }
+
+    out_graph = graph;
+    out_path = path;
+
     return true;
 }
 
