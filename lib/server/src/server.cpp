@@ -331,8 +331,7 @@ definitions::Zone Server::generateZone()
     }
     std::set<int> deleted_node_set;
 
-    srand(std::time(nullptr));
-    std::random_shuffle(full_node_set.begin(), full_node_set.end());
+    std::shuffle(full_node_set.begin(), full_node_set.end(), util::RandomGenerator);
     for (int i = 0; i < num_deleted_nodes; ++i)
     {
         deleted_node_set.insert(full_node_set[i]);

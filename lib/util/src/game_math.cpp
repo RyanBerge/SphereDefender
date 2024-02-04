@@ -11,6 +11,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <chrono>
 
 using std::cout, std::endl;
 
@@ -427,21 +428,18 @@ sf::RectangleShape CreateLine(sf::Vector2f start, sf::Vector2f finish, sf::Color
     return rect;
 }
 
-namespace {
-    std::random_device random_device;
-    std::mt19937 random_generator{random_device()};
-}
+std::mt19937 RandomGenerator{static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count() % INT_MAX)};
 
 int GetRandomInt(int min, int max)
 {
     std::uniform_int_distribution<int> distribution(min, max);
-    return distribution(random_generator);
+    return distribution(RandomGenerator);
 }
 
 float GetRandomFloat(float min, float max)
 {
     std::uniform_real_distribution<float> distribution(min, max);
-    return distribution(random_generator);
+    return distribution(RandomGenerator);
 }
 
 sf::Vector2f GetRandomPositionInCone(sf::Vector2f point, float min_distance, float max_distance, AngleDegrees angle, AngleDegrees angle_arc)

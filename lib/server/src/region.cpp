@@ -20,19 +20,13 @@ using server::global::PlayerList;
 
 using std::cout, std::cerr, std::endl;
 
-namespace {
-    constexpr int BASE_SPAWN_INTERVAL = 4;
-    constexpr float SPAWN_ACCELERATION_PER_PLAYER = 0.1;
-    constexpr float MINIMUM_SPAWN_INTERVAL = 0.8;
-}
-
 namespace server {
 
 Region::Region() { }
 
-Region::Region(definitions::RegionType region_type, unsigned player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionType region_type, int player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
 {
-    definitions::RegionDefinition definition = definitions::GetRegionDefinition(region_type);
+    definition = definitions::GetRegionDefinition(region_type);
 
     Bounds = definition.bounds;
     Convoy = definition.convoy;
@@ -45,17 +39,12 @@ Region::Region(definitions::RegionType region_type, unsigned player_count, float
     auto convoy_collisions = Convoy.GetCollisions();
     Obstacles.insert(Obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
 
-    spawn_enemies = definition.leyline;
     Leyline = definition.leyline;
 
     if (definition.leyline)
     {
         battery_charge_rate = 5;
     }
-
-    spawn_interval = BASE_SPAWN_INTERVAL;
-
-    last_spawn = 0;
 
     if (region_type == definitions::RegionType::MenuEvent)
     {
@@ -70,15 +59,7 @@ Region::Region(definitions::RegionType region_type, unsigned player_count, float
 
     for (auto& pack : definition.enemy_packs)
     {
-        for (auto& spawn : pack.spawns)
-        {
-            int count = util::GetRandomInt(spawn.min, spawn.max) + spawn.zone_scaling[region_difficulty];
-
-            for (int i = 0; i < count; ++i)
-            {
-                spawnEnemy(spawn.type, util::GetRandomPositionFromPoint(pack.position, 25, 200), pack.position);
-            }
-        }
+        spawnPack(pack);
     }
 }
 
@@ -96,39 +77,13 @@ void Region::Update(sf::Time elapsed)
         enemy.Update(elapsed);
     }
 
-    int siphon_rate = 0;
-    for (auto& enemy : Enemies)
-    {
-        if (enemy.GetBehavior() == definitions::Behavior::Feeding)
-        {
-            siphon_rate += enemy.GetSiphonRate();
-        }
-    }
-
-    if (region_age < 6)
-    {
-        BatteryLevel -= siphon_rate * elapsed.asSeconds();
-    }
-    else
-    {
-        BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
-        if (spawn_enemies && (last_spawn == 0 || region_age >= last_spawn + spawn_interval))
-        {
-            spawnWaveEnemy();
-        }
-    }
-
-    if (BatteryLevel < 0)
-    {
-        BatteryLevel = 0;
-    }
-
-    if (BatteryLevel > 1000)
-    {
-        BatteryLevel = 1000;
-    }
-
     handleProjectiles(elapsed);
+    updateBattery(elapsed);
+
+    if (definition.leyline)
+    {
+        spawnWave(elapsed);
+    }
 }
 
 namespace {
@@ -163,7 +118,7 @@ WinningLink getWinnerValue(definitions::MenuEventOption option)
     throw (std::runtime_error("Winner link not found?"));
 }
 
-}
+} // Anonymous namespace
 
 bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action)
 {
@@ -202,9 +157,78 @@ bool Region::AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t&
     return false;
 }
 
+void Region::updateBattery(sf::Time elapsed)
+{
+    int siphon_rate = 0;
+    for (auto& enemy : Enemies)
+    {
+        if (enemy.GetBehavior() == definitions::Behavior::Feeding)
+        {
+            siphon_rate += enemy.GetSiphonRate();
+        }
+    }
+
+    if (region_age < 6)
+    {
+        BatteryLevel -= siphon_rate * elapsed.asSeconds();
+    }
+    else
+    {
+        BatteryLevel += (battery_charge_rate - siphon_rate) * elapsed.asSeconds();
+    }
+
+    if (BatteryLevel < 0)
+    {
+        BatteryLevel = 0;
+    }
+
+    if (BatteryLevel > 1000)
+    {
+        BatteryLevel = 1000;
+    }
+}
+
+bool Region::spawnWave(sf::Time elapsed)
+{
+    constexpr util::Seconds SPAWN_INTERVAL = 15;
+    age_timer += elapsed.asSeconds();
+
+    if (age_timer < SPAWN_INTERVAL)
+    {
+        return false;
+    }
+
+    age_timer = 0;
+
+    for (int i = 0; i < num_players; ++i)
+    {
+        // TODO: Vary pack difficulty for partial region difficulties; like difficulty 1.4 should be a 60% chance for difficulty 1 and 40% for difficulty 2
+        definitions::EnemyPack pack = definitions::GetEnemyPackByDifficulty(region_difficulty);
+        pack.position.x = util::GetRandomFloat(definition.spawn_zone.left, definition.spawn_zone.left + definition.spawn_zone.width);
+        pack.position.y = util::GetRandomFloat(definition.spawn_zone.top, definition.spawn_zone.top + definition.spawn_zone.height);
+
+        spawnPack(pack);
+    }
+
+    return true;
+}
+
 void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position)
 {
     spawnEnemy(type, position, position);
+}
+
+void Region::spawnPack(definitions::EnemyPack pack)
+{
+    for (auto& spawn : pack.spawns)
+    {
+        int count = util::GetRandomInt(spawn.min, spawn.max);
+
+        for (int i = 0; i < count; ++i)
+        {
+            spawnEnemy(spawn.type, util::GetRandomPositionFromPoint(pack.position, 0, 60), pack.position);
+        }
+    }
 }
 
 void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf::Vector2f pack_position)
@@ -219,26 +243,6 @@ void Region::spawnEnemy(definitions::EntityType type, sf::Vector2f position, sf:
     if (PathingGraphs.find(type) == PathingGraphs.end())
     {
         PathingGraphs[type] = util::CreatePathingGraph(Obstacles, enemy.GetPathingSize());
-    }
-}
-
-void Region::spawnWaveEnemy()
-{
-    //if (Enemies.size() > 0)
-    //    return;
-
-    sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), util::GetRandomFloat(-200, 300)};
-    //sf::Vector2f spawn_position{util::GetRandomFloat(450, 550), 200};
-    //sf::Vector2f spawn_position{-500, 450}; // Under convoy
-    //sf::Vector2f spawn_position{-900, -450}; // Left of convoy
-
-    spawnEnemy(definitions::EntityType::SmallDemon, spawn_position);
-
-    last_spawn = region_age;
-    spawn_interval -= SPAWN_ACCELERATION_PER_PLAYER * num_players;
-    if (spawn_interval < MINIMUM_SPAWN_INTERVAL)
-    {
-        spawn_interval = MINIMUM_SPAWN_INTERVAL;
     }
 }
 

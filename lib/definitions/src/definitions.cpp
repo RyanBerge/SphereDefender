@@ -13,6 +13,7 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <random>
 
 using std::cout, std::cerr, std::endl;
 
@@ -24,63 +25,7 @@ class RegionInitializer
 public:
     RegionInitializer()
     {
-        LoadEntityData();
         LoadRegionData();
-    }
-
-    void LoadEntityData()
-    {
-        std::filesystem::path path("../data/definitions/enemy_pack.json");
-        if (!std::filesystem::exists(path))
-        {
-            cerr << "Error loading enemy packs: could not open file: " << path << endl;
-            return;
-        }
-
-        try
-        {
-            std::ifstream file(path);
-            nlohmann::json json;
-            file >> json;
-
-            for (auto& j_pack : json["packs"])
-            {
-                std::vector<SpawnDetails> pack;
-
-                for (auto& j_enemy : j_pack["enemies"])
-                {
-                    SpawnDetails details;
-                    details.min = j_enemy["min"];
-                    details.max = j_enemy["max"];
-                    for (int scaling : j_enemy["zone_scaling"])
-                    {
-                        details.zone_scaling.push_back(scaling);
-                    }
-
-                    std::string enemy_type = j_enemy["type"];
-                    if (enemy_type == "small_demon")
-                    {
-                        details.type = EntityType::SmallDemon;
-                    }
-                    else if (enemy_type == "bat")
-                    {
-                        details.type = EntityType::Bat;
-                    }
-                    else
-                    {
-                        cerr << "Enemy type not supported: " << enemy_type << endl;
-                    }
-
-                    pack.push_back(details);
-                }
-
-                EnemyPacks[j_pack["type"]] = pack;
-            }
-        }
-        catch(const std::exception& e)
-        {
-            cerr << "Initializer failed to parse file: " << path << endl;
-        }
     }
 
     void LoadRegionData()
@@ -132,6 +77,16 @@ public:
                 }
 
                 region.convoy.Position = sf::Vector2f(json["convoy"]["position"]["x"], json["convoy"]["position"]["y"]);
+                if (json.find("wave_spawn_zone") != json.end())
+                {
+                    sf::FloatRect spawn_zone;
+                    spawn_zone.left = json["wave_spawn_zone"]["x"];
+                    spawn_zone.top = json["wave_spawn_zone"]["y"];
+                    spawn_zone.width = json["wave_spawn_zone"]["width"];
+                    spawn_zone.height = json["wave_spawn_zone"]["height"];
+
+                    region.spawn_zone = spawn_zone;
+                }
 
                 for (auto& j_obstacle : json["obstacles"])
                 {
@@ -163,10 +118,13 @@ public:
                 {
                     for (auto& j_pack : j_enemy_type["packs"])
                     {
-                        EnemyPack pack;
+                        PackIdentifier id;
+                        id.name = j_pack["type"];
+                        id.difficulty = 0; // TODO: figure out how to deal with increasing difficulty of regions...
+
+                        EnemyPack pack = GetEnemyPackById(id);
                         pack.position = sf::Vector2f{j_pack["position"]["x"], j_pack["position"]["y"]};
 
-                        pack.spawns = EnemyPacks[j_pack["type"]];
                         region.enemy_packs.push_back(pack);
                     }
                 }
@@ -211,7 +169,6 @@ public:
     }
 
     std::map<RegionType, std::map<uint16_t, RegionDefinition>> Regions;
-    std::map<std::string, std::vector<SpawnDetails>> EnemyPacks;
 };
 
 class EntityDefinitionManager
@@ -393,7 +350,117 @@ public:
     std::map<EntityType, EntityDefinition> definition_map;
 };
 
+class PackDatabase
+{
+public:
+    PackDatabase()
+    {
+        std::filesystem::path path("../data/definitions/enemy_pack.json");
+        if (!std::filesystem::exists(path))
+        {
+            cerr << "File not found: " << path << "\n";
+            return;
+        }
+
+        try
+        {
+            std::ifstream file(path);
+            nlohmann::json json;
+            file >> json;
+
+            for (auto& j_pack : json["packs"])
+            {
+                EnemyPack pack;
+
+                for (auto& j_enemy : j_pack["enemies"])
+                {
+                    SpawnDetails spawn_details;
+
+                    spawn_details.min = j_enemy["min"];
+                    spawn_details.max = j_enemy["max"];
+
+                    std::string enemy_type = j_enemy["type"];
+                    if (enemy_type == "small_demon")
+                    {
+                        spawn_details.type = EntityType::SmallDemon;
+                    }
+                    else if (enemy_type == "bat")
+                    {
+                        spawn_details.type = EntityType::Bat;
+                    }
+                    else
+                    {
+                        cerr << "Enemy type not supported: " << enemy_type << endl;
+                    }
+
+                    pack.spawns.push_back(spawn_details);
+                }
+
+                PackIdentifier id;
+                id.difficulty = j_pack["difficulty"];
+                id.name = j_pack["name"];
+
+                spawn_map[id] = pack;
+                spawns[id.difficulty].push_back(pack);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            cerr << "Failed to parse spawns file: " << path << endl;
+        }
+    }
+
+    EnemyPack GetPackByDifficulty(PackDifficulty difficulty)
+    {
+        if (spawns[difficulty].size() == 0)
+        {
+            throw std::runtime_error("There are no spawns of the desired difficulty.");
+        }
+
+        std::shuffle(spawns[difficulty].begin(), spawns[difficulty].end(), util::RandomGenerator);
+        return spawns[difficulty][0];
+    }
+
+    EnemyPack GetPackByName(PackIdentifier id)
+    {
+        if (spawn_map.find(id) == spawn_map.end())
+        {
+            throw (std::runtime_error("A spawn with this id does not exist."));
+        }
+
+        return spawn_map[id];
+    }
+
+private:
+    std::map<PackIdentifier, EnemyPack> spawn_map;
+    std::array<std::vector<EnemyPack>, 10> spawns;
+};
+
+PackDatabase& GetPackDatabase()
+{
+    static PackDatabase database;
+    return database;
+}
+
 } // Anonymous namespace
+
+RegionDefinition GetRegionDefinition(RegionType region)
+{
+    static RegionInitializer initializer;
+    assert(initializer.Regions.find(region) != initializer.Regions.end());
+    assert(initializer.Regions[region].find(0) != initializer.Regions[region].end());
+    return initializer.Regions[region][0];
+}
+
+EnemyPack GetEnemyPackByDifficulty(PackDifficulty difficulty)
+{
+    return GetPackDatabase().GetPackByDifficulty(difficulty);
+}
+
+EnemyPack GetEnemyPackById(PackIdentifier id)
+{
+    return GetPackDatabase().GetPackByName(id);
+}
 
 EntityDefinition GetEntityDefinition(EntityType type)
 {
@@ -531,7 +598,6 @@ AnimationVariant GetAnimationVariant(util::Direction direction)
         }
     }
 }
-
 
 Weapon GetWeapon(WeaponType type)
 {
@@ -704,14 +770,6 @@ void ConvoyDefinition::load(Orientation orientation)
     {
         cerr << "Failed to parse convoy definition file: " << path << endl;
     }
-}
-
-RegionDefinition GetRegionDefinition(RegionType region)
-{
-    static RegionInitializer initializer;
-    assert(initializer.Regions.find(region) != initializer.Regions.end());
-    assert(initializer.Regions[region].find(0) != initializer.Regions[region].end());
-    return initializer.Regions[region][0];
 }
 
 class MenuEventInitializer

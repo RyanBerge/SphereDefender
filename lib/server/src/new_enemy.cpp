@@ -240,8 +240,7 @@ bool Enemy::attack()
         return false;
     }
 
-    srand(std::time(nullptr));
-    std::random_shuffle(attacks.begin(), attacks.end());
+    std::shuffle(attacks.begin(), attacks.end(), util::RandomGenerator);
 
     for (auto& attack : attacks)
     {

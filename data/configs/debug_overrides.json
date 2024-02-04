@@ -8,7 +8,7 @@
     "value": 500
   },
   "player_spawn_point": {
-    "override": true,
+    "override": false,
     "value": [ 1500, 100 ]
   },
   "static_map": {
@@ -16,7 +16,7 @@
     "value": true
   },
   "starting_region": {
-    "override": true,
-    "value": 5
+    "override": false,
+    "value": 1
   }
 }

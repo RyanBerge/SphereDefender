@@ -12,6 +12,7 @@
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include <cmath>
+#include <random>
 
 namespace util
 {
@@ -28,6 +29,8 @@ namespace util
 
     constexpr double pi = 3.141592653589793238462643383279502884L;
     constexpr float sqrt_2 = 1.42;
+
+    extern std::mt19937 RandomGenerator;
 
     struct LineSegment
     {

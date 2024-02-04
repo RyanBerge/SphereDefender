@@ -86,7 +86,7 @@
     {
       "packs": [
         {
-          "type": "test",
+          "type": "demon",
           "position": {
             "x": 1500,
             "y": -350

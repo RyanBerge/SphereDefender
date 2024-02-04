@@ -1,5 +1,5 @@
 /**************************************************************************************************
- *  File:       region_definitions.h
+ *  File:       definitions.h
  *
  *  Purpose:    Information about regions needed by both the client and the server
  *
@@ -286,12 +286,37 @@ struct Npc
     sf::Vector2f position;
 };
 
+MenuEvent GetNextMenuEvent();
+MenuEvent GetMenuEventById(uint16_t id);
+
+using PackDifficulty = int;
+
+struct PackIdentifier
+{
+    std::string name;
+    PackDifficulty difficulty;
+
+    bool operator==(const PackIdentifier& other) const
+    {
+        return (difficulty == other.difficulty) && (name == other.name);
+    }
+
+    bool operator<(const PackIdentifier& other) const
+    {
+        if (difficulty != other.difficulty)
+        {
+            return difficulty < other.difficulty;
+        }
+
+        return name < other.name;
+    }
+};
+
 struct SpawnDetails
 {
     EntityType type;
     int min;
     int max;
-    std::vector<int> zone_scaling;
 };
 
 struct EnemyPack
@@ -299,6 +324,9 @@ struct EnemyPack
     sf::Vector2f position;
     std::vector<SpawnDetails> spawns;
 };
+
+EnemyPack GetEnemyPackByDifficulty(PackDifficulty difficulty);
+EnemyPack GetEnemyPackById(PackIdentifier id);
 
 enum class RegionType : uint8_t
 {
@@ -313,6 +341,7 @@ struct RegionDefinition
     std::string background_file;
     sf::FloatRect bounds;
     ConvoyDefinition convoy;
+    sf::FloatRect spawn_zone;
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
     std::vector<MenuEvent> events;
@@ -343,7 +372,5 @@ struct Zone
 };
 
 RegionDefinition GetRegionDefinition(RegionType region);
-MenuEvent GetNextMenuEvent();
-MenuEvent GetMenuEventById(uint16_t id);
 
 } // namespace definitions
