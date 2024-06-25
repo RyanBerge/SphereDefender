@@ -46,7 +46,7 @@ void Overmap::Load(definitions::Zone zone)
 
     confirm_button.LoadAnimationData("gui/overmap_confirm.json");
     confirm_button.SetPosition(frame_bounds.left + frame_bounds.width - confirm_button.GetSprite().getGlobalBounds().width - frame.getOutlineThickness() * 2, frame_bounds.top + frame_bounds.height * 0.9f);
-    confirm_button.RegisterOnToggle([this](bool toggled){ castVote(toggled); });
+    confirm_button.RegisterLeftMouseUp([this](void) { castVote(confirm_button.GetToggled()); });
     confirm_button.SetEnabled(false);
 
     sf::FloatRect zone_bounds = frame_bounds;

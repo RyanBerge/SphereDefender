@@ -57,12 +57,12 @@ void ToggleButton::RegisterOnToggle(std::function<void(bool)> f)
 
 void ToggleButton::onLeftMouseUp(bool in_bounds)
 {
-    CursorButton::onLeftMouseUp(in_bounds);
-
     if (enabled && in_bounds)
     {
         Toggle();
     }
+
+    CursorButton::onLeftMouseUp(in_bounds);
 }
 
 } // client
