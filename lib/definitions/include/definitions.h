@@ -350,11 +350,13 @@ struct RegionDefinition
 
 struct Zone
 {
+    using Difficulty = float;
     struct RegionNode
     {
         uint16_t id;
         RegionType type;
         sf::Vector2f coordinates;
+        Difficulty difficulty;
     };
 
     struct Link

@@ -22,7 +22,7 @@ class Region
 {
 public:
     Region();
-    Region(definitions::RegionType region_name, int player_count, float battery_level);
+    Region(definitions::RegionType region_name, int player_count, float difficulty, float battery_level);
 
     void Update(sf::Time elapsed);
     bool AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action);

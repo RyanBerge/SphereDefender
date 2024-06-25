@@ -285,7 +285,7 @@ void Server::startGame()
     current_region = debug::StartingRegion.value;
 
     region.~Region();
-    new(&region)Region(current_zone.regions[current_region].type, PlayerList.size(), STARTING_BATTERY);
+    new(&region)Region(current_zone.regions[current_region].type, PlayerList.size(), current_zone.regions[current_region].difficulty, STARTING_BATTERY);
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -337,7 +337,6 @@ definitions::Zone Server::generateZone()
         deleted_node_set.insert(full_node_set[i]);
     }
 
-    uint16_t node_id = 0;
     for (float x = 0; x < node_count.x; ++x)
     {
         for (float y = 0; y < node_count.y; y++)
@@ -345,7 +344,6 @@ definitions::Zone Server::generateZone()
             bool first_node = (x == 0 && y == 0);
             bool last_node = (x == node_count.x - 1 && y == node_count.y - 1);
             definitions::Zone::RegionNode node{};
-            node.id = node_id++;
             if (!first_node && !last_node && deleted_node_set.contains(node.id))
             {
                 deleted_node_set.extract(node.id);
@@ -379,6 +377,11 @@ definitions::Zone Server::generateZone()
         }
     }
 
+    uint16_t node_id = 0;
+    for (auto& node : new_zone.regions) {
+        node.id = node_id++;
+    }
+
     int num_leylines = util::GetRandomInt(std::floor((node_count.x * node_count.y) / 10), std::ceil((node_count.x * node_count.y) / 10));
     unsigned interval = new_zone.regions.size() / (num_leylines + 1.0f);
 
@@ -401,6 +404,29 @@ definitions::Zone Server::generateZone()
     }
 
     generateLinksSimpleDiagonal(new_zone);
+
+    float min = new_zone.regions[0].coordinates.x;
+    float max = new_zone.regions[0].coordinates.x;
+    for (auto& node : new_zone.regions)
+    {
+        if (node.coordinates.x < min)
+        {
+            min = node.coordinates.x;
+        }
+
+        if (node.coordinates.x > max)
+        {
+            max = node.coordinates.x;
+        }
+    }
+
+    constexpr float DIFFICULTY_RANGE = 2; // 0 to 2
+    for (auto& node : new_zone.regions)
+    {
+        float range = max - min;
+        float ratio = (node.coordinates.x - min) / range;
+        node.difficulty = ratio * DIFFICULTY_RANGE;
+    }
 
     return new_zone;
 }
@@ -949,7 +975,7 @@ void Server::loadingComplete(Player& player)
             if (node.id == current_region)
             {
                 region.~Region();
-                new(&region)Region(node.type, PlayerList.size(), region.BatteryLevel - battery_cost);
+                new(&region)Region(node.type, PlayerList.size(), current_zone.regions[current_region].difficulty, region.BatteryLevel - battery_cost);
                 break;
             }
         }

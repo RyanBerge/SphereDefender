@@ -24,7 +24,8 @@ namespace server {
 
 Region::Region() { }
 
-Region::Region(definitions::RegionType region_type, int player_count, float battery_level) : BatteryLevel{battery_level}, num_players{player_count}
+Region::Region(definitions::RegionType region_type, int player_count, float difficulty, float battery_level) :
+    BatteryLevel{battery_level}, region_difficulty{difficulty}, num_players{player_count}
 {
     definition = definitions::GetRegionDefinition(region_type);
 
@@ -203,7 +204,7 @@ bool Region::spawnWave(sf::Time elapsed)
     for (int i = 0; i < num_players; ++i)
     {
         // TODO: Vary pack difficulty for partial region difficulties; like difficulty 1.4 should be a 60% chance for difficulty 1 and 40% for difficulty 2
-        definitions::EnemyPack pack = definitions::GetEnemyPackByDifficulty(region_difficulty);
+        definitions::EnemyPack pack = definitions::GetEnemyPackByDifficulty(/* region_difficulty */ 0);
         pack.position.x = util::GetRandomFloat(definition.spawn_zone.left, definition.spawn_zone.left + definition.spawn_zone.width);
         pack.position.y = util::GetRandomFloat(definition.spawn_zone.top, definition.spawn_zone.top + definition.spawn_zone.height);
 
