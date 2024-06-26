@@ -402,12 +402,13 @@ void GameManager::checkMessages()
             case ServerMessage::Code::SetGuiPause:
             {
                 bool paused;
+                bool enable_actions;
                 network::GuiType gui_type;
-                if (ServerMessage::DecodeSetGuiPause(resources::GetServerSocket(), paused, gui_type))
+                if (ServerMessage::DecodeSetGuiPause(resources::GetServerSocket(), paused, enable_actions, gui_type))
                 {
                     if (State == GameState::Game)
                     {
-                        Game.SetPaused(paused, gui_type);
+                        Game.SetPaused(paused, enable_actions, gui_type);
                     }
                 }
             }

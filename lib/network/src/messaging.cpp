@@ -960,10 +960,10 @@ bool ServerMessage::SetZone(sf::TcpSocket& socket, definitions::Zone zone)
     return true;
 }
 
-bool ServerMessage::SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type)
+bool ServerMessage::SetGuiPause(sf::TcpSocket& socket, bool paused, bool enable_actions, GuiType gui_type)
 {
     Code code = Code::SetGuiPause;
-    constexpr size_t buffer_size = sizeof(code) + sizeof(paused) + sizeof(gui_type);
+    constexpr size_t buffer_size = sizeof(code) + sizeof(paused) + sizeof(enable_actions) + sizeof(gui_type);
     uint8_t buffer[buffer_size];
 
     int offset = 0;
@@ -971,6 +971,8 @@ bool ServerMessage::SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_
     offset += sizeof(code);
     std::memcpy(buffer + offset, &paused, sizeof(paused));
     offset += sizeof(paused);
+    std::memcpy(buffer + offset, &enable_actions, sizeof(enable_actions));
+    offset += sizeof(enable_actions);
     std::memcpy(buffer + offset, &gui_type, sizeof(gui_type));
     offset += sizeof(gui_type);
 
@@ -1589,14 +1591,21 @@ bool ServerMessage::DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_
     return true;
 }
 
-bool ServerMessage::DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type)
+bool ServerMessage::DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, bool& out_enable_actions, GuiType& out_gui_type)
 {
     bool paused;
+    bool enable_actions;
     GuiType gui_type;
 
     if (!read(socket, &paused, sizeof(paused)))
     {
         cerr << "Network: " << __func__ << " failed to read paused value." << endl;
+        return false;
+    }
+
+    if (!read(socket, &enable_actions, sizeof(enable_actions)))
+    {
+        cerr << "Network: " << __func__ << " failed to read enable_actions value." << endl;
         return false;
     }
 
@@ -1607,6 +1616,7 @@ bool ServerMessage::DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, G
     }
 
     out_paused = paused;
+    out_enable_actions = enable_actions;
     out_gui_type = gui_type;
     return true;
 }

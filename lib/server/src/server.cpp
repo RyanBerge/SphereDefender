@@ -613,7 +613,7 @@ void Server::gatherPlayers()
 
         for (auto& p : PlayerList)
         {
-            ServerMessage::SetGuiPause(*p.Socket, true, network::GuiType::Overmap);
+            ServerMessage::SetGuiPause(*p.Socket, true, false, network::GuiType::Overmap);
         }
     }
 }
@@ -692,7 +692,7 @@ void Server::checkVotes(VotingType voting_type)
             for (auto& p : PlayerList)
             {
                 p.Status = Player::PlayerStatus::Loading;
-                ServerMessage::SetGuiPause(*p.Socket, false, network::GuiType::Overmap);
+                ServerMessage::SetGuiPause(*p.Socket, false, false, network::GuiType::Overmap);
                 ServerMessage::ChangeRegion(*p.Socket, winner);
             }
         }
@@ -1155,7 +1155,7 @@ void Server::consoleInteract(Player& player)
         global::Paused = false;
         for (auto& p : PlayerList)
         {
-            ServerMessage::SetGuiPause(*p.Socket, false, network::GuiType::Overmap);
+            ServerMessage::SetGuiPause(*p.Socket, false, true, network::GuiType::Overmap);
         }
     }
 }

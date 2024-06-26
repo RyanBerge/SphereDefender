@@ -137,7 +137,7 @@ public:
     static bool StartGame(sf::TcpSocket& socket);
     static bool AllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f spawn_position);
     static bool SetZone(sf::TcpSocket& socket, definitions::Zone zone);
-    static bool SetGuiPause(sf::TcpSocket& socket, bool paused, GuiType gui_type);
+    static bool SetGuiPause(sf::TcpSocket& socket, bool paused, bool enable_actions, GuiType gui_type);
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name);
     static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction);
@@ -162,7 +162,7 @@ public:
     static bool DecodeChangePlayerProperty(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerProperties& out_properties);
     static bool DecodeAllPlayersLoaded(sf::TcpSocket& socket, sf::Vector2f& out_spawn_position);
     static bool DecodeSetZone(sf::TcpSocket& socket, definitions::Zone& out_zone);
-    static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, GuiType& out_gui_type);
+    static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, bool& out_enable_actions, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction);
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);

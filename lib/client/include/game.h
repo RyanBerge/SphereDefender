@@ -44,7 +44,7 @@ public:
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);
-    void SetPaused(bool paused, network::GuiType gui_type);
+    void SetPaused(bool paused, bool enable_actions, network::GuiType gui_type);
     void SetPlayerActionsEnabled(bool enable);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAnimation(uint16_t enemy_id, definitions::AnimationName animation_name, util::Direction direction);

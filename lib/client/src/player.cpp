@@ -77,7 +77,6 @@ void Player::SetActionsEnabled(bool enabled)
     else
     {
         actions_disabled = true;
-        ClientMessage::PlayerStateChange(resources::GetServerSocket(), sf::Vector2i{0, 0});
     }
 }
 

@@ -350,7 +350,7 @@ void Game::UpdateBattery(float battery_level)
     gui.UpdateBatteryBar(battery_level);
 }
 
-void Game::SetPaused(bool paused, network::GuiType gui_type)
+void Game::SetPaused(bool paused, bool enable_actions, network::GuiType gui_type)
 {
     switch (gui_type)
     {
@@ -366,7 +366,7 @@ void Game::SetPaused(bool paused, network::GuiType gui_type)
         break;
     }
 
-    local_player.SetActionsEnabled(!paused);
+    local_player.SetActionsEnabled(enable_actions);
     IsPaused = paused;
 }
 
