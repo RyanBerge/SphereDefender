@@ -695,6 +695,7 @@ void Server::checkVotes(VotingType voting_type)
                 ServerMessage::SetGuiPause(*p.Socket, false, false, network::GuiType::Overmap);
                 ServerMessage::ChangeRegion(*p.Socket, winner);
             }
+            resetVotes();
         }
         break;
         case VotingType::MenuEvent:
