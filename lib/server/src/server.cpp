@@ -33,7 +33,7 @@ namespace {
 Server::Server()
 {
     listener.setBlocking(false);
-    sf::Socket::Status status = listener.listen(49179); // TODO: Make server settings and load from a file
+    sf::Socket::Status status = listener.listen(49494); // TODO: Make server settings and load from a file
     if (status != sf::Socket::Status::Done)
     {
         std::cerr << "Tcp Listener failed to initialize." << std::endl;
@@ -116,6 +116,8 @@ void Server::update()
                 }
             }
         }
+
+        handleLootCollision();
 
         if (global::RegionSelect)
         {
@@ -712,6 +714,35 @@ void Server::checkVotes(VotingType voting_type)
         default:
         {
             cerr << "Invalid voting type\n";
+        }
+    }
+}
+
+void Server::handleLootCollision()
+{
+    for (auto& player : PlayerList)
+    {
+        for (auto& item : region.LootItems)
+        {
+            if (item.type == definitions::LootItemType::Scrap && item.spawned)
+            {
+                std::string filepath = "../data/sprites/" + region.Definition.loot_item_spritesheets[item.type];
+                definitions::AnimationTracker animation_tracker = definitions::AnimationTracker::ConstructAnimationTracker(filepath);
+                sf::FloatRect bounds;
+                bounds.left = item.position.x;
+                bounds.top = item.position.y;
+                bounds.width = animation_tracker.GetAnimation("Default").collision_dimensions.x;
+                bounds.height = animation_tracker.GetAnimation("Default").collision_dimensions.y;
+                if (util::Intersects(player.GetBounds(), bounds))
+                {
+                    currency += item.value;
+                    item.spawned = false;
+                    for (auto& p : PlayerList)
+                    {
+                        ServerMessage::CollectLootItem(*p.Socket, player.Data.id, item);
+                    }
+                }
+            }
         }
     }
 }

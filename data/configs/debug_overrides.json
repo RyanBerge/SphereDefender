@@ -4,7 +4,7 @@
     "value": true
   },
   "player_movement_speed": {
-    "override": true,
+    "override": false,
     "value": 500
   },
   "player_spawn_point": {
@@ -12,11 +12,11 @@
     "value": [ 1500, 100 ]
   },
   "static_map": {
-    "override": false,
+    "override": true,
     "value": true
   },
   "starting_region": {
-    "override": false,
-    "value": 1
+    "override": true,
+    "value": 14
   }
 }

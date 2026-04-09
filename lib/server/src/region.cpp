@@ -27,12 +27,12 @@ Region::Region() { }
 Region::Region(definitions::RegionType region_type, int player_count, float difficulty, float battery_level) :
     BatteryLevel{battery_level}, region_difficulty{difficulty}, num_players{player_count}
 {
-    definition = definitions::GetRegionDefinition(region_type);
+    Definition = definitions::GetRegionDefinition(region_type);
 
-    Bounds = definition.bounds;
-    Convoy = definition.convoy;
+    Bounds = Definition.bounds;
+    Convoy = Definition.convoy;
 
-    for (auto& obstacle : definition.obstacles)
+    for (auto& obstacle : Definition.obstacles)
     {
         Obstacles.push_back(obstacle.bounds);
     }
@@ -40,9 +40,9 @@ Region::Region(definitions::RegionType region_type, int player_count, float diff
     auto convoy_collisions = Convoy.GetCollisions();
     Obstacles.insert(Obstacles.end(), convoy_collisions.begin(), convoy_collisions.end());
 
-    Leyline = definition.leyline;
+    Leyline = Definition.leyline;
 
-    if (definition.leyline)
+    if (Definition.leyline)
     {
         battery_charge_rate = 5;
     }
@@ -58,10 +58,12 @@ Region::Region(definitions::RegionType region_type, int player_count, float diff
         }
     }
 
-    for (auto& pack : definition.enemy_packs)
+    for (auto& pack : Definition.enemy_packs)
     {
         spawnPack(pack);
     }
+
+    spawnLootItems(Definition.loot_items);
 }
 
 void Region::Update(sf::Time elapsed)
@@ -81,7 +83,7 @@ void Region::Update(sf::Time elapsed)
     handleProjectiles(elapsed);
     updateBattery(elapsed);
 
-    if (definition.leyline)
+    if (Definition.leyline)
     {
         spawnWave(elapsed);
     }
@@ -205,8 +207,8 @@ bool Region::spawnWave(sf::Time elapsed)
     {
         // TODO: Vary pack difficulty for partial region difficulties; like difficulty 1.4 should be a 60% chance for difficulty 1 and 40% for difficulty 2
         definitions::EnemyPack pack = definitions::GetEnemyPackByDifficulty(/* region_difficulty */ 0);
-        pack.position.x = util::GetRandomFloat(definition.spawn_zone.left, definition.spawn_zone.left + definition.spawn_zone.width);
-        pack.position.y = util::GetRandomFloat(definition.spawn_zone.top, definition.spawn_zone.top + definition.spawn_zone.height);
+        pack.position.x = util::GetRandomFloat(Definition.spawn_zone.left, Definition.spawn_zone.left + Definition.spawn_zone.width);
+        pack.position.y = util::GetRandomFloat(Definition.spawn_zone.top, Definition.spawn_zone.top + Definition.spawn_zone.height);
 
         spawnPack(pack);
     }
@@ -283,6 +285,23 @@ void Region::handleProjectiles(sf::Time elapsed)
         {
             ++iterator;
         }
+    }
+}
+
+void Region::spawnLootItems(std::vector<definitions::LootItem> loot_items)
+{
+    for (auto& loot_item : loot_items)
+    {
+        static uint16_t id = 0;
+        auto item = loot_item;
+        item.id = id++;
+        item.spawned = true;
+        LootItems.push_back(item);
+    }
+
+    for (auto& player : PlayerList)
+    {
+        ServerMessage::AddLootItems(*player.Socket, LootItems);
     }
 }
 

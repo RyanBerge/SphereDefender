@@ -110,6 +110,8 @@ public:
         ChangeItem,
         PlayerStates,
         AddEnemy,
+        AddLootItems,
+        CollectLootItem,
         EnemyUpdate,
         BatteryUpdate,
         ProjectileUpdate,
@@ -144,6 +146,8 @@ public:
     static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type);
+    static bool AddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem> loot_items);
+    static bool CollectLootItem(sf::TcpSocket& socket, uint16_t player_id, definitions::LootItem item);
     static bool EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies);
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
@@ -168,6 +172,8 @@ public:
     static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type);
+    static bool DecodeAddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem>& out_loot_items);
+    static bool DecodeCollectLootItem(sf::TcpSocket& socket, uint16_t& out_player_id, definitions::LootItem& out_item);
     static bool DecodeEnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData>& out_enemies);
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);

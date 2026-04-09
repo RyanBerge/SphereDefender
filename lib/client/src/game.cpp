@@ -316,6 +316,17 @@ void Game::AddEnemy(uint16_t enemy_id, definitions::EntityType type)
     }
 }
 
+void Game::AddLootItems(std::vector<definitions::LootItem> loot_items)
+{
+    region_map.SpawnLootItems(loot_items);
+}
+
+void Game::CollectLootItem(uint16_t player_id, definitions::LootItem item)
+{
+    region_map.CollectLootItem(item);
+    gui.CollectLootItem(player_id, item);
+}
+
 void Game::UpdateEnemies(std::vector<network::EnemyData> enemy_list)
 {
     for (auto& enemy : enemy_list)

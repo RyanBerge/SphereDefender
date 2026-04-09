@@ -39,6 +39,12 @@ public:
         bool fresh_interaction;
     };
 
+    struct LootItem
+    {
+        definitions::LootItem definition;
+        Spritesheet spritesheet;
+    };
+
     RegionMap();
 
     void Update(sf::Time elapsed);
@@ -50,6 +56,8 @@ public:
     void InitializeRegion(definitions::RegionDefinition definition);
     std::vector<sf::FloatRect> GetInteractablePositions();
     Interaction Interact(sf::Vector2f player_position);
+    void SpawnLootItems(std::vector<definitions::LootItem> loot_items);
+    void CollectLootItem(definitions::LootItem item);
     void LeaveRegion();
     void EnterRegion();
 
@@ -64,6 +72,7 @@ private:
     Convoy convoy;
     std::vector<sf::RectangleShape> obstacles;
     std::vector<Npc> npcs;
+    std::vector<LootItem> loot_items;
 
     bool leaving_region = false;
 };

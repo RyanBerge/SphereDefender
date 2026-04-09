@@ -100,6 +100,25 @@ public:
                     region.obstacles.push_back(Obstacle{type, bounds});
                 }
 
+                for (auto& j_item : json["loot_items"])
+                {
+                    LootItem loot_item;
+                    if (j_item["type"] == "Scrap")
+                    {
+                        loot_item.type = LootItemType::Scrap;
+                    }
+
+                    if (loot_item.type == LootItemType::Scrap)
+                    {
+                        loot_item.value = j_item["value"];
+                    }
+
+                    std::string sprite_file = "items/" + static_cast<std::string>(j_item["sprite"]) + ".json";
+                    loot_item.position = sf::Vector2f{j_item["position"]["x"], j_item["position"]["y"]};
+                    region.loot_items.push_back(loot_item);
+                    region.loot_item_spritesheets[loot_item.type] = sprite_file;
+                }
+
                 for (auto& j_npc : json["npcs"])
                 {
                     Npc npc;

@@ -1,0 +1,25 @@
+{
+  "filename": "CurrencyIcon.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 102, 42 ],
+      "origin": [ 0, 0 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Default",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Default", "variant": "Default" }
+        }
+      ]
+    }
+  ]
+}

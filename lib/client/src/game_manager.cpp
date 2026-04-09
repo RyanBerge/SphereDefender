@@ -61,6 +61,7 @@ void GameManager::Start()
         resources::GetWindow().display();
         MainMenu.Lobby.Create("Ryan");
         MainMenu.CurrentMenu = MainMenu::MenuType::Lobby;
+        sf::sleep(sf::milliseconds(300));
         checkMessages();
         MainMenu.Lobby.StartGame();
     }
@@ -238,7 +239,7 @@ void GameManager::checkMessages()
                     }
                     else
                     {
-                        cerr << "PlayerId message received when client wasn't in a lobby." << endl;
+                        cerr << "PlayerId message received when client wasn't in a lobby: ";
                         cerr << (int)State << ", " << (int)MainMenu.CurrentMenu << endl;
                     }
                 }
@@ -459,6 +460,25 @@ void GameManager::checkMessages()
                 if (ServerMessage::DecodeAddEnemy(resources::GetServerSocket(), enemy_id, type))
                 {
                     Game.AddEnemy(enemy_id, type);
+                }
+            }
+            break;
+            case ServerMessage::Code::AddLootItems:
+            {
+                std::vector<definitions::LootItem> loot_items;
+                if (ServerMessage::DecodeAddLootItems(resources::GetServerSocket(), loot_items))
+                {
+                    Game.AddLootItems(loot_items);
+                }
+            }
+            break;
+            case ServerMessage::Code::CollectLootItem:
+            {
+                uint16_t player_id;
+                definitions::LootItem item;
+                if (ServerMessage::DecodeCollectLootItem(resources::GetServerSocket(), player_id, item))
+                {
+                    Game.CollectLootItem(player_id, item);
                 }
             }
             break;

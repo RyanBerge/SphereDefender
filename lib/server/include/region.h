@@ -27,18 +27,19 @@ public:
     void Update(sf::Time elapsed);
     bool AdvanceMenuEvent(uint16_t winner, uint16_t& out_event_id, uint16_t& out_event_action);
 
+    definitions::RegionDefinition Definition;
     sf::FloatRect Bounds;
     definitions::ConvoyDefinition Convoy{};
     std::list<Enemy> Enemies;
     std::vector<sf::FloatRect> Obstacles;
     std::list<definitions::Projectile> Projectiles;
+    std::vector<definitions::LootItem> LootItems;
     float BatteryLevel = 0;
     bool Leyline = false;
 
     std::map<definitions::EntityType, util::PathingGraph> PathingGraphs;
 
 private:
-    definitions::RegionDefinition definition;
     float region_difficulty = 0;
     int num_players = 1;
     util::Seconds region_age = 0; // In seconds
@@ -52,6 +53,7 @@ private:
     void spawnPack(definitions::EnemyPack pack);
     bool spawnWave(sf::Time elapsed);
     void handleProjectiles(sf::Time elapsed);
+    void spawnLootItems(std::vector<definitions::LootItem> loot_items);
 };
 
 } // namespace server

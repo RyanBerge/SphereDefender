@@ -1125,6 +1125,62 @@ bool ServerMessage::AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitio
     return true;
 }
 
+bool ServerMessage::AddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem> loot_items)
+{
+    Code code = ServerMessage::Code::AddLootItems;
+
+    uint16_t num_items = static_cast<uint16_t>(loot_items.size());
+
+    size_t buffer_size = sizeof(code) + sizeof(num_items) + (sizeof(definitions::LootItem) * num_items);
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &num_items, sizeof(num_items));
+    offset += sizeof(num_items);
+
+    for (auto& item : loot_items)
+    {
+        std::memcpy(buffer + offset, &item, sizeof(item));
+        offset += sizeof(item);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    return true;
+}
+
+bool ServerMessage::CollectLootItem(sf::TcpSocket& socket, uint16_t player_id, definitions::LootItem item)
+{
+    Code code = ServerMessage::Code::CollectLootItem;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(player_id) + sizeof(item);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &player_id, sizeof(player_id));
+    offset += sizeof(player_id);
+    std::memcpy(buffer + offset, &item, sizeof(item));
+    offset += sizeof(item);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServerMessage::EnemyUpdate(sf::TcpSocket& socket, std::vector<EnemyData> enemies)
 {
     Code code = ServerMessage::Code::EnemyUpdate;
@@ -1729,7 +1785,7 @@ bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemTyp
 
     if (!read(socket, &item, sizeof(item)))
     {
-        cerr << "Network: " << __func__ << " failed to read num enemies." << endl;
+        cerr << "Network: " << __func__ << " failed to read an item." << endl;
         return false;
     }
 
@@ -1756,6 +1812,56 @@ bool ServerMessage::DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id
 
     out_enemy_id = enemy_id;
     out_type = type;
+    return true;
+}
+
+bool ServerMessage::DecodeAddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem>& out_loot_items)
+{
+    uint16_t num_items;
+    std::vector<definitions::LootItem> loot_items;
+
+    if (!read(socket, &num_items, sizeof(num_items)))
+    {
+        cerr << "Network: " << __func__ << " failed to read num loot items." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < num_items; ++i)
+    {
+        definitions::LootItem item;
+
+        if (!read(socket, &item, sizeof(item)))
+        {
+            cerr << "Network: " << __func__ << " failed to read a loot item definition." << endl;
+            return false;
+        }
+
+        loot_items.push_back(item);
+    }
+
+    out_loot_items = loot_items;
+    return true;
+}
+
+bool ServerMessage::DecodeCollectLootItem(sf::TcpSocket& socket, uint16_t& out_player_id, definitions::LootItem& out_item)
+{
+    uint16_t player_id;
+    definitions::LootItem item;
+
+    if (!read(socket, &player_id, sizeof(player_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &item, sizeof(item)))
+    {
+        cerr << "Network: " << __func__ << " failed to read an item value." << endl;
+        return false;
+    }
+
+    out_player_id = player_id;
+    out_item = item;
     return true;
 }
 

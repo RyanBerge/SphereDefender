@@ -10,6 +10,7 @@
 #pragma once
 
 #include <atomic>
+#include <array>
 #include "cursor_button.h"
 #include "overmap.h"
 #include "stash.h"
@@ -25,6 +26,13 @@ namespace client {
 class Gui
 {
 public:
+    struct FeedbackText
+    {
+        sf::Text text;
+        bool active;
+        float alpha;
+    };
+
     Gui();
 
     void Update(sf::Time elapsed);
@@ -43,6 +51,7 @@ public:
     void UpdateBatteryBar(float battery_level);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
     void ChangeItem(definitions::ItemType item);
+    void CollectLootItem(uint16_t player_id, definitions::LootItem item);
     void ChangeRegion(uint16_t region_id);
     void MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list);
     bool Available();
@@ -92,6 +101,10 @@ private:
     util::Seconds missing_health_timer = 0;
     Spritesheet healthbar_frame;
     Spritesheet inventory_item;
+    uint16_t currency = 0;
+    Spritesheet currency_icon;
+    sf::Text currency_text;
+    std::array<FeedbackText, 6> currency_feedback_text;
     sf::RectangleShape battery_bar;
     sf::RectangleShape battery_bar_frame;
     sf::RectangleShape death_tint;

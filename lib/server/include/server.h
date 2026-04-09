@@ -52,6 +52,7 @@ private:
     uint16_t current_region;
     uint16_t next_region;
     std::array<definitions::ItemType, 24> item_stash;
+    uint32_t currency = 0;
     definitions::MenuEvent current_event;
 
     void update();
@@ -71,6 +72,7 @@ private:
     void gatherPlayers();
     void resetVotes();
     void checkVotes(VotingType voting_type);
+    void handleLootCollision();
 
     enum class MenuEventId : uint16_t
     {

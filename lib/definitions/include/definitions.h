@@ -286,6 +286,20 @@ struct Npc
     sf::Vector2f position;
 };
 
+enum class LootItemType : uint8_t
+{
+    Scrap
+};
+
+struct LootItem
+{
+    uint16_t id;
+    LootItemType type;
+    uint16_t value;
+    sf::Vector2f position;
+    bool spawned;
+};
+
 MenuEvent GetNextMenuEvent();
 MenuEvent GetMenuEventById(uint16_t id);
 
@@ -344,6 +358,8 @@ struct RegionDefinition
     sf::FloatRect spawn_zone;
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
+    std::vector<LootItem> loot_items;
+    std::map<definitions::LootItemType, std::string> loot_item_spritesheets;
     std::vector<MenuEvent> events;
     std::vector<EnemyPack> enemy_packs;
 };

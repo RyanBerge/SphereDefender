@@ -41,6 +41,8 @@ public:
     void SetZone(definitions::Zone zone);
     void UpdatePlayerStates(std::vector<network::PlayerData> player_list);
     void AddEnemy(uint16_t enemy_id, definitions::EntityType type);
+    void AddLootItems(std::vector<definitions::LootItem> loot_items);
+    void CollectLootItem(uint16_t player_id, definitions::LootItem item);
     void UpdateEnemies(std::vector<network::EnemyData> enemy_list);
     void UpdateProjectiles(std::vector<network::ProjectileData> projectile_list);
     void UpdateBattery(float battery_level);

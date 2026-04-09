@@ -41,6 +41,33 @@ void Gui::Update(sf::Time elapsed)
             healthbar_missing.setScale(sf::Vector2f{1, 0});
         }
     }
+
+    for (auto& feedback_text : currency_feedback_text)
+    {
+        if (feedback_text.active)
+        {
+            feedback_text.alpha -= elapsed.asSeconds();
+            if (feedback_text.alpha < 0)
+            {
+                feedback_text.alpha = 0;
+            }
+
+            feedback_text.text.setFillColor(sf::Color(0, 0, 0, feedback_text.alpha * 255));
+            feedback_text.text.setOutlineColor(sf::Color(255, 255, 255, feedback_text.alpha * 255));
+
+            sf::Vector2f position = feedback_text.text.getPosition();
+            position.y -= 50 * elapsed.asSeconds();
+            feedback_text.text.setPosition(position);
+
+            if (feedback_text.alpha == 0)
+            {
+                feedback_text.active = false;
+                feedback_text.text.setFillColor(sf::Color::Black);
+                feedback_text.text.setOutlineColor(sf::Color::White);
+                feedback_text.text.setPosition(sf::Vector2f{currency_icon.GetSprite().getPosition().x + 35, currency_icon.GetSprite().getPosition().y -10});
+            }
+        }
+    }
 }
 
 void Gui::Draw()
@@ -69,6 +96,15 @@ void Gui::Draw()
             resources::GetWindow().draw(healthbar_missing);
             healthbar_frame.Draw();
             inventory_item.Draw();
+            currency_icon.Draw();
+            resources::GetWindow().draw(currency_text);
+            for (auto& feedback_text : currency_feedback_text)
+            {
+                if (feedback_text.active)
+                {
+                    resources::GetWindow().draw(feedback_text.text);
+                }
+            }
         }
 
         resources::GetWindow().draw(battery_bar);
@@ -172,6 +208,31 @@ void Gui::Load(definitions::Zone zone)
     inventory_item.LoadAnimationData("gui/inventory_item.json");
     inventory_item.SetPosition(sf::Vector2f{window_resolution.x * 0.15f, window_resolution.y * 0.88f});
     inventory_item.SetAnimation("Medpack");
+
+    currency_icon.LoadAnimationData("gui/currency.json");
+    currency_icon.SetPosition(sf::Vector2f{window_resolution.x * 0.8f, window_resolution.y * 0.85f});
+
+    currency_text.setFont(*font);
+    currency_text.setString("0");
+    currency_text.setCharacterSize(25);
+    bounds = currency_text.getGlobalBounds();
+    currency_text.setPosition(sf::Vector2f{currency_icon.GetSprite().getPosition().x + 55, currency_icon.GetSprite().getPosition().y + 5});
+    currency_text.setFillColor(sf::Color::Black);
+    currency_text.setOutlineColor(sf::Color::White);
+    currency_text.setOutlineThickness(1);
+
+    for (auto& feedback_text : currency_feedback_text)
+    {
+        feedback_text.active = false;
+        feedback_text.text.setFont(*font);
+        feedback_text.text.setString("0");
+        feedback_text.text.setCharacterSize(25);
+        bounds = feedback_text.text.getGlobalBounds();
+        feedback_text.text.setPosition(sf::Vector2f{currency_icon.GetSprite().getPosition().x + 35, currency_icon.GetSprite().getPosition().y -10});
+        feedback_text.text.setFillColor(sf::Color::Black);
+        feedback_text.text.setOutlineColor(sf::Color::White);
+        feedback_text.text.setOutlineThickness(1);
+    }
 
     battery_bar_frame.setSize(sf::Vector2f{800, 20});
     battery_bar_frame.setOrigin(sf::Vector2f{0, 10});
@@ -340,6 +401,27 @@ void Gui::ChangeItem(definitions::ItemType item)
             inventory_item.SetAnimation("Medpack");
         }
         break;
+    }
+}
+
+void Gui::CollectLootItem(uint16_t player_id, definitions::LootItem item)
+{
+    (void)player_id;
+    if (item.type == definitions::LootItemType::Scrap)
+    {
+        currency += item.value;
+        currency_text.setString(std::to_string(currency));
+
+        for (auto& feedback_text : currency_feedback_text)
+        {
+            if (!feedback_text.active)
+            {
+                feedback_text.active = true;
+                feedback_text.alpha = 1;
+                feedback_text.text.setString("+ " + std::to_string(item.value));
+                break;
+            }
+        }
     }
 }
 

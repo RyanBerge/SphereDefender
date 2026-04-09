@@ -58,6 +58,14 @@ void RegionMap::Draw()
     {
         npc.spritesheet.Draw();
     }
+
+    for (auto& item : loot_items)
+    {
+        if (item.definition.spawned)
+        {
+            item.spritesheet.Draw();
+        }
+    }
 }
 
 void RegionMap::Load(definitions::RegionType region)
@@ -190,6 +198,35 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
     }
 
     return interaction;
+}
+
+void RegionMap::SpawnLootItems(std::vector<definitions::LootItem> loot)
+{
+    definitions::RegionDefinition region_definition = definitions::GetRegionDefinition(RegionType);
+    for (auto& item_definition : loot)
+    {
+        Spritesheet spritesheet(region_definition.loot_item_spritesheets[item_definition.type]);
+        spritesheet.SetPosition(item_definition.position);
+        spritesheet.SetAnimation("Default");
+
+        LootItem loot_item;
+        loot_item.spritesheet = spritesheet;
+        loot_item.definition = item_definition;
+        loot_item.definition.spawned = true;
+
+        loot_items.push_back(loot_item);
+    }
+}
+
+void RegionMap::CollectLootItem(definitions::LootItem item)
+{
+    for (auto& loot_item : loot_items)
+    {
+        if (item.id == loot_item.definition.id)
+        {
+            loot_item.definition.spawned = false;
+        }
+    }
 }
 
 void RegionMap::LeaveRegion()
