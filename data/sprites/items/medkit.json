@@ -6,13 +6,13 @@
       "index": 0,
       "location": [ 0, 0 ],
       "size": [ 47, 48 ],
-      "origin": [ 0, 0 ]
+      "origin": [ 23, 24 ]
     },
     {
       "index": 1,
       "location": [ 47, 0 ],
       "size": [ 47, 48 ],
-      "origin": [ 0, 0 ]
+      "origin": [ 23, 24 ]
     }
   ],
   "animations": [

@@ -1187,8 +1187,8 @@ void Server::buyItem(Player& player)
                     if (currency >= item.cost)
                     {
                         currency -= item.cost;
-                        shop.stock.erase(shop_iterator--);
-                        cout << player.Data.name << " bought item with id " << item.id << " for " << item.cost << " scrap.\n";
+                        shop.stock.erase(shop_iterator--); 
+                        cout << player.Data.name << " bought " << definitions::ToString(item.type) << " with id " << item.id << " for " << item.cost << " scrap.\n";
                         for (auto& p : PlayerList)
                         {
                             ServerMessage::UpdateShop(*p.Socket, currency, shop);

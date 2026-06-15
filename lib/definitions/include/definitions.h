@@ -199,6 +199,8 @@ enum class ItemType : uint8_t
     None, Medpack
 };
 
+std::string ToString(ItemType item_type);
+
 struct PlayerDefinition
 {
 public:

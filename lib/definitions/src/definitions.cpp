@@ -700,6 +700,25 @@ Weapon GetWeapon(WeaponType type)
     return weapon;
 }
 
+std::string ToString(ItemType item_type)
+{
+    switch (item_type)
+    {
+        case ItemType::None:
+        {
+            return "None";
+        }
+        break;
+        case ItemType::Medpack:
+        {
+            return "Medpack";
+        }
+        break;
+    }
+
+    return "ItemType String Not Found";
+}
+
 PlayerDefinition::PlayerDefinition()
 {
     radius = 18;
