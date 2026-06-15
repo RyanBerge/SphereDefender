@@ -527,6 +527,16 @@ void GameManager::checkMessages()
                 }
             }
             break;
+            case ServerMessage::Code::UpdateShop:
+            {
+                uint16_t currency;
+                definitions::Shop shop;
+                if (ServerMessage::DecodeUpdateShop(resources::GetServerSocket(), currency, shop))
+                {
+                    Game.UpdateShop(currency, shop);
+                }
+            }
+            break;
             case ServerMessage::Code::GatherPlayers:
             {
                 uint16_t player_id;

@@ -34,6 +34,7 @@ public:
     std::vector<sf::FloatRect> Obstacles;
     std::list<definitions::Projectile> Projectiles;
     std::vector<definitions::LootItem> LootItems;
+    std::vector<definitions::Shop> Shops;
     float BatteryLevel = 0;
     bool Leyline = false;
 

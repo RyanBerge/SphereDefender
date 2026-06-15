@@ -53,6 +53,7 @@ public:
         StartAction,
         UseItem,
         SwapItem,
+        BuyItem,
         CastVote,
         Console,
 
@@ -73,6 +74,7 @@ public:
     static bool StartAction(sf::TcpSocket& socket, PlayerAction action);
     static bool UseItem(sf::TcpSocket& socket);
     static bool SwapItem(sf::TcpSocket& socket, uint8_t item_index);
+    static bool BuyItem(sf::TcpSocket& socket, uint16_t shop_id, uint16_t item_id);
     static bool CastVote(sf::TcpSocket& socket, uint8_t vote, bool confirm);
     static bool Console(sf::TcpSocket& socket, bool activate);
 
@@ -82,6 +84,7 @@ public:
     static bool DecodePlayerStateChange(sf::TcpSocket& socket, sf::Vector2i& out_movement_vector);
     static bool DecodeStartAction(sf::TcpSocket& socket, PlayerAction& out_action);
     static bool DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_index);
+    static bool DecodeBuyItem(sf::TcpSocket& socket, uint16_t& out_shop_id, uint16_t& out_item_id);
     static bool DecodeCastVote(sf::TcpSocket& socket, uint8_t& out_vote, bool& out_confirm);
     static bool DecodeConsole(sf::TcpSocket& socket, bool& out_activate);
 };
@@ -117,6 +120,7 @@ public:
         ProjectileUpdate,
         ChangeRegion,
         UpdateStash,
+        UpdateShop,
         GatherPlayers,
         CastVote,
         SetMenuEvent,
@@ -153,6 +157,7 @@ public:
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
     static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
     static bool UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items);
+    static bool UpdateShop(sf::TcpSocket& socket, uint16_t currency, definitions::Shop shop);
     static bool GatherPlayers(sf::TcpSocket& socket, uint16_t player_id, bool start);
     static bool CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm);
     static bool SetMenuEvent(sf::TcpSocket& socket, uint16_t event_id);
@@ -179,6 +184,7 @@ public:
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
     static bool DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items);
+    static bool DecodeUpdateShop(sf::TcpSocket& socket, uint16_t& out_currency, definitions::Shop& out_shop);
     static bool DecodeGatherPlayers(sf::TcpSocket& socket, uint16_t& out_player_id, bool& out_start);
     static bool DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm);
     static bool DecodeSetMenuEvent(sf::TcpSocket& socket, uint16_t& out_event_id);

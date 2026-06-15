@@ -490,6 +490,30 @@ bool ClientMessage::SwapItem(sf::TcpSocket& socket, uint8_t item_index)
     return true;
 }
 
+bool ClientMessage::BuyItem(sf::TcpSocket& socket, uint16_t shop_id, uint16_t item_id)
+{
+    Code code = ClientMessage::Code::BuyItem;
+
+    constexpr size_t buffer_size = sizeof(code) + sizeof(shop_id) + sizeof(item_id);
+    uint8_t buffer[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &shop_id, sizeof(shop_id));
+    offset += sizeof(shop_id);
+    std::memcpy(buffer + offset, &item_id, sizeof(item_id));
+    offset += sizeof(item_id);
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ClientMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 bool ClientMessage::CastVote(sf::TcpSocket& socket, uint8_t vote, bool confirm)
 {
     Code code = ClientMessage::Code::CastVote;
@@ -659,6 +683,28 @@ bool ClientMessage::DecodeSwapItem(sf::TcpSocket& socket, uint8_t& out_item_inde
     }
 
     out_item_index = item_index;
+    return true;
+}
+
+bool ClientMessage::DecodeBuyItem(sf::TcpSocket& socket, uint16_t& out_shop_id, uint16_t& out_item_id)
+{
+    uint16_t shop_id;
+    uint16_t item_id;
+
+    if (!read(socket, &shop_id, sizeof(shop_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read shop id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &item_id, sizeof(item_id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read item id." << endl;
+        return false;
+    }
+
+    out_shop_id = shop_id;
+    out_item_id = item_id;
     return true;
 }
 
@@ -1237,6 +1283,11 @@ bool ServerMessage::BatteryUpdate(sf::TcpSocket& socket, float battery_level)
 
 bool ServerMessage::ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles)
 {
+    if (projectiles.size() == 0)
+    {
+        return true;
+    }
+
     Code code = ServerMessage::Code::ProjectileUpdate;
 
     uint16_t num_projectiles = projectiles.size();
@@ -1316,6 +1367,42 @@ bool ServerMessage::UpdateStash(sf::TcpSocket& socket, std::array<definitions::I
         return false;
     }
 
+    return true;
+}
+
+bool ServerMessage::UpdateShop(sf::TcpSocket& socket, uint16_t currency, definitions::Shop shop)
+{
+    Code code = ServerMessage::Code::UpdateShop;
+
+    uint16_t num_items = shop.stock.size();
+
+    size_t buffer_size = sizeof(code) + sizeof(shop.id) + sizeof(currency) + sizeof(num_items) + (sizeof(definitions::ShopItem) * num_items);
+    uint8_t* buffer = new uint8_t[buffer_size];
+
+    int offset = 0;
+    std::memcpy(buffer, &code, sizeof(code));
+    offset += sizeof(code);
+    std::memcpy(buffer + offset, &shop.id, sizeof(shop.id));
+    offset += sizeof(shop.id);
+    std::memcpy(buffer + offset, &currency, sizeof(currency));
+    offset += sizeof(currency);
+    std::memcpy(buffer + offset, &num_items, sizeof(num_items));
+    offset += sizeof(num_items);
+
+    for (auto& item : shop.stock)
+    {
+        std::memcpy(buffer + offset, &item, sizeof(item));
+        offset += sizeof(item);
+    }
+
+    if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
     return true;
 }
 
@@ -1977,6 +2064,46 @@ bool ServerMessage::DecodeUpdateStash(sf::TcpSocket& socket, std::array<definiti
     }
 
     out_items = items;
+    return true;
+}
+
+bool ServerMessage::DecodeUpdateShop(sf::TcpSocket& socket, uint16_t& out_currency, definitions::Shop& out_shop)
+{
+    uint16_t currency;
+    definitions::Shop shop;
+    uint16_t num_items;
+
+    if (!read(socket, &shop.id, sizeof(shop.id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read shop id." << endl;
+        return false;
+    }
+
+    if (!read(socket, &currency, sizeof(currency)))
+    {
+        cerr << "Network: " << __func__ << " failed to read currency." << endl;
+        return false;
+    }
+
+    if (!read(socket, &num_items, sizeof(num_items)))
+    {
+        cerr << "Network: " << __func__ << " failed to read num items." << endl;
+        return false;
+    }
+
+    for (unsigned i = 0; i < num_items; ++i)
+    {
+        definitions::ShopItem item;
+        if (!read(socket, &item, sizeof(item)))
+        {
+            cerr << "Network: " << __func__ << " failed to read item." << endl;
+            return false;
+        }
+        shop.stock.push_back(item);
+    }
+
+    out_currency = currency;
+    out_shop = shop;
     return true;
 }
 

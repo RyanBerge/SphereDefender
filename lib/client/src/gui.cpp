@@ -96,15 +96,6 @@ void Gui::Draw()
             resources::GetWindow().draw(healthbar_missing);
             healthbar_frame.Draw();
             inventory_item.Draw();
-            currency_icon.Draw();
-            resources::GetWindow().draw(currency_text);
-            for (auto& feedback_text : currency_feedback_text)
-            {
-                if (feedback_text.active)
-                {
-                    resources::GetWindow().draw(feedback_text.text);
-                }
-            }
         }
 
         resources::GetWindow().draw(battery_bar);
@@ -125,6 +116,24 @@ void Gui::Draw()
             }
             resources::GetWindow().draw(dialog_source_text);
             resources::GetWindow().draw(dialog_prompt_text);
+        }
+
+        if (current_shop.IsActive && !InDialog)
+        {
+            current_shop.Draw();
+        }
+
+        if (!InDialog)
+        {
+            currency_icon.Draw();
+            resources::GetWindow().draw(currency_text);
+            for (auto& feedback_text : currency_feedback_text)
+            {
+                if (feedback_text.active)
+                {
+                    resources::GetWindow().draw(feedback_text.text);
+                }
+            }
         }
 
         if (overmap.IsActive())
@@ -425,6 +434,49 @@ void Gui::CollectLootItem(uint16_t player_id, definitions::LootItem item)
     }
 }
 
+void Gui::SetShop(definitions::Shop shop)
+{
+    current_shop = ShopWindow(shop);
+}
+
+void Gui::UpdateShop(definitions::Shop shop)
+{
+    if (current_shop.IsActive)
+    {
+        current_shop.UpdateStock(shop);
+    }
+}
+
+void Gui::UpdateCurrency(uint16_t updated_currency)
+{
+    if (updated_currency == currency)
+    {
+        return;
+    }
+
+    for (auto& feedback_text : currency_feedback_text)
+    {
+        if (!feedback_text.active)
+        {
+            feedback_text.active = true;
+            feedback_text.alpha = 1;
+            if (updated_currency < currency)
+            {
+                feedback_text.text.setString("- " + std::to_string(currency - updated_currency));
+                break;
+            }
+            else
+            {
+                feedback_text.text.setString("+ " + std::to_string(updated_currency - currency));
+                break;
+            }
+        }
+    }
+
+    currency = updated_currency;
+    currency_text.setString(std::to_string(currency));
+}
+
 void Gui::ChangeRegion(uint16_t region_id)
 {
     overmap.SetRegion(region_id);
@@ -484,6 +536,10 @@ void Gui::EscapePressed()
     else if (InMenus)
     {
         InMenus = false;
+    }
+    else if (current_shop.IsActive)
+    {
+        current_shop.IsActive = false;
     }
     else
     {
@@ -596,7 +652,7 @@ void Gui::DisplayMenu()
     exit_button.SetAnimation("Up");
 }
 
-void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list)
+void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list, DialogTrigger trigger)
 {
     dialog_text.clear();
     this->dialog = dialog_list;
@@ -604,6 +660,7 @@ void Gui::DisplayDialog(std::string source, std::vector<std::string> dialog_list
     setDialogText(source, dialog[0]);
 
     InDialog = true;
+    dialog_trigger = trigger;
 }
 
 void Gui::DisplayMenuEvent(definitions::MenuEvent event, uint16_t page_id)
@@ -740,6 +797,18 @@ void Gui::advanceDialog()
     if (current_dialog == dialog.size())
     {
         InDialog = false;
+        switch (dialog_trigger)
+        {
+            case DialogTrigger::None:
+            {
+            }
+            break;
+            case DialogTrigger::OpenShop:
+            {
+                current_shop.IsActive = true;
+            }
+            break;
+        }
     }
     else
     {
@@ -788,6 +857,10 @@ void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
 
             event_vote_confirm_button.UpdateMousePosition(event);
         }
+        else if (current_shop.IsActive)
+        {
+            current_shop.OnMouseMove(event);
+        }
     }
 }
 
@@ -815,6 +888,10 @@ void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
             }
 
             event_vote_confirm_button.UpdateMouseState(event, CursorButton::State::Down);
+        }
+        else if (current_shop.IsActive)
+        {
+            current_shop.OnMouseDown(event);
         }
         else if (stash.Active)
         {
@@ -852,6 +929,21 @@ void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
 
             event_vote_confirm_button.UpdateMouseState(event, CursorButton::State::Up);
         }
+        else if (current_shop.IsActive)
+        {
+            current_shop.OnMouseUp(event);
+        }
+    }
+}
+
+void Gui::OnKeyPressed(sf::Event::KeyEvent event)
+{
+    Settings::KeyBindings& bindings = Settings::GetInstance().Bindings;
+
+    if ((event.code == bindings.MoveLeft || event.code == bindings.MoveRight ||
+        event.code == bindings.MoveUp || event.code == bindings.MoveDown) && current_shop.IsActive)
+    {
+        current_shop.IsActive = false;
     }
 }
 

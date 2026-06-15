@@ -21,7 +21,7 @@ class RegionMap
 public:
     enum class InteractionType
     {
-        None, NpcDialog, ConvoyConsole, ConvoyStash
+        None, NpcDialog, Shop, ConvoyConsole, ConvoyStash
     };
 
     struct Interaction
@@ -29,6 +29,7 @@ public:
         InteractionType type;
         std::vector<std::string> dialog;
         std::string npc_name;
+        uint16_t shop_id;
     };
 
     struct Npc
@@ -37,6 +38,8 @@ public:
         std::string name;
         std::vector<std::string> dialog;
         bool fresh_interaction;
+        bool shop;
+        uint16_t shop_id;
     };
 
     struct LootItem
@@ -58,6 +61,8 @@ public:
     Interaction Interact(sf::Vector2f player_position);
     void SpawnLootItems(std::vector<definitions::LootItem> loot_items);
     void CollectLootItem(definitions::LootItem item);
+    bool GetShop(uint16_t shop_id, definitions::Shop& out_shop);
+    void UpdateShop(definitions::Shop updated_shop);
     void LeaveRegion();
     void EnterRegion();
 
@@ -72,6 +77,7 @@ private:
     Convoy convoy;
     std::vector<sf::RectangleShape> obstacles;
     std::vector<Npc> npcs;
+    std::vector<definitions::Shop> shops;
     std::vector<LootItem> loot_items;
 
     bool leaving_region = false;

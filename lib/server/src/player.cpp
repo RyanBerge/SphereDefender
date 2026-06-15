@@ -187,6 +187,11 @@ bool Player::SpawnProjectile(definitions::Projectile& out_projectile)
     return false;
 }
 
+definitions::ItemType Player::GetItem()
+{
+    return equipped_item;
+}
+
 definitions::ItemType Player::UseItem()
 {
     switch (equipped_item)

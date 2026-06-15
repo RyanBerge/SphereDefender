@@ -57,6 +57,7 @@ public:
     void SetMenuEvent(uint16_t event_id);
     void AdvanceMenuEvent(uint16_t advance_value, bool finish);
     void UpdateStash(std::array<definitions::ItemType, 24> items);
+    void UpdateShop(uint16_t currency, definitions::Shop shop);
     void DisplayGatherPlayers(uint16_t player_id, bool start);
     void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
 

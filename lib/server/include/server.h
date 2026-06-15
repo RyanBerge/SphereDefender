@@ -94,6 +94,7 @@ private:
     void startPlayerAction(Player& player);
     void useItem(Player& player);
     void swapItem(Player& player);
+    void buyItem(Player& player);
     void castVote(Player& player);
     void consoleInteract(Player& player);
 

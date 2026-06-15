@@ -51,6 +51,7 @@ public:
     void SetWeapon(definitions::Weapon new_weapon);
     void Damage(int damage_value);
     bool SpawnProjectile(definitions::Projectile& out_projectile);
+    definitions::ItemType GetItem();
     definitions::ItemType UseItem();
     definitions::ItemType ChangeItem(definitions::ItemType item);
     void AddIncomingAttack(definitions::AttackEvent attack);

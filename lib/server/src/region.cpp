@@ -58,6 +58,8 @@ Region::Region(definitions::RegionType region_type, int player_count, float diff
         }
     }
 
+    Shops = Definition.shops;
+
     for (auto& pack : Definition.enemy_packs)
     {
         spawnPack(pack);

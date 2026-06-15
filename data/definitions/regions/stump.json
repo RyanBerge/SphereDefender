@@ -63,7 +63,25 @@
       "name": "Shopkeeper",
       "sprite": "old_man",
       "dialog": [
-        "Sorry, my inventory is empty today... come back tomorrow?"
+        "Here to shop?"
+      ],
+      "stock": [
+        {
+          "type": "Medpack",
+          "cost": 10
+        },
+        {
+          "type": "Medpack",
+          "cost": 20
+        },
+        {
+          "type": "Medpack",
+          "cost": 30
+        },
+        {
+          "type": "Medpack",
+          "cost": 40
+        }
       ],
       "position": {
         "x": -50,

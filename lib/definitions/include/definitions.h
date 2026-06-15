@@ -10,6 +10,7 @@
 
 #include <map>
 #include <vector>
+#include <list>
 #include <string>
 #include <optional>
 #include "SFML/System/Vector2.hpp"
@@ -284,6 +285,22 @@ struct Npc
     std::string sprite_file;
     std::vector<std::string> dialog;
     sf::Vector2f position;
+    bool shop;
+    uint16_t shop_id;
+};
+
+struct ShopItem
+{
+    uint16_t id;
+    ItemType type;
+    uint16_t cost;
+    bool stale;
+};
+
+struct Shop
+{
+    uint16_t id;
+    std::list<ShopItem> stock;
 };
 
 enum class LootItemType : uint8_t
@@ -358,6 +375,7 @@ struct RegionDefinition
     sf::FloatRect spawn_zone;
     std::vector<Obstacle> obstacles;
     std::vector<Npc> npcs;
+    std::vector<definitions::Shop> shops;
     std::vector<LootItem> loot_items;
     std::map<definitions::LootItemType, std::string> loot_item_spritesheets;
     std::vector<MenuEvent> events;

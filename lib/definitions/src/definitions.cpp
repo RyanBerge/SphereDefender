@@ -122,6 +122,7 @@ public:
                 for (auto& j_npc : json["npcs"])
                 {
                     Npc npc;
+                    npc.shop = false;
                     npc.name = j_npc["name"];
                     npc.sprite_file = "entities/" + static_cast<std::string>(j_npc["sprite"]) + ".json";
                     for (auto& j_dialog : j_npc["dialog"])
@@ -130,7 +131,31 @@ public:
                     }
                     npc.position = sf::Vector2f{j_npc["position"]["x"], j_npc["position"]["y"]};
 
+                    definitions::Shop shop;
+                    static uint16_t shop_id = 0;
+                    shop.id = shop_id++;
+                    for (auto& j_shop_item : j_npc["stock"])
+                    {
+                        npc.shop = true;
+                        npc.shop_id = shop.id;
+                        definitions::ShopItem item;
+                        static uint16_t id = 0;
+                        item.id = id++;
+                        std::string type_name = j_shop_item["type"];
+                        if (type_name == "Medpack")
+                        {
+                            item.type = definitions::ItemType::Medpack;
+                        }
+                        item.cost = j_shop_item["cost"];
+                        item.stale = false;
+                        shop.stock.push_back(item);
+                    }
+
                     region.npcs.push_back(npc);
+                    if (shop.stock.size() > 0)
+                    {
+                        region.shops.push_back(shop);
+                    }
                 }
 
                 for (auto& j_enemy_type : json["enemies"])

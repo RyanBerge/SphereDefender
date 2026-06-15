@@ -122,6 +122,14 @@ void RegionMap::InitializeRegion(definitions::RegionDefinition definition)
         npc.name = npc_def.name;
         npc.dialog = npc_def.dialog;
         npc.fresh_interaction = true;
+        npc.shop = npc_def.shop;
+        npc.shop_id = npc_def.shop_id;
+        if (npc.shop)
+        {
+            definitions::Shop shop;
+            shop.id = npc_def.shop_id;
+            shops.push_back(shop);
+        }
 
         npcs.push_back(npc);
     }
@@ -163,7 +171,14 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
         {
             if (!npcs[i].dialog.empty() && (interaction.type == InteractionType::None || new_distance < distance))
             {
-                interaction.type = InteractionType::NpcDialog;
+                if (npcs[i].shop)
+                {
+                    interaction.type = InteractionType::Shop;
+                }
+                else
+                {
+                    interaction.type = InteractionType::NpcDialog;
+                }
                 distance = new_distance;
                 index = i;
             }
@@ -190,6 +205,18 @@ RegionMap::Interaction RegionMap::Interact(sf::Vector2f player_position)
         {
             interaction.dialog = npcs[index].dialog;
             interaction.npc_name = npcs[index].name;
+            npcs[index].fresh_interaction = false;
+            npcs[index].spritesheet.SetAnimation("Default");
+        }
+        break;
+        case InteractionType::Shop:
+        {
+            interaction.dialog = npcs[index].dialog;
+            interaction.npc_name = npcs[index].name;
+            if (npcs[index].shop)
+            {
+                interaction.shop_id = npcs[index].shop_id;
+            }
             npcs[index].fresh_interaction = false;
             npcs[index].spritesheet.SetAnimation("Default");
         }
@@ -225,6 +252,32 @@ void RegionMap::CollectLootItem(definitions::LootItem item)
         if (item.id == loot_item.definition.id)
         {
             loot_item.definition.spawned = false;
+        }
+    }
+}
+
+bool RegionMap::GetShop(uint16_t shop_id, definitions::Shop& out_shop)
+{
+    for (auto& shop : shops)
+    {
+        if (shop.id == shop_id)
+        {
+            out_shop = shop;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void RegionMap::UpdateShop(definitions::Shop updated_shop)
+{
+    for (auto& shop : shops)
+    {
+        if (shop.id == updated_shop.id)
+        {
+            shop = updated_shop;
+            return;
         }
     }
 }

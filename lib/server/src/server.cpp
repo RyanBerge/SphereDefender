@@ -245,6 +245,11 @@ void Server::checkMessages(Player& player)
             swapItem(player);
         }
         break;
+        case ClientMessage::Code::BuyItem:
+        {
+            buyItem(player);
+        }
+        break;
         case ClientMessage::Code::CastVote:
         {
             castVote(player);
@@ -288,6 +293,13 @@ void Server::startGame()
 
     region.~Region();
     new(&region)Region(current_zone.regions[current_region].type, PlayerList.size(), current_zone.regions[current_region].difficulty, STARTING_BATTERY);
+    for (auto& p : PlayerList)
+    {
+        for (auto& shop : region.Shops)
+        {
+            ServerMessage::UpdateShop(*p.Socket, currency, shop);
+        }
+    }
 
     for (unsigned i = 0; i < item_stash.size(); ++i)
     {
@@ -800,6 +812,7 @@ void Server::initLobby(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     if (game_state != GameState::Uninitialized)
@@ -839,6 +852,7 @@ void Server::playerJoined(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     if (game_state != GameState::Lobby)
@@ -1008,6 +1022,13 @@ void Server::loadingComplete(Player& player)
             {
                 region.~Region();
                 new(&region)Region(node.type, PlayerList.size(), current_zone.regions[current_region].difficulty, region.BatteryLevel - battery_cost);
+                for (auto& p : PlayerList)
+                {
+                    for (auto& shop : region.Shops)
+                    {
+                        ServerMessage::UpdateShop(*p.Socket, currency, shop);
+                    }
+                }
                 break;
             }
         }
@@ -1063,6 +1084,7 @@ void Server::updatePlayerState(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     if (game_state != GameState::Game)
@@ -1087,6 +1109,7 @@ void Server::startPlayerAction(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     if (game_state != GameState::Game)
@@ -1128,6 +1151,7 @@ void Server::swapItem(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     definitions::ItemType item = player.ChangeItem(item_stash[item_index]);
@@ -1140,6 +1164,65 @@ void Server::swapItem(Player& player)
     }
 }
 
+void Server::buyItem(Player& player)
+{
+    uint16_t shop_index;
+    uint16_t item_index;
+    if (!ClientMessage::DecodeBuyItem(*player.Socket, shop_index, item_index))
+    {
+        player.Socket->disconnect();
+        player.Status = Player::PlayerStatus::Disconnected;
+        return;
+    }
+
+    for (auto& shop : region.Shops)
+    {
+        if (shop.id == shop_index)
+        {
+            for (auto shop_iterator = shop.stock.begin(); shop_iterator != shop.stock.end(); ++shop_iterator)
+            {
+                auto item = *shop_iterator;
+                if (item.id == item_index)
+                {
+                    if (currency >= item.cost)
+                    {
+                        currency -= item.cost;
+                        shop.stock.erase(shop_iterator--);
+                        cout << player.Data.name << " bought item with id " << item.id << " for " << item.cost << " scrap.\n";
+                        for (auto& p : PlayerList)
+                        {
+                            ServerMessage::UpdateShop(*p.Socket, currency, shop);
+                        }
+
+                        // TODO: Update stash
+                        if (player.GetItem() == definitions::ItemType::None)
+                        {
+                            player.ChangeItem(item.type);
+                            ServerMessage::ChangeItem(*player.Socket, item.type);
+                        }
+                        else
+                        {
+                            for (auto& stash_item : item_stash)
+                            {
+                                if (stash_item == definitions::ItemType::None)
+                                {
+                                    stash_item = item.type;
+                                    break;
+                                }
+                            }
+                            for (auto& p : PlayerList)
+                            {
+                                ServerMessage::UpdateStash(*p.Socket, item_stash);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Server::castVote(Player& player)
 {
     uint8_t vote;
@@ -1148,6 +1231,7 @@ void Server::castVote(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     if (!(global::RegionSelect || global::MenuEvent) /* TODO: Add check for menu events here */)
@@ -1173,6 +1257,7 @@ void Server::consoleInteract(Player& player)
     {
         player.Socket->disconnect();
         player.Status = Player::PlayerStatus::Disconnected;
+        return;
     }
 
     global::GatheringPlayers = activate;

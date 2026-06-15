@@ -15,8 +15,8 @@
 #include "overmap.h"
 #include "stash.h"
 #include "definitions.h"
-#include "definitions.h"
 #include "wrappable_text.h"
+#include "shop_window.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -33,6 +33,11 @@ public:
         float alpha;
     };
 
+    enum class DialogTrigger
+    {
+        None, OpenShop
+    };
+
     Gui();
 
     void Update(sf::Time elapsed);
@@ -44,7 +49,7 @@ public:
 
     void SetEnabled(bool new_enabled);
     void DisplayMenu();
-    void DisplayDialog(std::string source, std::vector<std::string> dialog_list);
+    void DisplayDialog(std::string source, std::vector<std::string> dialog_list, DialogTrigger trigger);
     void SetOvermapDisplay(bool display);
     void DisplayStash();
     void UpdateHealth(uint8_t value);
@@ -52,6 +57,9 @@ public:
     void UpdateStash(std::array<definitions::ItemType, 24> items);
     void ChangeItem(definitions::ItemType item);
     void CollectLootItem(uint16_t player_id, definitions::LootItem item);
+    void SetShop(definitions::Shop shop);
+    void UpdateShop(definitions::Shop shop);
+    void UpdateCurrency(uint16_t updated_currency);
     void ChangeRegion(uint16_t region_id);
     void MarkInteractables(sf::Vector2f player_position, std::vector<sf::FloatRect> bounds_list);
     bool Available();
@@ -70,6 +78,7 @@ public:
     void OnMouseMove(sf::Event::MouseMoveEvent event);
     void OnMouseDown(sf::Event::MouseButtonEvent event);
     void OnMouseUp(sf::Event::MouseButtonEvent event);
+    void OnKeyPressed(sf::Event::KeyEvent event);
     void OnTextEntered(sf::Event::TextEvent event);
 
 private:
@@ -125,6 +134,9 @@ private:
     sf::Text dialog_source_text;
     sf::Text dialog_prompt_text;
     unsigned current_dialog = 0;
+    DialogTrigger dialog_trigger = DialogTrigger::None;
+
+    ShopWindow current_shop;
 
     bool in_event = false;
     definitions::MenuEvent current_event;

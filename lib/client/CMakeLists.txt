@@ -22,6 +22,7 @@ set(Sources
     src/region_map.cpp
     src/resources.cpp
     src/settings.cpp
+    src/shop_window.cpp
     src/spritesheet.cpp
     src/stash.cpp
     src/textbox.cpp

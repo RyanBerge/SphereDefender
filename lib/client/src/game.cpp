@@ -476,6 +476,13 @@ void Game::UpdateStash(std::array<definitions::ItemType, 24> items)
     gui.UpdateStash(items);
 }
 
+void Game::UpdateShop(uint16_t currency, definitions::Shop shop)
+{
+    gui.UpdateCurrency(currency);
+    gui.UpdateShop(shop);
+    region_map.UpdateShop(shop);
+}
+
 void Game::DisplayGatherPlayers(uint16_t player_id, bool start)
 {
     gui.DisplayGatherPlayers(player_id, start);
@@ -698,6 +705,11 @@ void Game::onKeyPressed(sf::Event event)
 {
     if (loaded)
     {
+        if (gui.Available())
+        {
+            gui.OnKeyPressed(event.key);
+        }
+
         if (!menu_open) {
             local_player.OnKeyPressed(event.key);
         }
@@ -716,8 +728,23 @@ void Game::onKeyPressed(sf::Event event)
                 break;
                 case RegionMap::InteractionType::NpcDialog:
                 {
-                    gui.DisplayDialog(interaction.npc_name, interaction.dialog);
+                    gui.DisplayDialog(interaction.npc_name, interaction.dialog, Gui::DialogTrigger::None);
                     local_player.SetActionsEnabled(false);
+                }
+                break;
+                case RegionMap::InteractionType::Shop:
+                {
+                    gui.DisplayDialog(interaction.npc_name, interaction.dialog, Gui::DialogTrigger::OpenShop);
+                    local_player.SetActionsEnabled(false);
+                    definitions::Shop shop;
+                    if (region_map.GetShop(interaction.shop_id, shop))
+                    {
+                        gui.SetShop(shop);
+                    }
+                    else
+                    {
+                        cerr << "Shop not found at NPC " << interaction.npc_name << " with id: " << interaction.shop_id << "\n";
+                    }
                 }
                 break;
                 case RegionMap::InteractionType::ConvoyConsole:
