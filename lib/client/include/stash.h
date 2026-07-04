@@ -28,7 +28,7 @@ public:
     void Update(sf::Time elapsed);
     void Draw();
 
-    void UpdateItems(std::array<definitions::ItemType, 24> item_array);
+    void UpdateItems(std::array<definitions::InventoryItem, 24> item_array);
 
     bool Active = false;
 

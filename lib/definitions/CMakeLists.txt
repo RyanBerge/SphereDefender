@@ -5,6 +5,7 @@ set(Sources
     src/animation_tracker.cpp
     src/debug_overrides.cpp
     src/definitions.cpp
+    src/skill_definitions.cpp
 )
 
 add_library(${TargetName} SHARED ${Sources})

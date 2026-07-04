@@ -26,7 +26,9 @@ enum class GuiType : uint8_t
 enum class PlayerActionType
 {
     Attack,
-    Stunned
+    Stunned,
+
+    DodgeRoll
 };
 
 struct PlayerAction
@@ -56,6 +58,7 @@ public:
         BuyItem,
         CastVote,
         Console,
+        SpendSkillPoint,
 
         LeaveGame,
 
@@ -111,6 +114,7 @@ public:
         PlayerStartAction,
         ChangeEnemyAnimation,
         ChangeItem,
+        GainSkillPoint,
         PlayerStates,
         AddEnemy,
         AddLootItems,
@@ -147,7 +151,8 @@ public:
     static bool PlayerStartAction(sf::TcpSocket& socket, uint16_t player_id, PlayerAction action);
     static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name);
     static bool ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_id, definitions::AnimationName name, util::Direction direction);
-    static bool ChangeItem(sf::TcpSocket& socket, definitions::ItemType item);
+    static bool ChangeItem(sf::TcpSocket& socket, definitions::InventoryItem item);
+    static bool GainSkillPoint(sf::TcpSocket& socket, uint16_t player_id);
     static bool PlayerStates(sf::TcpSocket& socket, std::vector<PlayerData> players);
     static bool AddEnemy(sf::TcpSocket& socket, uint16_t enemy_id, definitions::EntityType type);
     static bool AddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem> loot_items);
@@ -156,7 +161,7 @@ public:
     static bool BatteryUpdate(sf::TcpSocket& socket, float battery_level);
     static bool ProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData> projectiles);
     static bool ChangeRegion(sf::TcpSocket& socket, uint16_t region_id);
-    static bool UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items);
+    static bool UpdateStash(sf::TcpSocket& socket, std::array<definitions::InventoryItem, 24> items);
     static bool UpdateShop(sf::TcpSocket& socket, uint16_t currency, definitions::Shop shop);
     static bool GatherPlayers(sf::TcpSocket& socket, uint16_t player_id, bool start);
     static bool CastVote(sf::TcpSocket& socket, uint16_t player_id, uint8_t vote, bool confirm);
@@ -174,7 +179,8 @@ public:
     static bool DecodeSetGuiPause(sf::TcpSocket& socket, bool& out_paused, bool& out_enable_actions, GuiType& out_gui_type);
     static bool DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action);
     static bool DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::AnimationName& out_name, util::Direction& out_direction);
-    static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item);
+    static bool DecodeChangeItem(sf::TcpSocket& socket, definitions::InventoryItem& out_item);
+    static bool DecodeGainSkillPoint(sf::TcpSocket& socket, uint16_t& player_id);
     static bool DecodePlayerStates(sf::TcpSocket& socket, std::vector<PlayerData>& out_players);
     static bool DecodeAddEnemy(sf::TcpSocket& socket, uint16_t& out_enemy_id, definitions::EntityType& out_type);
     static bool DecodeAddLootItems(sf::TcpSocket& socket, std::vector<definitions::LootItem>& out_loot_items);
@@ -183,7 +189,7 @@ public:
     static bool DecodeBatteryUpdate(sf::TcpSocket& socket, float& out_battery_level);
     static bool DecodeProjectileUpdate(sf::TcpSocket& socket, std::vector<ProjectileData>& out_projectiles);
     static bool DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_region_id);
-    static bool DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items);
+    static bool DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::InventoryItem, 24>& out_items);
     static bool DecodeUpdateShop(sf::TcpSocket& socket, uint16_t& out_currency, definitions::Shop& out_shop);
     static bool DecodeGatherPlayers(sf::TcpSocket& socket, uint16_t& out_player_id, bool& out_start);
     static bool DecodeCastVote(sf::TcpSocket& socket, uint16_t& out_player_id, uint8_t& out_vote, bool& out_confirm);

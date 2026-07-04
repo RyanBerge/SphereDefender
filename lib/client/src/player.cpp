@@ -12,6 +12,7 @@
 #include "game_math.h"
 #include "resources.h"
 #include "messaging.h"
+#include "player_stats.h"
 #include <iostream>
 #include <cmath>
 
@@ -88,7 +89,7 @@ bool Player::ActionsDisabled()
 
 void Player::OnMouseMove(sf::Event::MouseMoveEvent event)
 {
-    (void)event;
+    current_mouse_position = sf::Vector2i{event.x, event.y};
 }
 
 void Player::OnMouseDown(sf::Event::MouseButtonEvent event)
@@ -130,6 +131,31 @@ void Player::OnKeyPressed(sf::Event::KeyEvent event)
         event.code == bindings.MoveUp || event.code == bindings.MoveDown)
     {
         updateMovement();
+    }
+
+    for (auto& [skill, binding] : bindings.BoundSkills)
+    {
+        if (event.code == bindings.UseSkill[binding])
+        {
+            switch (skill)
+            {
+                case definitions::SkillType::None:
+                {
+                    cout << "None\n";
+                }
+                break;
+                case definitions::SkillType::DodgeRoll:
+                {
+                    startRoll();
+                }
+                break;
+                case definitions::SkillType::Lunge:
+                {
+                    cout << "Lunge\n";
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -185,14 +211,9 @@ void Player::startAttack(sf::Vector2i point)
 {
     if (Avatar.Data.health > 0)
     {
-        sf::Vector2f distance_to_destination = resources::GetWindow().mapPixelToCoords(point, resources::GetWorldView()) - Avatar.GetPosition();
-        float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
-
-        uint16_t attack_angle = (static_cast<uint16_t>(rotation + 360)) % 360;
-
         network::PlayerAction action;
         action.type = network::PlayerActionType::Attack;
-        action.action_angle = attack_angle;
+        action.action_angle = getMouseAngle(point);
         if (Avatar.Data.properties.weapon_type == definitions::WeaponType::Sword)
         {
             action.action_angle = std::round(action.action_angle / 45.0) * 45; // round to nearest 45 degrees
@@ -203,6 +224,24 @@ void Player::startAttack(sf::Vector2i point)
         attacking = true;
         attack_timer = 0;
     }
+}
+
+void Player::startRoll()
+{
+    network::PlayerAction action;
+    action.type = network::PlayerActionType::DodgeRoll;
+    action.action_angle = getMouseAngle(current_mouse_position);
+    action.duration = definitions::skills::GetSkillDefinitions().roll.duration;
+
+    ClientMessage::StartAction(resources::GetServerSocket(), action);
+}
+
+uint16_t Player::getMouseAngle(sf::Vector2i mouse_position)
+{
+    sf::Vector2f distance_to_destination = resources::GetWindow().mapPixelToCoords(mouse_position, resources::GetWorldView()) - Avatar.GetPosition();
+    float rotation = std::atan2(distance_to_destination.y, distance_to_destination.x) * 180 / util::pi;
+
+    return (static_cast<uint16_t>(rotation + 360)) % 360;
 }
 
 } // client

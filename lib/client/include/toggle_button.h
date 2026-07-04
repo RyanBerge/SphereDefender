@@ -16,18 +16,25 @@ namespace client {
 class ToggleButton : public CursorButton
 {
 public:
+    enum class Mode
+    {
+        Tint, Animation
+    };
+
     ToggleButton();
     ToggleButton(std::string filepath);
 
     virtual void Toggle();
     virtual void SetToggled(bool toggle_value);
     virtual bool GetToggled();
+    virtual void SetMode(Mode new_mode);
     virtual void RegisterOnToggle(std::function<void(bool)> f);
 
 protected:
     virtual void onLeftMouseUp(bool in_bounds) override;
 
     bool toggled = false;
+    Mode mode;
 
     std::vector<std::function<void(bool)>> toggleCallbacks;
 };

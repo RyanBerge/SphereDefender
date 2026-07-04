@@ -305,11 +305,15 @@ void Server::startGame()
     {
         if (i < 6)
         {
-            item_stash[i] = definitions::ItemType::Medpack;
+            definitions::InventoryItem item;
+            item.type = definitions::InventoryItemType::Medpack;
+            item_stash[i] = item;
         }
         else
         {
-            item_stash[i] = definitions::ItemType::None;
+            definitions::InventoryItem item;
+            item.type = definitions::InventoryItemType::None;
+            item_stash[i] = item;
         }
     }
 
@@ -1125,9 +1129,23 @@ void Server::startPlayerAction(Player& player)
     }
 
     bool permitted = true;
-    if (action.type == network::PlayerActionType::Attack)
+    switch (action.type)
     {
-        permitted = player.StartAttack(action.action_angle);
+        case network::PlayerActionType::Attack:
+        {
+            permitted = player.StartAttack(action.action_angle);
+        }
+        break;
+        case network::PlayerActionType::Stunned:
+        {
+
+        }
+        break;
+        case network::PlayerActionType::DodgeRoll:
+        {
+            permitted = player.StartRoll(action.action_angle);
+        }
+        break;
     }
 
     if (permitted)
@@ -1154,7 +1172,7 @@ void Server::swapItem(Player& player)
         return;
     }
 
-    definitions::ItemType item = player.ChangeItem(item_stash[item_index]);
+    definitions::InventoryItem item = player.ChangeItem(item_stash[item_index]);
     ServerMessage::ChangeItem(*player.Socket, item_stash[item_index]);
     item_stash[item_index] = item;
 
@@ -1181,45 +1199,71 @@ void Server::buyItem(Player& player)
         {
             for (auto shop_iterator = shop.stock.begin(); shop_iterator != shop.stock.end(); ++shop_iterator)
             {
-                auto item = *shop_iterator;
-                if (item.id == item_index)
+                auto shop_item = *shop_iterator;
+                if (shop_item.id == item_index)
                 {
-                    if (currency >= item.cost)
+                    if (currency >= shop_item.cost)
                     {
-                        currency -= item.cost;
-                        shop.stock.erase(shop_iterator--); 
-                        cout << player.Data.name << " bought " << definitions::ToString(item.type) << " with id " << item.id << " for " << item.cost << " scrap.\n";
+                        currency -= shop_item.cost;
+                        shop.stock.erase(shop_iterator--);
+                        cout << player.Data.name << " bought " << definitions::ToString(shop_item.type) << " with id " << shop_item.id << " for " << shop_item.cost << " scrap.\n";
                         for (auto& p : PlayerList)
                         {
                             ServerMessage::UpdateShop(*p.Socket, currency, shop);
                         }
 
-                        // TODO: Update stash
-                        if (player.GetItem() == definitions::ItemType::None)
+                        if (shop_item.grants_inventory_item)
                         {
-                            player.ChangeItem(item.type);
-                            ServerMessage::ChangeItem(*player.Socket, item.type);
+                            definitions::InventoryItem inventory_item;
+                            inventory_item.type = shop_item.inventory_item_type;
+                            if (player.GetItem().type == definitions::InventoryItemType::None)
+                            {
+                                player.ChangeItem(inventory_item);
+                                ServerMessage::ChangeItem(*player.Socket, inventory_item);
+                            }
+                            else
+                            {
+                                for (auto& stash_item : item_stash)
+                                {
+                                    if (stash_item.type == definitions::InventoryItemType::None)
+                                    {
+                                        stash_item = inventory_item;
+                                        break;
+                                    }
+                                }
+                                for (auto& p : PlayerList)
+                                {
+                                    ServerMessage::UpdateStash(*p.Socket, item_stash);
+                                }
+                            }
                         }
                         else
                         {
-                            for (auto& stash_item : item_stash)
-                            {
-                                if (stash_item == definitions::ItemType::None)
-                                {
-                                    stash_item = item.type;
-                                    break;
-                                }
-                            }
-                            for (auto& p : PlayerList)
-                            {
-                                ServerMessage::UpdateStash(*p.Socket, item_stash);
-                            }
-                            break;
+                            applyItemEffect(player, shop_item.consumable_type);
                         }
+
+                        break;
                     }
                 }
             }
         }
+    }
+}
+
+void Server::applyItemEffect(Player& player, definitions::ConsumableItemType item_type)
+{
+    switch (item_type)
+    {
+        case definitions::ConsumableItemType::Diary:
+        {
+            cout << player.Data.name << " used a diary.\n";
+
+            for (auto& p : PlayerList)
+            {
+                ServerMessage::GainSkillPoint(*p.Socket, player.Data.id);
+            }
+        }
+        break;
     }
 }
 

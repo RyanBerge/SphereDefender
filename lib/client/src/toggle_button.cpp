@@ -18,19 +18,28 @@ ToggleButton::ToggleButton() { }
 
 ToggleButton::ToggleButton(std::string filepath)
 {
+    mode = Mode::Tint;
     LoadAnimationData(filepath);
 }
 
 void ToggleButton::Toggle() {
     toggled = !toggled;
 
-    if (toggled)
+    if (toggled && mode == Mode::Tint)
     {
         spritesheet.GetSprite().setColor(sf::Color::Yellow);
     }
-    else
+    else if (toggled && mode == Mode::Animation)
+    {
+        spritesheet.SetAnimation(spritesheet.GetAnimation().name, definitions::AnimationVariant::Active);
+    }
+    else if (!toggled && mode == Mode::Tint)
     {
         spritesheet.GetSprite().setColor(sf::Color::White);
+    }
+    else
+    {
+        spritesheet.SetAnimation(spritesheet.GetAnimation().name, definitions::AnimationVariant::Default);
     }
 
     for (auto& callback : toggleCallbacks)
@@ -48,6 +57,11 @@ void ToggleButton::SetToggled(bool toggle_value) {
 bool ToggleButton::GetToggled()
 {
     return toggled;
+}
+
+void ToggleButton::SetMode(Mode new_mode)
+{
+    mode = new_mode;
 }
 
 void ToggleButton::RegisterOnToggle(std::function<void(bool)> f)

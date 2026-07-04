@@ -1,0 +1,30 @@
+{
+  "rows": [
+    {
+      "row_index": 0,
+      "skills": [
+        {
+          "name": "[Basic Ranged Skill]",
+          "description": [
+            "asdasdasd",
+            "asdasd"
+          ],
+          "cooldown": 2
+        }
+      ]
+    },
+    {
+      "row_index": 1,
+      "skills": [
+        {
+          "name": "[Intermediary Ranged Skill]",
+          "description": [
+            "asdasdasd.",
+            "asdasd."
+          ],
+          "cooldown": 4
+        }
+      ]
+    }
+  ]
+}

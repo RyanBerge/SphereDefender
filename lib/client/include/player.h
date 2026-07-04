@@ -45,10 +45,14 @@ public:
 private:
     bool attacking = false;
     bool actions_disabled = false;
+    sf::Vector2i current_mouse_position;
     util::Seconds attack_timer;
 
     void updateMovement();
     void startAttack(sf::Vector2i point);
+    void startRoll();
+
+    uint16_t getMouseAngle(sf::Vector2i mouse_position);
 
 };
 

@@ -47,7 +47,10 @@ namespace {
     }
 }
 
-Player::Player() : definition{definitions::PlayerDefinition::Get()} { }
+Player::Player() : definition{definitions::PlayerDefinition::Get()}
+{
+    equipped_item.type = definitions::InventoryItemType::Medpack;
+}
 
 void Player::Update(sf::Time elapsed, Region& region)
 {
@@ -76,22 +79,22 @@ void Player::Update(sf::Time elapsed, Region& region)
 
 void Player::UpdatePlayerState(sf::Vector2i movement_vector)
 {
-    if (movement_override)
-    {
-        return;
-    }
-
     double hyp = std::hypot(movement_vector.x, movement_vector.y);
 
     if (hyp == 0)
     {
-        velocity.x = 0;
-        velocity.y = 0;
+        cached_velocity.x = 0;
+        cached_velocity.y = 0;
     }
     else
     {
-        velocity.x = (movement_vector.x / hyp) * definition.speed;
-        velocity.y = (movement_vector.y / hyp) * definition.speed;
+        cached_velocity.x = (movement_vector.x / hyp) * definition.speed;
+        cached_velocity.y = (movement_vector.y / hyp) * definition.speed;
+    }
+
+    if (!movement_override)
+    {
+        velocity = cached_velocity;
     }
 }
 
@@ -112,6 +115,22 @@ bool Player::StartAttack(uint16_t attack_angle)
     projectile_timer = 0;
     attack_timer = 0;
     Attacking = true;
+
+    return true;
+}
+
+bool Player::StartRoll(uint16_t roll_angle)
+{
+    if (movement_override)
+    {
+        return false;
+    }
+
+    definitions::skills::Roll roll_definition = definitions::skills::GetSkillDefinitions().roll;
+    movement_override_time = roll_definition.duration;
+    movement_override_timer = 0;
+    movement_override = true;
+    movement_override_vector = util::AngleToVector(roll_angle) * (roll_definition.distance / roll_definition.duration);
 
     return true;
 }
@@ -187,21 +206,21 @@ bool Player::SpawnProjectile(definitions::Projectile& out_projectile)
     return false;
 }
 
-definitions::ItemType Player::GetItem()
+definitions::InventoryItem Player::GetItem()
 {
     return equipped_item;
 }
 
-definitions::ItemType Player::UseItem()
+definitions::InventoryItem Player::UseItem()
 {
-    switch (equipped_item)
+    switch (equipped_item.type)
     {
-        case definitions::ItemType::None:
+        case definitions::InventoryItemType::None:
         {
             return equipped_item;
         }
         break;
-        case definitions::ItemType::Medpack:
+        case definitions::InventoryItemType::Medpack:
         {
             Data.health += MEDPACK_HEAL_VALUE;
             if (Data.health > 100)
@@ -212,15 +231,15 @@ definitions::ItemType Player::UseItem()
         break;
     }
 
-    definitions::ItemType item = equipped_item;
-    equipped_item = definitions::ItemType::None;
+    definitions::InventoryItem item = equipped_item;
+    equipped_item = definitions::InventoryItem{definitions::InventoryItemType::None};
     ServerMessage::ChangeItem(*Socket, equipped_item);
     return item;
 }
 
-definitions::ItemType Player::ChangeItem(definitions::ItemType item)
+definitions::InventoryItem Player::ChangeItem(definitions::InventoryItem item)
 {
-    definitions::ItemType temp = equipped_item;
+    definitions::InventoryItem temp = equipped_item;
     equipped_item = item;
     return temp;
 }
@@ -239,6 +258,7 @@ void Player::handleMovement(sf::Time elapsed, Region& region)
         if (movement_override_timer >= movement_override_time)
         {
             movement_override = false;
+            velocity = cached_velocity;
         }
         else
         {

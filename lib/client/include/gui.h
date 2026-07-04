@@ -17,6 +17,7 @@
 #include "definitions.h"
 #include "wrappable_text.h"
 #include "shop_window.h"
+#include "skills_panel.h"
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -54,8 +55,8 @@ public:
     void DisplayStash();
     void UpdateHealth(uint8_t value);
     void UpdateBatteryBar(float battery_level);
-    void UpdateStash(std::array<definitions::ItemType, 24> items);
-    void ChangeItem(definitions::ItemType item);
+    void UpdateStash(std::array<definitions::InventoryItem, 24> items);
+    void ChangeItem(definitions::InventoryItem item);
     void CollectLootItem(uint16_t player_id, definitions::LootItem item);
     void SetShop(definitions::Shop shop);
     void UpdateShop(definitions::Shop shop);
@@ -127,6 +128,9 @@ private:
     CursorButton save_button;
     CursorButton settings_button;
     CursorButton exit_button;
+
+    CursorButton skills_button;
+    SkillsPanel skills_panel;
 
     sf::RectangleShape dialog_frame;
     std::vector<std::string> dialog;

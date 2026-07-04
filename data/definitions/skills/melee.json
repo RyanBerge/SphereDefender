@@ -1,0 +1,30 @@
+{
+  "rows": [
+    {
+      "row_index": 0,
+      "skills": [
+        {
+          "name": "Dodge Roll",
+          "description": [
+            "Quickly roll in the direction of movement,",
+            "becoming briefly immune to damage."
+          ],
+          "cooldown": 2
+        }
+      ]
+    },
+    {
+      "row_index": 1,
+      "skills": [
+        {
+          "name": "Lunge",
+          "description": [
+            "Dash forward with your weapon, dealing damage.",
+            "If an enemy is killed, become briefly immune to damage."
+          ],
+          "cooldown": 4
+        }
+      ]
+    }
+  ]
+}

@@ -51,7 +51,7 @@ private:
     Region region;
     uint16_t current_region;
     uint16_t next_region;
-    std::array<definitions::ItemType, 24> item_stash;
+    std::array<definitions::InventoryItem, 24> item_stash;
     uint32_t currency = 0;
     definitions::MenuEvent current_event;
 
@@ -73,6 +73,7 @@ private:
     void resetVotes();
     void checkVotes(VotingType voting_type);
     void handleLootCollision();
+    void applyItemEffect(Player& player, definitions::ConsumableItemType item_type);
 
     enum class MenuEventId : uint16_t
     {

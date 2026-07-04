@@ -49,30 +49,27 @@ ShopWindow::ShopWindow(definitions::Shop shop_definition)
     unsigned i = 0;
     for (auto& item : shop_definition.stock)
     {
-        if (item.type == definitions::ItemType::Medpack)
-        {
-            CursorButton item_button;
-            item_button.LoadAnimationData("items/medkit.json");
-            sf::Vector2f center;
-            center.x = item_frames[i].getPosition().x + (item_frames[i].getSize().x / 2);
-            center.y = item_frames[i].getPosition().y + (item_frames[i].getSize().y / 2);
-            item_button.SetPosition(center.x, center.y);
-            item_button.SetAnimation("Default");
-            uint16_t capture_id = shop_id;
-            item_button.RegisterLeftMouseDown([capture_id, item](void){ 
-                //cout << "Clicked on item with id: " << item.id << "\n";
-                if (!item.stale)
-                {
-                    ClientMessage::BuyItem(resources::GetServerSocket(), capture_id, item.id);
-                }
-            });
+        CursorButton item_button;
+        item_button.LoadAnimationData(definitions::GetAnimationFilename(item.type));
+        sf::Vector2f center;
+        center.x = item_frames[i].getPosition().x + (item_frames[i].getSize().x / 2);
+        center.y = item_frames[i].getPosition().y + (item_frames[i].getSize().y / 2);
+        item_button.SetPosition(center.x, center.y);
+        item_button.SetAnimation("Default");
+        uint16_t capture_id = shop_id;
+        item_button.RegisterLeftMouseDown([capture_id, item](void){ 
+            //cout << "Clicked on item with id: " << item.id << "\n";
+            if (!item.stale)
+            {
+                ClientMessage::BuyItem(resources::GetServerSocket(), capture_id, item.id);
+            }
+        });
 
-            StockBuyButton buy_button;
-            buy_button.button = item_button;
-            buy_button.item = item;
+        StockBuyButton buy_button;
+        buy_button.button = item_button;
+        buy_button.item = item;
 
-            items.push_back(buy_button);
-        }
+        items.push_back(buy_button);
 
         sf::Text price_text;
         price_text.setString(std::to_string(item.cost));

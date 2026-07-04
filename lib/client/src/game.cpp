@@ -13,6 +13,7 @@
 #include "settings.h"
 #include "messaging.h"
 #include "debug_overrides.h"
+#include "player_stats.h"
 #include <thread>
 #include <iostream>
 #include <cmath>
@@ -413,6 +414,19 @@ void Game::StartAction(uint16_t player_id, network::PlayerAction action)
                 avatars[player_id].SetStunned(action.duration);
             }
         }
+        break;
+        case network::PlayerActionType::DodgeRoll:
+        {
+            if (local_player.Avatar.Data.id == player_id)
+            {
+                local_player.Avatar.SetRolling(action.duration, action.action_angle);
+            }
+            else
+            {
+                avatars[player_id].SetRolling(action.duration, action.action_angle);
+            }
+        }
+        break;
     }
 }
 
@@ -428,9 +442,17 @@ void Game::RemovePlayer(uint16_t player_id)
     avatars.erase(player_id);
 }
 
-void Game::ChangeItem(definitions::ItemType item)
+void Game::ChangeItem(definitions::InventoryItem item)
 {
     gui.ChangeItem(item);
+}
+
+void Game::GainSkillPoint(uint16_t player_id)
+{
+    cout << GetPlayerName(player_id) << " used a diary and you gained a skill point\n";
+    stats::GetPlayerStats().UnspentSkillPoints += 1;
+    stats::GetPlayerStats().TotalSkillPoints += 1;
+    cout << "Unspent Skill Points: " << stats::GetPlayerStats().UnspentSkillPoints << "\n";
 }
 
 void Game::ChangeRegion(uint16_t region_id)
@@ -471,7 +493,7 @@ void Game::AdvanceMenuEvent(uint16_t advance_value, bool finish)
     gui.AdvanceMenuEvent(advance_value, finish);
 }
 
-void Game::UpdateStash(std::array<definitions::ItemType, 24> items)
+void Game::UpdateStash(std::array<definitions::InventoryItem, 24> items)
 {
     gui.UpdateStash(items);
 }

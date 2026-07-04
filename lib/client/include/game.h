@@ -50,13 +50,14 @@ public:
     void SetPlayerActionsEnabled(bool enable);
     void StartAction(uint16_t player_id, network::PlayerAction action);
     void ChangeEnemyAnimation(uint16_t enemy_id, definitions::AnimationName animation_name, util::Direction direction);
-    void ChangeItem(definitions::ItemType item);
+    void ChangeItem(definitions::InventoryItem item);
+    void GainSkillPoint(uint16_t player_id);
     void RemovePlayer(uint16_t player_id);
     void ChangeRegion(uint16_t region_id);
     void EnterRegion(sf::Vector2f spawn_position);
     void SetMenuEvent(uint16_t event_id);
     void AdvanceMenuEvent(uint16_t advance_value, bool finish);
-    void UpdateStash(std::array<definitions::ItemType, 24> items);
+    void UpdateStash(std::array<definitions::InventoryItem, 24> items);
     void UpdateShop(uint16_t currency, definitions::Shop shop);
     void DisplayGatherPlayers(uint16_t player_id, bool start);
     void DisplayVote(uint16_t player_id, uint8_t vote, bool confirmed);
@@ -124,7 +125,6 @@ private:
 
     bool display_debug_path = false;
     std::vector<sf::Text> debug_graph_nodes;
-    //std::vector<sf::CircleShape> debug_graph_nodes;
     std::vector<sf::CircleShape> debug_path_nodes;
 };
 

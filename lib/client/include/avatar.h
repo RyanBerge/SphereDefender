@@ -32,6 +32,7 @@ public:
 
     void StartAttack(uint16_t attack_angle);
     void SetStunned(util::Seconds duration);
+    void SetRolling(util::Seconds duration, uint16_t angle);
     void UpdateHealth(uint8_t health);
 
     network::PlayerData Data;
@@ -42,12 +43,18 @@ private:
     sf::RectangleShape gun;
     Spritesheet gunshot;
 
+    definitions::AnimationIdentifier cached_animation;
+
     float starting_attack_angle;
     util::Seconds attack_timer;
+
     bool stunned = false;
     util::Seconds stun_duration;
     util::Seconds stun_timer;
 
+    bool rolling = false;
+    util::Seconds roll_duration;
+    util::Seconds roll_timer;
 };
 
 } // client

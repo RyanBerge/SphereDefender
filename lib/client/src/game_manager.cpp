@@ -437,10 +437,19 @@ void GameManager::checkMessages()
             break;
             case ServerMessage::Code::ChangeItem:
             {
-                definitions::ItemType item;
+                definitions::InventoryItem item;
                 if (ServerMessage::DecodeChangeItem(resources::GetServerSocket(), item))
                 {
                     Game.ChangeItem(item);
+                }
+            }
+            break;
+            case ServerMessage::Code::GainSkillPoint:
+            {
+                uint16_t player_id;
+                if (ServerMessage::DecodeGainSkillPoint(resources::GetServerSocket(), player_id))
+                {
+                    Game.GainSkillPoint(player_id);
                 }
             }
             break;
@@ -520,7 +529,7 @@ void GameManager::checkMessages()
             break;
             case ServerMessage::Code::UpdateStash:
             {
-                std::array<definitions::ItemType, 24> items;
+                std::array<definitions::InventoryItem, 24> items;
                 if (ServerMessage::DecodeUpdateStash(resources::GetServerSocket(), items))
                 {
                     Game.UpdateStash(items);

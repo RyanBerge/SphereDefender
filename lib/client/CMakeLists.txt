@@ -18,11 +18,13 @@ set(Sources
     src/main_menu.cpp
     src/main.cpp
     src/overmap.cpp
+    src/player_stats.cpp
     src/player.cpp
     src/region_map.cpp
     src/resources.cpp
     src/settings.cpp
     src/shop_window.cpp
+    src/skills_panel.cpp
     src/spritesheet.cpp
     src/stash.cpp
     src/textbox.cpp

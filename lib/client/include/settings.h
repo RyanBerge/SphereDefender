@@ -19,6 +19,14 @@ namespace client {
 class Settings
 {
 public:
+    enum class SkillBinding
+    {
+        Skill1 = 0,
+        Skill2 = 1,
+        Skill3 = 2,
+        Skill4 = 3
+    };
+
     struct KeyBindings
     {
         sf::Keyboard::Key MoveLeft;
@@ -29,6 +37,9 @@ public:
         sf::Keyboard::Key Escape;
         sf::Keyboard::Key Interact;
         sf::Keyboard::Key Item;
+
+        std::map<SkillBinding, sf::Keyboard::Key> UseSkill;
+        std::map<definitions::SkillType, SkillBinding> BoundSkills;
     };
 
     Settings();
@@ -39,6 +50,7 @@ public:
     void Open();
     void Close();
     void ApplySettings();
+    void BindSkill(definitions::Skill skill);
 
     KeyBindings Bindings;
     network::ServerSettings ServerSettings;

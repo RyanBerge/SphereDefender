@@ -138,16 +138,9 @@ public:
                     {
                         npc.shop = true;
                         npc.shop_id = shop.id;
-                        definitions::ShopItem item;
-                        static uint16_t id = 0;
-                        item.id = id++;
                         std::string type_name = j_shop_item["type"];
-                        if (type_name == "Medpack")
-                        {
-                            item.type = definitions::ItemType::Medpack;
-                        }
+                        definitions::ShopItem item = CreateShopItem(type_name);
                         item.cost = j_shop_item["cost"];
-                        item.stale = false;
                         shop.stock.push_back(item);
                     }
 
@@ -524,7 +517,8 @@ AnimationVariant ToVariant(std::string variant)
         { "Northeast", AnimationVariant::Northeast },
         { "Northwest", AnimationVariant::Northwest },
         { "Southeast", AnimationVariant::Southeast },
-        { "Southwest", AnimationVariant::Southwest }
+        { "Southwest", AnimationVariant::Southwest },
+        { "Active", AnimationVariant::Active }
     };
 
     if (variant_map.find(variant) != variant_map.end())
@@ -585,6 +579,11 @@ std::string ToString(AnimationVariant variant)
         case AnimationVariant::Southwest:
         {
             return "Southwest";
+        }
+        break;
+        case AnimationVariant::Active:
+        {
+            return "Active";
         }
         break;
     }
@@ -700,23 +699,112 @@ Weapon GetWeapon(WeaponType type)
     return weapon;
 }
 
-std::string ToString(ItemType item_type)
+class PlayerClassInitializer
 {
-    switch (item_type)
+public:
+    PlayerClassInitializer()
     {
-        case ItemType::None:
-        {
-            return "None";
-        }
-        break;
-        case ItemType::Medpack:
-        {
-            return "Medpack";
-        }
-        break;
+        LoadClassMap();
     }
 
-    return "ItemType String Not Found";
+    void LoadClassMap()
+    {
+        std::filesystem::path directory_path = std::filesystem::path("../data/definitions/skills");
+
+        if (!std::filesystem::exists(directory_path))
+        {
+            cerr << "Directory could not be found: " << directory_path << endl;
+            return;
+        }
+
+        try
+        {
+            for (const auto& path : std::filesystem::directory_iterator(directory_path))
+            {
+                std::ifstream file(path.path());
+                nlohmann::json json;
+                file >> json;
+
+                std::string filename = path.path().filename().replace_extension("").string();
+                PlayerClassType class_type;
+                if (filename == "melee")
+                {
+                    class_type = PlayerClassType::Melee;
+                }
+                else if (filename == "ranged")
+                {
+                    class_type = PlayerClassType::Ranged;
+                }
+
+                PlayerClass player_class;
+                player_class.type = class_type;
+
+                for (auto& j_row : json["rows"])
+                {
+                    int index = j_row["row_index"];
+                    player_class.skills.push_back(std::vector<Skill>());
+                    for (auto& j_skill : j_row["skills"])
+                    {
+                        Skill skill;
+                        skill.row = index;
+                        skill.name = j_skill["name"];
+
+                        if (skill.name == "Dodge Roll")
+                        {
+                            skill.type = SkillType::DodgeRoll;
+                        }
+                        else if (skill.name == "Lunge")
+                        {
+                            skill.type = SkillType::Lunge;
+                        }
+                        else
+                        {
+                            cerr << "Skill type not found: " << skill.name << "\n";
+                            skill.type = SkillType::None;
+                        }
+
+                        skill.cooldown = j_skill["cooldown"];
+                        for (auto& j_description : j_skill["description"])
+                        {
+                            std::string line = j_description;
+                            skill.description += (line + "\n");
+                        }
+                        skill.description = skill.description.substr(0, skill.description.size() - 1);
+                        player_class.skills[index].push_back(skill);
+                    }
+                }
+
+                ClassMap[class_type] = player_class;
+            }
+        }
+        catch (std::exception& e)
+        {
+            cerr << e.what();
+        }
+
+//        for (auto& [type, player_class] : ClassMap)
+//        {
+//            cout << "Class: " << (int)player_class.type << "\n";
+//            int row_index = 0;
+//            for (auto& row : player_class.skills)
+//            {
+//                cout << "Row: " << row_index++ << "\n";
+//                for (auto& skill : row)
+//                {
+//                    cout << "Name: " << skill.name << "\n";
+//                }
+//            }
+//        }
+    }
+
+    std::map<PlayerClassType, PlayerClass> ClassMap;
+};
+
+PlayerClass GetPlayerClass(PlayerClassType type)
+{
+    static PlayerClassInitializer class_initializer;
+
+    return class_initializer.ClassMap[type];
 }
 
 PlayerDefinition::PlayerDefinition()
@@ -927,6 +1015,122 @@ MenuEventInitializer& getMenuEventInitializer()
 {
     static MenuEventInitializer initializer;
     return initializer;
+}
+
+ShopItem CreateShopItem(std::string type_name)
+{
+    static uint16_t item_id = 0;
+    ShopItem shop_item;
+    shop_item.id = item_id++;
+    shop_item.type = GetShopItemType(type_name);
+    shop_item.stale = false;
+    shop_item.cost = 0;
+
+    switch (shop_item.type)
+    {
+        case ShopItemType::Medpack:
+        {
+            shop_item.grants_consumable_item = false;
+            shop_item.grants_inventory_item = true;
+            shop_item.inventory_item_type = InventoryItemType::Medpack;
+        }
+        break;
+        case ShopItemType::Diary:
+        {
+            shop_item.grants_consumable_item = true;
+            shop_item.grants_inventory_item = false;
+            shop_item.consumable_type = ConsumableItemType::Diary;
+        }
+        break;
+    }
+
+    return shop_item;
+}
+
+ShopItemType GetShopItemType(std::string type_name)
+{
+    if (type_name == "Medpack")
+    {
+        return ShopItemType::Medpack;
+    }
+    else if (type_name == "Diary")
+    {
+        return ShopItemType::Diary;
+    }
+
+    std::cerr << "Shop item type not recognized: " << type_name << "\n";
+    return ShopItemType::Medpack;
+}
+
+std::string ToString(InventoryItemType item_type)
+{
+    switch (item_type)
+    {
+        case InventoryItemType::None:
+        {
+            return "None";
+        }
+        break;
+        case InventoryItemType::Medpack:
+        {
+            return "Medpack";
+        }
+        break;
+    }
+
+    return "ItemType String Not Found";
+}
+
+std::string ToString(ShopItemType item_type)
+{
+    switch (item_type)
+    {
+        case ShopItemType::Medpack:
+        {
+            return "Medpack";
+        }
+        break;
+        case ShopItemType::Diary:
+        {
+            return "Diary";
+        }
+        break;
+    }
+
+    return "ItemType String Not Found";
+}
+
+std::string ToString(LootItemType item_type)
+{
+    switch (item_type)
+    {
+        case LootItemType::Scrap:
+        {
+            return "Scrap";
+        }
+        break;
+    }
+
+    return "ItemType String Not Found";
+}
+
+std::string GetAnimationFilename(ShopItemType type)
+{
+    switch (type)
+    {
+        case ShopItemType::Medpack:
+        {
+            return "items/medkit.json";
+        }
+        break;
+        case ShopItemType::Diary:
+        {
+            return "items/diary.json";
+        }
+        break;
+    }
+
+    return "Animation filename not found.\n";
 }
 
 MenuEvent GetNextMenuEvent()

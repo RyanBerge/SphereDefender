@@ -165,6 +165,11 @@ void CursorButton::SetPosition(float x, float y)
     GetTransform().setPosition(x, y);
 }
 
+void CursorButton::SetPosition(sf::Vector2f position)
+{
+    SetPosition(position.x, position.y);
+}
+
 void CursorButton::UpdateMousePosition(sf::Event::MouseMoveEvent mouse_event)
 {
     sf::FloatRect bounds = GetGlobalBounds();

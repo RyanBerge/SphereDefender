@@ -1,0 +1,7 @@
+{
+  "roll": {
+    "distance": 75,
+    "duration": 0.2,
+    "cooldown": 3
+  }
+}

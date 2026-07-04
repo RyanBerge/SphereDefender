@@ -7,8 +7,11 @@
  *  Author:     Ryan Berge
  *
  *************************************************************************************************/
+#include <iostream>
 #include "settings.h"
 #include "resources.h"
+
+using std::cout, std::endl;
 
 namespace client {
 
@@ -23,6 +26,11 @@ Settings::Settings()
     Bindings.Escape = sf::Keyboard::Key::Escape;
     Bindings.Interact = sf::Keyboard::Key::E;
     Bindings.Item = sf::Keyboard::Key::LShift;
+
+    Bindings.UseSkill[SkillBinding::Skill1] = sf::Keyboard::Key::Space;
+    Bindings.UseSkill[SkillBinding::Skill2] = sf::Keyboard::Key::Q;
+    Bindings.UseSkill[SkillBinding::Skill3] = sf::Keyboard::Key::R;
+    Bindings.UseSkill[SkillBinding::Skill4] = sf::Keyboard::Key::F;
 
     ServerSettings.ServerPort = 49494;
     DefaultServerIp = "127.0.0.1";
@@ -78,6 +86,24 @@ void Settings::ApplySettings()
 {
     // TODO: May need callbacks hooks here from places that need to know if the settings changed
     Close();
+}
+
+void Settings::BindSkill(definitions::Skill skill)
+{
+    bool used[4] = {false, false, false, false};
+    for (auto& [skill_type, binding] : Bindings.BoundSkills)
+    {
+        used[(int)binding] = true;
+    }
+
+    for (unsigned i = 0; i < 4; ++i)
+    {
+        if (used[i] == false)
+        {
+            Bindings.BoundSkills[skill.type] = static_cast<SkillBinding>(i);
+            break;
+        }
+    }
 }
 
 } // client

@@ -45,15 +45,16 @@ public:
     void Update(sf::Time elapsed, Region& region);
     void UpdatePlayerState(sf::Vector2i movement_vector);
     bool StartAttack(uint16_t attack_angle);
+    bool StartRoll(uint16_t roll_angle);
     sf::FloatRect GetBounds();
     util::LineSegment GetSwordLocation();
     definitions::Weapon GetWeapon();
     void SetWeapon(definitions::Weapon new_weapon);
     void Damage(int damage_value);
     bool SpawnProjectile(definitions::Projectile& out_projectile);
-    definitions::ItemType GetItem();
-    definitions::ItemType UseItem();
-    definitions::ItemType ChangeItem(definitions::ItemType item);
+    definitions::InventoryItem GetItem();
+    definitions::InventoryItem UseItem();
+    definitions::InventoryItem ChangeItem(definitions::InventoryItem item);
     void AddIncomingAttack(definitions::AttackEvent attack);
 
     std::shared_ptr<sf::TcpSocket> Socket;
@@ -74,11 +75,12 @@ private:
 
     definitions::PlayerDefinition definition;
     definitions::Weapon weapon;
-    definitions::ItemType equipped_item = definitions::ItemType::Medpack;
+    definitions::InventoryItem equipped_item;
     util::Seconds projectile_timer = 0;
     int projectiles_fired = 0;
     bool spawn_projectile = false;
     sf::Vector2f velocity{};
+    sf::Vector2f cached_velocity{};
     sf::Vector2f movement_override_vector{};
     util::Seconds movement_override_timer = 0;
     util::Seconds movement_override_time = 0;

@@ -87,6 +87,11 @@ void Gui::Draw()
         GuiView.setViewport(resources::GetWorldView().getViewport());
         resources::GetWindow().setView(GuiView);
 
+        if (!InDialog)
+        {
+            skills_button.Draw();
+        }
+
         ui_frame.Draw();
         menu_button.Draw();
 
@@ -134,6 +139,11 @@ void Gui::Draw()
                     resources::GetWindow().draw(feedback_text.text);
                 }
             }
+        }
+
+        if (skills_panel.IsActive == true)
+        {
+            skills_panel.Draw();
         }
 
         if (overmap.IsActive())
@@ -320,6 +330,11 @@ void Gui::Load(definitions::Zone zone)
     exit_button.SetPosition(reference_bounds.left + reference_bounds.width / 2 - bounds.width / 2, reference_bounds.top + reference_bounds.height * 0.8 - bounds.height / 2);
     exit_button.RegisterLeftMouseUp(std::bind(&Gui::exitGame, this));
 
+    skills_button.LoadAnimationData("gui/skills_button.json");
+    bounds = skills_button.GetSprite().getGlobalBounds();
+    skills_button.SetPosition(window_resolution.x * 0.25f, window_resolution.y - bounds.getSize().y * 1.8);
+    skills_button.RegisterLeftMouseUp([this](void){ skills_panel.IsActive = true; });
+
     event_background.setFillColor(sf::Color{130, 150, 255, 255});
     event_background.setSize(sf::Vector2f{window_resolution.x * 0.8f, window_resolution.y * 0.8f});
     event_background.setOrigin(sf::Vector2f{event_background.getSize().x / 2, event_background.getSize().y / 2});
@@ -391,26 +406,14 @@ void Gui::UpdateBatteryBar(float battery_level)
     battery_bar.setScale(sf::Vector2f{battery_level / 1000, 1});
 }
 
-void Gui::UpdateStash(std::array<definitions::ItemType, 24> items)
+void Gui::UpdateStash(std::array<definitions::InventoryItem, 24> items)
 {
     stash.UpdateItems(items);
 }
 
-void Gui::ChangeItem(definitions::ItemType item)
+void Gui::ChangeItem(definitions::InventoryItem item)
 {
-    switch (item)
-    {
-        case definitions::ItemType::None:
-        {
-            inventory_item.SetAnimation("None");
-        }
-        break;
-        case definitions::ItemType::Medpack:
-        {
-            inventory_item.SetAnimation("Medpack");
-        }
-        break;
-    }
+    inventory_item.SetAnimation(definitions::ToString(item.type));
 }
 
 void Gui::CollectLootItem(uint16_t player_id, definitions::LootItem item)
@@ -540,6 +543,10 @@ void Gui::EscapePressed()
     else if (current_shop.IsActive)
     {
         current_shop.IsActive = false;
+    }
+    else if (skills_panel.IsActive)
+    {
+        skills_panel.IsActive = false;
     }
     else
     {
@@ -837,6 +844,8 @@ void Gui::OnMouseMove(sf::Event::MouseMoveEvent event)
     if (enabled)
     {
         menu_button.UpdateMousePosition(event);
+        skills_button.UpdateMousePosition(event);
+        skills_panel.OnMouseMove(event);
         if (InMenus)
         {
             resume_button.UpdateMousePosition(event);
@@ -869,6 +878,8 @@ void Gui::OnMouseDown(sf::Event::MouseButtonEvent event)
     if (enabled)
     {
         menu_button.UpdateMouseState(event, CursorButton::State::Down);
+        skills_button.UpdateMouseState(event, CursorButton::State::Down);
+        skills_panel.OnMouseDown(event);
         if (InMenus)
         {
             resume_button.UpdateMouseState(event, CursorButton::State::Down);
@@ -909,6 +920,8 @@ void Gui::OnMouseUp(sf::Event::MouseButtonEvent event)
     if (enabled)
     {
         menu_button.UpdateMouseState(event, CursorButton::State::Up);
+        skills_button.UpdateMouseState(event, CursorButton::State::Up);
+        skills_panel.OnMouseUp(event);
         if (InMenus)
         {
             resume_button.UpdateMouseState(event, CursorButton::State::Up);

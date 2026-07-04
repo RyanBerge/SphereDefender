@@ -1,0 +1,103 @@
+{
+  "filename": "SkillFrame.png",
+  "frames": [
+    {
+      "index": 0,
+      "location": [ 0, 0 ],
+      "size": [ 100, 50 ],
+      "origin": [ 0, 0 ]
+    },
+    {
+      "index": 1,
+      "location": [ 0, 50 ],
+      "size": [ 100, 50 ],
+      "origin": [ 0, 0 ]
+    },
+    {
+      "index": 2,
+      "location": [ 0, 100 ],
+      "size": [ 100, 50 ],
+      "origin": [ 0, 0 ]
+    },
+    {
+      "index": 3,
+      "location": [ 0, 150 ],
+      "size": [ 100, 50 ],
+      "origin": [ 0, 0 ]
+    }
+  ],
+  "animations": [
+    {
+      "name": "Up",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 0,
+          "end_frame": 0,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Up", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Hover",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Hover", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Down",
+      "variants": [
+        {
+          "name": "Default",
+          "start_frame": 1,
+          "end_frame": 1,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Down", "variant": "Default" }
+        }
+      ]
+    },
+    {
+      "name": "Up",
+      "variants": [
+        {
+          "name": "Active",
+          "start_frame": 2,
+          "end_frame": 2,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Up", "variant": "Active" }
+        }
+      ]
+    },
+    {
+      "name": "Hover",
+      "variants": [
+        {
+          "name": "Active",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Hover", "variant": "Active" }
+        }
+      ]
+    },
+    {
+      "name": "Down",
+      "variants": [
+        {
+          "name": "Active",
+          "start_frame": 3,
+          "end_frame": 3,
+          "animation_speed": 0,
+          "next_animation": { "animation": "Down", "variant": "Active" }
+        }
+      ]
+    }
+  ]
+}

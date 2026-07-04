@@ -44,6 +44,7 @@ public:
     virtual sf::Sprite& GetSprite();
     virtual sf::Transformable& GetTransform();
     virtual void SetPosition(float x, float y);
+    virtual void SetPosition(sf::Vector2f position);
     virtual sf::FloatRect GetGlobalBounds();
 
     virtual void RegisterLeftMouseDown(std::function<void(void)> f);

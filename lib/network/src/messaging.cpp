@@ -1125,7 +1125,7 @@ bool ServerMessage::ChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t enemy_i
     return true;
 }
 
-bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::ItemType item)
+bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::InventoryItem item)
 {
     Code code = ServerMessage::Code::ChangeItem;
 
@@ -1139,6 +1139,25 @@ bool ServerMessage::ChangeItem(sf::TcpSocket& socket, definitions::ItemType item
     offset += sizeof(code);
 
     if (!writeBuffer(socket, buffer, buffer_size))
+    {
+        cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServerMessage::GainSkillPoint(sf::TcpSocket& socket, uint16_t player_id)
+{
+    Code code = ServerMessage::Code::GainSkillPoint;
+
+    constexpr size_t buffer_len = sizeof(code) + sizeof(player_id);
+    uint8_t buffer[buffer_len];
+
+    std::memcpy(buffer, &code, sizeof(code));
+    std::memcpy(buffer + sizeof(code), &player_id, sizeof(player_id));
+
+    if (!writeBuffer(socket, buffer, buffer_len))
     {
         cerr << "Network: Failed to send ServerMessage::" << __func__ << " message" << endl;
         return false;
@@ -1344,11 +1363,11 @@ bool ServerMessage::ChangeRegion(sf::TcpSocket& socket, uint16_t region_id)
     return true;
 }
 
-bool ServerMessage::UpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24> items)
+bool ServerMessage::UpdateStash(sf::TcpSocket& socket, std::array<definitions::InventoryItem, 24> items)
 {
     Code code = ServerMessage::Code::UpdateStash;
 
-    constexpr size_t buffer_size = sizeof(code) + sizeof(definitions::ItemType) * 24;
+    constexpr size_t buffer_size = sizeof(code) + sizeof(definitions::InventoryItem) * 24;
     uint8_t buffer[buffer_size];
 
     int offset = 0;
@@ -1813,7 +1832,7 @@ bool ServerMessage::DecodePlayerStates(sf::TcpSocket& socket, std::vector<Player
 bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out_player_id, PlayerAction& out_action)
 {
     uint16_t id;
-    PlayerAction temp_action;
+    PlayerAction action;
 
     if (!read(socket, &id, sizeof(id)))
     {
@@ -1821,14 +1840,14 @@ bool ServerMessage::DecodePlayerStartAction(sf::TcpSocket& socket, uint16_t& out
         return false;
     }
 
-    if (!read(socket, &temp_action, sizeof(temp_action)))
+    if (!read(socket, &action, sizeof(action)))
     {
         cerr << "Network: " << __func__ << " failed to read player action flags." << endl;
         return false;
     }
 
     out_player_id = id;
-    out_action = temp_action;
+    out_action = action;
 
     return true;
 }
@@ -1866,9 +1885,9 @@ bool ServerMessage::DecodeChangeEnemyAnimation(sf::TcpSocket& socket, uint16_t& 
     return true;
 }
 
-bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemType& out_item)
+bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::InventoryItem& out_item)
 {
-    definitions::ItemType item;
+    definitions::InventoryItem item;
 
     if (!read(socket, &item, sizeof(item)))
     {
@@ -1877,6 +1896,19 @@ bool ServerMessage::DecodeChangeItem(sf::TcpSocket& socket, definitions::ItemTyp
     }
 
     out_item = item;
+    return true;
+}
+
+bool ServerMessage::DecodeGainSkillPoint(sf::TcpSocket& socket, uint16_t& out_id)
+{
+    uint16_t id;
+    if (!read(socket, &id, sizeof(id)))
+    {
+        cerr << "Network: " << __func__ << " failed to read a player id." << endl;
+        return false;
+    }
+
+    out_id = id;
     return true;
 }
 
@@ -2048,13 +2080,13 @@ bool ServerMessage::DecodeChangeRegion(sf::TcpSocket& socket, uint16_t& out_regi
     return true;
 }
 
-bool ServerMessage::DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::ItemType, 24>& out_items)
+bool ServerMessage::DecodeUpdateStash(sf::TcpSocket& socket, std::array<definitions::InventoryItem, 24>& out_items)
 {
-    std::array<definitions::ItemType, 24> items;
+    std::array<definitions::InventoryItem, 24> items;
 
     for (unsigned i = 0; i < 24; ++i)
     {
-        definitions::ItemType item;
+        definitions::InventoryItem item;
         if (!read(socket, &item, sizeof(item)))
         {
             cerr << "Network: " << __func__ << " failed to read a region name." << endl;

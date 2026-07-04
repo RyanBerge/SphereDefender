@@ -86,26 +86,13 @@ void Stash::Draw()
     }
 }
 
-void Stash::UpdateItems(std::array<definitions::ItemType, 24> item_array)
+void Stash::UpdateItems(std::array<definitions::InventoryItem, 24> item_array)
 {
     for (unsigned i = 0; i < item_array.size(); ++i)
     {
         unsigned row = i / 6;
         unsigned column = i % 6;
-
-        switch (item_array[i])
-        {
-            case definitions::ItemType::None:
-            {
-                items[row][column].SetAnimation("None");
-            }
-            break;
-            case definitions::ItemType::Medpack:
-            {
-                items[row][column].SetAnimation("Medpack");
-            }
-            break;
-        }
+        items[row][column].SetAnimation(definitions::ToString(item_array[i].type));
     }
 }
 

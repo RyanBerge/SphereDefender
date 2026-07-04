@@ -50,6 +50,7 @@ void Avatar::Update(sf::Time elapsed)
 
     attack_timer += elapsed.asSeconds();
     stun_timer += elapsed.asSeconds();
+    roll_timer += elapsed.asSeconds();
 
     spritesheet.Update(elapsed);
 
@@ -84,6 +85,14 @@ void Avatar::Update(sf::Time elapsed)
         if (stunned && stun_timer >= stun_duration)
         {
             stunned = false;
+        }
+
+        if (rolling && roll_timer >= roll_duration)
+        {
+            rolling = false;
+            spritesheet.GetSprite().setScale(sf::Vector2f{1, 1});
+            //cout << definitions::ToString(cached_animation.variant) << "\n";
+            spritesheet.SetAnimation("Idle", spritesheet.GetAnimation().variant);
         }
     }
 }
@@ -129,37 +138,10 @@ void Avatar::SetPosition(sf::Vector2f position)
         return;
     }
 
-    if (position.x - old_position.x == 0 && position.y - old_position.y > 0)
+    if (old_position != position)
     {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::South);
-    }
-    else if (position.x - old_position.x == 0 && position.y - old_position.y < 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::North);
-    }
-    else if (position.x - old_position.x < 0 && position.y - old_position.y == 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::West);
-    }
-    else if (position.x - old_position.x > 0 && position.y - old_position.y == 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::East);
-    }
-    else if (position.x - old_position.x > 0 && position.y - old_position.y > 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southeast);
-    }
-    else if (position.x - old_position.x > 0 && position.y - old_position.y < 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northeast);
-    }
-    else if (position.x - old_position.x < 0 && position.y - old_position.y > 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Southwest);
-    }
-    else if (position.x - old_position.x < 0 && position.y - old_position.y < 0)
-    {
-        spritesheet.SetAnimation("Idle", definitions::AnimationVariant::Northwest);
+        sf::Vector2f direction_vector{position.x - old_position.x, position.y - old_position.y};
+        spritesheet.SetAnimation("Idle", definitions::GetAnimationVariant(util::GetOctalDirection(util::VectorToAngle(direction_vector))));
     }
 }
 
@@ -194,6 +176,16 @@ void Avatar::SetStunned(util::Seconds duration)
     stunned = true;
     stun_duration = duration + 0.05f;
     stun_timer = 0;
+}
+
+void Avatar::SetRolling(util::Seconds duration, uint16_t angle)
+{
+    rolling = true;
+    roll_duration = duration;
+    roll_timer = 0;
+
+    spritesheet.SetAnimation("Rolling", definitions::GetAnimationVariant(util::GetOctalDirection(angle)));
+    spritesheet.GetSprite().setScale(sf::Vector2f{0.85f, 0.85f});
 }
 
 void Avatar::UpdateHealth(uint8_t health)

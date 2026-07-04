@@ -15,7 +15,7 @@
 #include <optional>
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
-#include "game_math.h"
+#include "skill_definitions.h"
 
 namespace definitions
 {
@@ -109,7 +109,8 @@ enum class AnimationVariant
 {
     Default,
     North, South, East, West,
-    Northeast, Northwest, Southeast, Southwest
+    Northeast, Northwest, Southeast, Southwest,
+    Active
 };
 
 AnimationVariant ToVariant(std::string variant);
@@ -194,12 +195,33 @@ struct Projectile
     float invulnerability_window;
 };
 
-enum class ItemType : uint8_t
+enum class SkillType
 {
-    None, Medpack
+    None,
+    DodgeRoll, Lunge
 };
 
-std::string ToString(ItemType item_type);
+struct Skill
+{
+    SkillType type;
+    int row;
+    std::string name;
+    std::string description;
+    float cooldown;
+};
+
+enum class PlayerClassType
+{
+    Melee, Ranged
+};
+
+struct PlayerClass
+{
+    PlayerClassType type;
+    std::vector<std::vector<Skill>> skills;
+};
+
+PlayerClass GetPlayerClass(PlayerClassType type);
 
 struct PlayerDefinition
 {
@@ -291,13 +313,40 @@ struct Npc
     uint16_t shop_id;
 };
 
+enum class InventoryItemType : uint8_t
+{
+    None, Medpack
+};
+
+struct InventoryItem
+{
+    InventoryItemType type;
+};
+
+enum class ConsumableItemType
+{
+    Diary
+};
+
+enum class ShopItemType : uint8_t
+{
+    Medpack, Diary
+};
+
 struct ShopItem
 {
     uint16_t id;
-    ItemType type;
+    ShopItemType type;
     uint16_t cost;
     bool stale;
+    bool grants_inventory_item;
+    InventoryItemType inventory_item_type;
+    bool grants_consumable_item;
+    ConsumableItemType consumable_type;
 };
+
+ShopItem CreateShopItem(std::string type_name);
+ShopItemType GetShopItemType(std::string type_name);
 
 struct Shop
 {
@@ -318,6 +367,12 @@ struct LootItem
     sf::Vector2f position;
     bool spawned;
 };
+
+std::string ToString(InventoryItemType item_type);
+std::string ToString(ShopItemType item_type);
+std::string ToString(LootItemType item_type);
+
+std::string GetAnimationFilename(ShopItemType type);
 
 MenuEvent GetNextMenuEvent();
 MenuEvent GetMenuEventById(uint16_t id);
